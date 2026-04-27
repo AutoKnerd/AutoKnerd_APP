@@ -1,0 +1,220 @@
+.autodrive-lead-modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: none;
+}
+
+.autodrive-lead-modal-root.is-open {
+  display: block;
+}
+
+.autodrive-lead-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.autodrive-lead-modal-shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.autodrive-lead-modal-card {
+  position: relative;
+  width: min(100%, 540px);
+  max-height: min(88vh, 860px);
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: #141414;
+  color: #ffffff;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.autodrive-lead-modal-panel {
+  padding: 1.5rem;
+}
+
+.autodrive-lead-modal-panel[data-step='schedule'] {
+  padding: 1.25rem;
+}
+
+.autodrive-lead-modal-close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.autodrive-lead-modal-title {
+  margin: 0;
+  font-size: clamp(2.2rem, 4vw, 3.9rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.autodrive-lead-modal-title .accent {
+  color: #3488ba;
+}
+
+.autodrive-lead-modal-description {
+  margin: 1rem 0 0;
+  max-width: 900px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.autodrive-lead-modal-form {
+  margin-top: 1.4rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.autodrive-lead-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.autodrive-lead-field label {
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.autodrive-lead-field input,
+.autodrive-lead-field select {
+  min-height: 50px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: #1d1d1d;
+  color: #ffffff;
+  padding: 0 1rem;
+  font-size: 1rem;
+}
+
+.autodrive-lead-field input:focus,
+.autodrive-lead-field select:focus {
+  outline: 2px solid #24b7ff;
+  outline-offset: 0;
+}
+
+.autodrive-lead-submit {
+  margin-top: 0.25rem;
+  min-height: 54px;
+  border: 0;
+  border-radius: 14px;
+  background: #3488ba;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.autodrive-lead-submit[disabled] {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.autodrive-lead-schedule {
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0d0f0f;
+}
+
+.autodrive-lead-schedule-hero {
+  padding: 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(52, 136, 186, 0.16), rgba(16, 16, 16, 0.92) 40%, rgba(16, 16, 16, 1) 100%);
+}
+
+.autodrive-lead-schedule-kicker {
+  margin: 0;
+  color: rgba(141, 214, 255, 0.92);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.autodrive-lead-schedule-title {
+  margin: 0.8rem 0 0;
+  color: #ffffff;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.autodrive-lead-schedule-description {
+  margin: 1rem 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.7;
+}
+
+.autodrive-lead-schedule-note {
+  padding: 1rem 1.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  background: #111313;
+}
+
+.autodrive-lead-schedule-note a {
+  color: #8dd6ff;
+  font-weight: 700;
+}
+
+.autodrive-lead-schedule-frame {
+  padding: 1rem;
+  background: #181818;
+}
+
+.autodrive-lead-schedule-frame iframe {
+  display: block;
+  width: 100%;
+  min-height: 640px;
+  border: 0;
+  border-radius: 12px;
+  background: #121212;
+}
+
+@media (max-width: 768px) {
+  .autodrive-lead-modal-shell {
+    align-items: flex-start;
+    padding: 1rem;
+  }
+
+  .autodrive-lead-modal-card {
+    width: 100%;
+    margin-top: 1rem;
+    border-radius: 16px;
+  }
+
+  .autodrive-lead-modal-panel,
+  .autodrive-lead-schedule-hero,
+  .autodrive-lead-schedule-note {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .autodrive-lead-schedule-frame {
+    padding: 0.75rem;
+  }
+}

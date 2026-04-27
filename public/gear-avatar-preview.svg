@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="AutoKnerd gear avatar preview">
+  <defs>
+    <linearGradient id="lens-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBF6E7" />
+      <stop offset="100%" stop-color="#F4EED9" />
+    </linearGradient>
+    <linearGradient id="lens-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFBEF" />
+      <stop offset="100%" stop-color="#F4EED9" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation="1.2" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <path
+      d="M 58.07,1.28 L 69.93,1.28 L 73.88,14.99 L 79.95,16.61 L 90.23,6.72 L 100.49,12.65 L 97.07,26.49 L 101.51,30.93 L 115.35,27.51 L 121.28,37.77 L 111.39,48.05 L 113.01,54.12 L 126.72,58.07 L 126.72,69.93 L 113.01,73.88 L 111.39,79.95 L 121.28,90.23 L 115.35,100.49 L 101.51,97.07 L 97.07,101.51 L 100.49,115.35 L 90.23,121.28 L 79.95,111.39 L 73.88,113.01 L 69.93,126.72 L 58.07,126.72 L 54.12,113.01 L 48.05,111.39 L 37.77,121.28 L 27.51,115.35 L 30.93,101.51 L 26.49,97.07 L 12.65,100.49 L 6.72,90.23 L 16.61,79.95 L 14.99,73.88 L 1.28,69.93 L 1.28,58.07 L 14.99,54.12 L 16.61,48.05 L 6.72,37.77 L 12.65,27.51 L 26.49,30.93 L 30.93,26.49 L 27.51,12.65 L 37.77,6.72 L 48.05,16.61 L 54.12,14.99 Z"
+      fill="#0A0A0A"
+      stroke="#78C72B"
+      stroke-width="3"
+      stroke-linejoin="round"
+    />
+    <circle cx="64" cy="64" r="35" fill="#F8F4E7" />
+    <circle cx="64" cy="64" r="31" fill="#66BC27" stroke="#111111" stroke-width="1.75" />
+    <g transform="translate(4 -1) rotate(3 60 60)">
+      <path
+        d="M30 58.5c1-5.9 4.6-8.8 11.4-9.8l13.7-1.8c4.6-.6 8.3.2 11.4 2.5 2.6 1.9 5.3 2 7.8.2 2.8-2 6.1-2.8 10.4-2.3l11.6 1.5c6.2.8 9.1 3.3 10.1 8.1l1.4 6.7-4.1.8-1.1-4.6c-.8-3.1-2.6-4.5-6.9-5.1l-11.3-1.4c-3.8-.5-6.4.1-8.5 1.8-4.2 3.2-8.9 3.1-13.3-.1-2.2-1.6-5.2-2.1-9.1-1.6l-13.4 1.8c-4.5.6-6.8 2.4-7.8 6.2l-1.1 4.1-4.1-.9z"
+        fill="#080808"
+      />
+      <path
+        d="M33.4 61.5c1.5-6 5.7-8.8 12-8.8h7.3c5.3 0 8.5 1.3 10.3 4.7 1.1 2.1 1.3 5.1.6 8.8l-1.2 6.2c-1.6 8-5.8 11.5-13.5 11.5h-6.6c-8.1 0-12.5-4.1-12.5-11.5 0-1.5.2-3 .5-4.6l1.1-6.3z"
+        fill="url(#lens-left)"
+      />
+      <path
+        d="M71.8 66.2c-.8-4.4-.4-7.8 1.4-10.2 2.1-2.8 5.4-4 10.5-4h7c8.7 0 13 3.8 13 11.4 0 1.1-.1 2.3-.4 3.5l-1.3 6.5c-1.4 7.1-5.8 10.8-12.8 10.8h-6.8c-7.4 0-11.8-3.7-13.2-11.3l-.9-6.7z"
+        fill="url(#lens-right)"
+      />
+      <path
+        d="M32.4 60.8c1.5-5.6 5.6-8.2 12-8.2h7.8c6.5 0 10.1 2.4 11 8.1l1.4 8.8c1.2 8-3.1 14.8-11 16l-8.1 1.2c-8.2 1.3-15.5-4.7-15.5-13 0-1 .1-2.1.3-3.1l2.1-9.8z"
+        fill="none"
+        stroke="#080808"
+        stroke-width="2.2"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M71.1 61.5c.8-5.9 4.7-8.9 11.4-8.9h8.1c8.2 0 13.7 5.6 13.7 13.8 0 .9-.1 1.9-.3 2.8l-1.7 8.4c-1.4 6.8-6.2 10.9-13.1 10.9h-8c-6.8 0-11.7-4.1-13-10.9l-1.3-6.8c-.2-1-.3-2.1-.3-3.1 0-1 .2-2.1.5-3.2l.8-3z"
+        fill="none"
+        stroke="#080808"
+        stroke-width="2.2"
+        stroke-linejoin="round"
+      />
+      <path d="M62.8 61.1c1.5 1.4 3.4 2.1 5.6 2.1 2.1 0 4-.7 5.6-2.1" fill="none" stroke="#080808" stroke-width="2" stroke-linecap="round" />
+      <path d="M29.1 56.8c.6-4.3 3.2-6.3 7.7-6.3h5.5" fill="none" stroke="#080808" stroke-width="2.4" stroke-linecap="round" />
+      <path d="M96.3 50.5h5c4.2 0 6.8 1.9 7.6 5.8" fill="none" stroke="#080808" stroke-width="2.4" stroke-linecap="round" />
+      <ellipse cx="36.5" cy="55.6" rx="1.8" ry="1.4" fill="#FFF9EA" />
+      <ellipse cx="85.4" cy="54.6" rx="2" ry="1.5" fill="#FFF9EA" />
+      <path d="M107.7 58.5h4.6" fill="none" stroke="#FFF9EA" stroke-width="1.8" stroke-linecap="round" />
+    </g>
+  </g>
+</svg>

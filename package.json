@@ -1,0 +1,14 @@
+{
+  "name": "autoknerd-app-v2",
+  "private": true,
+  "version": "0.1.0",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "firebase-admin": "^12.7.0",
+    "pdf-lib": "^1.17.1"
+  }
+}

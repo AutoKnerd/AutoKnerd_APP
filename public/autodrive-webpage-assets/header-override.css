@@ -1,0 +1,406 @@
+.autodrive-left-nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  min-width: 280px;
+}
+
+.autodrive-menu-link {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.autodrive-menu-link:hover {
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.autodrive-system-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding-bottom: 18px;
+  margin-bottom: -18px;
+}
+
+.autodrive-system-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.autodrive-system-caret {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.autodrive-system-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 16rem;
+  padding: 1rem;
+  border: 1px solid rgba(52, 136, 186, 0.24);
+  background: rgba(8, 18, 30, 0.96);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.32);
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.autodrive-system-group:hover .autodrive-system-dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.autodrive-system-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.8rem 0.85rem;
+  text-decoration: none;
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.autodrive-system-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.autodrive-system-title {
+  color: #8dd6ff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.autodrive-system-subtitle {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.autodrive-mobile-menu-trigger {
+  display: none;
+}
+
+.autodrive-mobile-menu-panel {
+  display: none;
+}
+
+.autodrive-marketing-header {
+  position: fixed !important;
+  inset: 0 0 auto 0 !important;
+  width: 100% !important;
+  min-height: 88px;
+  padding: 1rem 1.25rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 0.75rem !important;
+  z-index: 300 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 10, 10, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.autodrive-brand-group {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  gap: 0 !important;
+}
+
+.autodrive-brand-group .hide-mobile {
+  display: none !important;
+}
+
+.autodrive-brand-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.autodrive-brand-link img {
+  height: clamp(56px, 6vw, 74px) !important;
+  width: auto !important;
+  object-fit: contain;
+}
+
+.autodrive-marketing-header .nav-action-group {
+  margin-left: auto;
+}
+
+.autodrive-login-btn {
+  min-height: 46px !important;
+  border: 1px solid rgba(52, 136, 186, 0.78) !important;
+  background: #3488ba !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 24px rgba(52, 136, 186, 0.24) !important;
+}
+
+.autodrive-signup-btn {
+  min-height: 46px !important;
+  box-shadow: 0 0 24px rgba(102, 184, 72, 0.2) !important;
+}
+
+@media (max-width: 768px) {
+  body.autodrive-mobile-menu-open {
+    overflow: hidden;
+  }
+
+  .autodrive-left-nav {
+    display: none !important;
+  }
+
+  .autodrive-system-dropdown {
+    display: none !important;
+  }
+
+  .autodrive-mobile-menu-trigger {
+    display: inline-flex;
+    position: relative;
+    z-index: 2;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+    background: rgba(10, 10, 10, 0.78);
+    padding: 0 10px;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .autodrive-mobile-menu-trigger:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .autodrive-mobile-menu-trigger span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.92);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .autodrive-marketing-header.mobile-menu-open .autodrive-mobile-menu-trigger span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .autodrive-marketing-header.mobile-menu-open .autodrive-mobile-menu-trigger span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .autodrive-marketing-header.mobile-menu-open .autodrive-mobile-menu-trigger span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  .autodrive-mobile-menu-panel {
+    display: block;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+  }
+
+  .autodrive-marketing-header.mobile-menu-open .autodrive-mobile-menu-panel {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .autodrive-marketing-header.mobile-menu-open .autodrive-mobile-menu-trigger {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .autodrive-mobile-menu-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.52);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+
+  .autodrive-marketing-header.mobile-menu-open .autodrive-mobile-menu-backdrop {
+    opacity: 1;
+  }
+
+  .autodrive-mobile-menu-inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    width: min(30rem, calc(100vw - 2rem));
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(13, 15, 15, 0.98);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.32);
+    padding: 1.75rem 1.5rem 2rem;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.24s ease;
+  }
+
+  .autodrive-marketing-header.mobile-menu-open .autodrive-mobile-menu-inner {
+    transform: translateX(0);
+  }
+
+  .autodrive-mobile-menu-header {
+    position: relative;
+    text-align: left;
+  }
+
+  .autodrive-mobile-menu-title {
+    margin: 0;
+    color: #8dd6ff;
+    font-size: 0.875rem;
+    font-weight: 900;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+
+  .autodrive-mobile-menu-description {
+    margin: 0.4rem 0 0;
+    color: rgba(255, 255, 255, 0.34);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    max-width: calc(100% - 4.5rem);
+  }
+
+  .autodrive-mobile-menu-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(52, 136, 186, 0.8);
+    border-radius: 14px;
+    background: rgba(15, 31, 46, 0.92);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(52, 136, 186, 0.12);
+  }
+
+  .autodrive-mobile-primary {
+    display: inline-flex;
+    min-height: 48px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.5rem;
+    border-radius: 2px;
+    background: #3488ba;
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: filter 0.15s ease, transform 0.15s ease;
+  }
+
+  .autodrive-mobile-primary:hover {
+    filter: brightness(1.08);
+  }
+
+  .autodrive-mobile-links {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .autodrive-mobile-section {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .autodrive-mobile-section + .autodrive-mobile-section {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .autodrive-mobile-label {
+    color: rgba(255, 255, 255, 0.34);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .autodrive-mobile-item {
+    display: flex;
+    min-height: 52px;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0 1rem;
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .autodrive-mobile-item:hover {
+    border-color: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .autodrive-mobile-section-secondary {
+    margin-top: 1.25rem;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .autodrive-marketing-header {
+    min-height: 78px;
+    padding: 0.85rem 1rem !important;
+  }
+
+  .autodrive-brand-link img {
+    height: 46px !important;
+  }
+
+  .autodrive-marketing-header .nav-action-group {
+    width: auto !important;
+    gap: 0.5rem !important;
+  }
+
+  .autodrive-marketing-header .nav-action-group .autodrive-login-btn,
+  .autodrive-marketing-header .nav-action-group .autodrive-signup-btn {
+    display: none !important;
+  }
+}

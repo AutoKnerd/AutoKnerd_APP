@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 1024" role="img" aria-labelledby="title desc">
+  <title id="title">The Reinforcement System</title>
+  <desc id="desc">Closed-loop execution diagram with six stages: Micro-Drill, Live Application, Skill Logging, Drift Signal, Manager Coaching, Weekly Reinforcement.</desc>
+
+  <rect width="1536" height="1024" fill="#080c10"/>
+
+  <g fill="none" stroke="#2f9f4f" stroke-opacity="0.45" stroke-width="3">
+    <path d="M776 333 C 985 345, 1115 425, 1176 556" marker-end="url(#arrow-green)"/>
+    <path d="M1178 588 C 1156 686, 1065 748, 928 790" marker-end="url(#arrow-green)"/>
+  </g>
+
+  <g fill="none" stroke="#9ca3af" stroke-opacity="0.6" stroke-width="2">
+    <path d="M916 793 C 790 826, 640 826, 520 795" marker-end="url(#arrow-gray)"/>
+    <path d="M508 792 C 365 748, 278 683, 260 578" marker-end="url(#arrow-gray)"/>
+    <path d="M260 548 C 282 434, 365 368, 520 329" marker-end="url(#arrow-gray)"/>
+    <path d="M530 327 C 640 295, 790 295, 914 329" marker-end="url(#arrow-gray)"/>
+  </g>
+
+  <defs>
+    <marker id="arrow-green" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#69c37f"/>
+    </marker>
+    <marker id="arrow-gray" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#9ca3af"/>
+    </marker>
+  </defs>
+
+  <g font-family="Outfit, Inter, Arial, sans-serif" font-size="50" font-weight="700" fill="#eef2f7" text-anchor="middle">
+    <text x="768" y="96">The Reinforcement System</text>
+  </g>
+
+  <g font-family="Inter, Arial, sans-serif" font-size="22" fill="#a4acb7" text-anchor="middle">
+    <text x="768" y="146">Consistency is engineered through repetition, measurement, and correction.</text>
+  </g>
+
+  <g font-family="Outfit, Inter, Arial, sans-serif" font-size="42" fill="#0c1116" text-anchor="middle">
+    <g>
+      <rect x="622" y="260" width="292" height="70" fill="#0b1014" stroke="#6abf73" stroke-width="2"/>
+      <text x="768" y="306" fill="#e6ecf3">Micro-Drill</text>
+    </g>
+    <g>
+      <rect x="1098" y="445" width="298" height="70" fill="#0b1014" stroke="#6abf73" stroke-width="2"/>
+      <text x="1247" y="491" fill="#e6ecf3">Live Application</text>
+    </g>
+    <g>
+      <rect x="1058" y="660" width="298" height="70" fill="#0b1014" stroke="#8f9aa8" stroke-width="2"/>
+      <text x="1207" y="706" fill="#e6ecf3">Skill Logging</text>
+    </g>
+    <g>
+      <rect x="610" y="770" width="316" height="70" fill="#0b1014" stroke="#d7b34c" stroke-width="2"/>
+      <text x="768" y="816" fill="#e6ecf3">Drift Signal</text>
+    </g>
+    <g>
+      <rect x="176" y="660" width="332" height="70" fill="#0b1014" stroke="#d7b34c" stroke-width="2"/>
+      <text x="342" y="706" fill="#e6ecf3">Manager Coaching</text>
+    </g>
+    <g>
+      <rect x="124" y="445" width="332" height="70" fill="#0b1014" stroke="#8f9aa8" stroke-width="2"/>
+      <text x="290" y="491" fill="#e6ecf3">Weekly Reinforcement</text>
+    </g>
+  </g>
+</svg>
