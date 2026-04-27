@@ -3886,6 +3886,17 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
     userDoc = snap;
   }
 
+  const isTemporaryDeveloperLogin = normalizeEmail(userId) === normalizeEmail('andrew@autoknerd.com');
+  if (!userDoc && isTemporaryDeveloperLogin) {
+    return buildTemporaryDeveloperBundle({
+      userId: normalizeEmail(userId) || 'developer-session',
+      mockMode,
+      mockRoleOverride,
+    });
+  }
+
+  if (!userDoc) return null;
+
   const userData = userDoc.data() || {};
   const badgesSnap = await firebaseDb.collection('users').doc(userDoc.id).collection('earnedBadges').orderBy('timestamp', 'desc').limit(12).get().catch(() => ({ empty: true, docs: [] }));
 
@@ -4318,10 +4329,24 @@ async function handleAuthSignIn(req, res) {
     const body = await readBody(req);
     const identifier = String(body.identifier || body.email || body.userId || '').trim();
     const code = String(body.code || body.accessCode || '').trim();
+    const isTemporaryDeveloperLogin = normalizeEmail(identifier) === normalizeEmail('andrew@autoknerd.com');
     if (!identifier) {
       return sendJson(res, 400, { ok: false, message: 'Email or staff ID is required.' });
     }
     const userDoc = await findUserDocByIdentifier(identifier);
+    if (!userDoc && isTemporaryDeveloperLogin) {
+      const bundle = await buildTemporaryDeveloperBundle({
+        userId: normalizeEmail(identifier) || 'developer-session',
+        mockMode: body.mockMode,
+        mockRoleOverride: body.mockRoleOverride,
+      });
+      const token = createAuthSession(bundle.user.userId);
+      return sendJson(res, 200, {
+        ok: true,
+        token,
+        bundle,
+      });
+    }
     if (!userDoc) {
       return sendJson(res, 404, { ok: false, message: 'No matching Firebase user found.' });
     }
@@ -4330,7 +4355,6 @@ async function handleAuthSignIn(req, res) {
       return sendJson(res, 401, { ok: false, message: 'Incorrect access code.' });
     }
 
-    const isTemporaryDeveloperLogin = normalizeEmail(identifier) === normalizeEmail('andrew@autoknerd.com');
     const bundle = await fetchUserBundle(
       userDoc.id,
       isTemporaryDeveloperLogin ? 'Developer' : body.roleOverride,
@@ -4366,6 +4390,71 @@ async function handleAuthSignIn(req, res) {
     console.error('[auth-sign-in] failed', error);
     return sendJson(res, 500, { ok: false, message: 'Unable to sign in.' });
   }
+}
+
+async function buildTemporaryDeveloperBundle({ userId = 'developer-session', mockMode = false, mockRoleOverride = null } = {}) {
+  const roleProfile = getRoleProfile('Developer');
+  const stats = normalizeStats();
+  const xp = 0;
+  const level = calculateLevel(xp);
+  const focusTrait = 'trust';
+  const strongTrait = 'relationship';
+  const lessonCategory = pickRoleLessonCategory('Developer', roleProfile.roleType, focusTrait, `${userId}:${dateKey(new Date())}`);
+  const lessonProfile = getLessonCategoryProfile(lessonCategory);
+  const lessonLibrary = buildLessonLibrary('Developer', roleProfile.roleType, focusTrait, lessonCategory);
+  const focus = buildManagerTodayFocus(roleProfile, focusTrait, `${userId}:${dateKey(new Date())}`);
+  const freshUpExperience = getFreshUpExperience('Developer', roleProfile.roleType);
+  const developerDashboard = await buildDeveloperDashboardData({
+    currentUserId: userId,
+    userData: {
+      role: 'Developer',
+      mockMode,
+      mockRoleOverride,
+      stats,
+      xp,
+      freshUpMeter: 0,
+      freshUpAvailable: false,
+    },
+    roleProfile,
+  });
+
+  return {
+    user: {
+      userId,
+      name: 'Andrew',
+      email: 'andrew@autoknerd.com',
+      sourceRole: 'Developer',
+      role: 'Developer',
+      roleLabel: 'Developer',
+      stats,
+      xp,
+      level,
+      streak: 0,
+      momentumScore: 0,
+      focusTrait,
+      strongTrait,
+      freshUpMeter: 0,
+      freshUpAvailable: false,
+      freshUpCoreSessionsSinceLast: 0,
+      roleType: roleProfile.roleType,
+      roleScope: roleProfile.maxEnrollmentScope,
+      visibilityScope: roleProfile.visibilityScope,
+      lessonCategory,
+      roleOverride: 'Developer',
+      mockMode,
+      mockRoleOverride,
+    },
+    recentSessions: [],
+    badges: [],
+    focus,
+    lessonProfile,
+    lessonLibrary,
+    freshUpExperience,
+    managerDashboard: null,
+    developerDashboard,
+    roleProfile,
+    insight: 'Developer access is ready. Use the console to inspect live dealership data.',
+  };
 }
 
 function buildEnrollmentProfile(roleLabel) {
