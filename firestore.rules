@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function authRole() {
+      return isSignedIn()
+        ? (request.auth.token.role != null
+            ? request.auth.token.role
+            : (request.auth.token.roleLabel != null ? request.auth.token.roleLabel : ''))
+        : '';
+    }
+
+    function isPrivileged() {
+      return isSignedIn() && (authRole() == 'Developer' || authRole() == 'Admin');
+    }
+
+    function currentUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function currentDealershipId() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && currentUserDoc().data.dealershipId != null
+        ? currentUserDoc().data.dealershipId
+        : '';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function sameDealership(dealershipId) {
+      return isPrivileged() || (isSignedIn() && dealershipId != null && dealershipId != '' && dealershipId == currentDealershipId());
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isPrivileged();
+    }
+
+    match /sessions/{sessionId} {
+      allow read: if isPrivileged() || sameDealership(resource.data.dealershipId);
+      allow create, update, delete: if isPrivileged();
+    }
+
+    match /dealerships/{dealershipId} {
+      allow read: if isPrivileged() || sameDealership(dealershipId);
+      allow create, update, delete: if isPrivileged();
+    }
+  }
+}

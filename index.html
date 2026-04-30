@@ -108,6 +108,186 @@ tailwind.config = {
     background: #ccff00;
     color: #000;
   }
+
+  @keyframes loading-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  @keyframes loading-float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes loading-dot {
+    0%, 80%, 100% {
+      opacity: 0.3;
+      transform: translateY(0);
+    }
+
+    40% {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+  }
+
+  @keyframes loading-spin {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .loading-shimmer {
+    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0%, rgba(204, 255, 0, 0.18) 50%, rgba(255, 255, 255, 0.06) 100%);
+    background-size: 220% 100%;
+    animation: loading-shimmer 1.35s ease-in-out infinite;
+  }
+
+  .loading-float {
+    animation: loading-float 3s ease-in-out infinite;
+  }
+
+  .loading-ring {
+    box-shadow: inset 0 0 0 1px rgba(204, 255, 0, 0.16), 0 0 30px rgba(204, 255, 0, 0.08);
+    animation: loading-float 4.2s ease-in-out infinite;
+  }
+
+  .loading-dot {
+    display: inline-block;
+    animation: loading-dot 1.1s infinite;
+  }
+
+  .loading-spin {
+    animation: loading-spin 3.8s linear infinite;
+  }
+
+  #toolsHubScreen {
+    background-color: #080808;
+    color: #e2e4cf;
+    background-image:
+      radial-gradient(circle at 0% 0%, rgba(204, 255, 0, 0.03) 0%, transparent 45%),
+      radial-gradient(circle at 100% 10%, rgba(0, 242, 255, 0.04) 0%, transparent 36%),
+      radial-gradient(circle at 50% 100%, rgba(255, 186, 38, 0.025) 0%, transparent 42%);
+    background-attachment: fixed;
+  }
+
+  #toolsHubScreen .liquid-glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #toolsHubScreen .liquid-glass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  #toolsHubScreen .liquid-glass-accent-lime {
+    border-left: 4px solid #ccff00;
+  }
+
+  #toolsHubScreen .liquid-glass-accent-cyan {
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.05);
+  }
+
+  #toolsHubScreen .glass-depth {
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  #toolsHubScreen .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  #toolsHubScreen .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  #toolsHubSearchResultsPanel {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-6px);
+    overflow: hidden;
+    transition: max-height 280ms ease, opacity 220ms ease, transform 220ms ease;
+  }
+
+  #toolsHubSearchResultsPanel.is-open {
+    max-height: 2000px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    #toolsHubScreen header {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    #toolsHubScreen main {
+      padding-left: 1rem;
+      padding-right: 1rem;
+      padding-top: 5rem;
+      padding-bottom: 6rem;
+      gap: 1rem;
+    }
+
+    #toolsHubScreen .tools-hub-hero-title {
+      font-size: 2rem;
+      line-height: 1.1;
+    }
+
+    #toolsHubScreen .tools-hub-hero-copy {
+      font-size: 0.95rem;
+    }
+
+    #toolsHubScreen .tools-hub-grid {
+      gap: 1rem;
+    }
+
+    #toolsHubScreen .tools-hub-sidebar {
+      gap: 1rem;
+    }
+
+    #toolsHubScreen .tools-hub-section-title {
+      font-size: 1.25rem;
+      line-height: 1.2;
+    }
+
+    #toolsHubScreen .tools-hub-stack-mobile {
+      flex-direction: column;
+      overflow-x: visible;
+    }
+
+    #toolsHubScreen .tools-hub-stack-mobile > * {
+      width: 100%;
+    }
+  }
 </style>
 </head>
 <body class="bg-background text-on-surface font-body antialiased min-h-screen relative overflow-x-hidden selection:bg-primary/30 selection:text-primary">
@@ -118,14 +298,64 @@ tailwind.config = {
   <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==')] opacity-40 mix-blend-overlay"></div>
 </div>
 
-<div id="bootScreen" class="hidden-screen fixed inset-0 z-40 flex items-center justify-center bg-background/95 backdrop-blur-xl">
-  <div class="flex flex-col items-center gap-4 text-center px-6">
-    <div class="h-14 w-14 rounded-full border border-primary/30 bg-primary/10 shadow-[0_0_30px_rgba(204,255,0,0.18)] flex items-center justify-center">
-      <span class="material-symbols-outlined text-primary animate-pulse text-2xl">autorenew</span>
-    </div>
-    <div>
-      <p class="font-label text-xs uppercase tracking-[0.28em] text-on-surface-variant">Loading profile</p>
-      <p class="mt-2 font-headline text-xl font-bold text-on-surface">Pulling your live data</p>
+<div id="bootScreen" class="fixed inset-0 z-40 flex items-center justify-center bg-background/95 px-4 backdrop-blur-xl">
+  <div class="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#111111]/92 p-6 shadow-[0_40px_120px_rgba(0,0,0,0.7)] md:p-8">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(204,255,0,0.16),_transparent_55%)]"></div>
+    <div class="relative flex flex-col gap-6">
+      <div class="flex items-start gap-4 md:items-center">
+        <div class="loading-ring relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
+          <div class="absolute inset-2 rounded-full border border-primary/20"></div>
+          <img src="/gear-head.png" alt="AutoKnerd gear logo" class="loading-spin h-10 w-10 object-contain" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="font-label text-[10px] uppercase tracking-[0.32em] text-primary/80">Loading profile</p>
+          <h1 class="mt-2 font-headline text-3xl font-bold text-on-surface md:text-4xl">Waking up AutoKnerd</h1>
+          <p class="mt-2 max-w-2xl text-sm leading-relaxed text-on-surface-variant md:text-base">Syncing your account, lesson history, and coaching momentum so the dashboard opens ready to work.</p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 md:grid-cols-3">
+        <div class="rounded-2xl border border-white/10 bg-black/25 p-4">
+          <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">1. Verify</p>
+          <p class="mt-2 font-headline text-lg font-bold text-on-surface">Checking access</p>
+          <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">Confirming your session and role before we show any live data.</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-black/25 p-4">
+          <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">2. Sync</p>
+          <p class="mt-2 font-headline text-lg font-bold text-on-surface">Loading lessons</p>
+          <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">Pulling your freshest coaching progress and recommended next steps.</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-black/25 p-4">
+          <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">3. Ready</p>
+          <p class="mt-2 font-headline text-lg font-bold text-on-surface">Preparing dashboard</p>
+          <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">Assembling your home screen, insights, and launch controls.</p>
+        </div>
+      </div>
+
+      <div class="rounded-[1.5rem] border border-white/10 bg-black/30 p-4">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="font-label text-[10px] uppercase tracking-[0.24em] text-primary/80">Connection</p>
+            <p id="bootConnectionText" class="mt-1 text-sm font-medium text-on-surface">Pulling live data</p>
+          </div>
+          <div class="loading-dots flex items-center gap-2 text-primary">
+            <span class="loading-dot h-2 w-2 rounded-full bg-current"></span>
+            <span class="loading-dot h-2 w-2 rounded-full bg-current" style="animation-delay: 0.15s;"></span>
+            <span class="loading-dot h-2 w-2 rounded-full bg-current" style="animation-delay: 0.3s;"></span>
+          </div>
+        </div>
+        <div class="mt-4 space-y-3">
+          <div class="h-3 rounded-full bg-white/6 loading-shimmer"></div>
+          <div class="h-3 w-5/6 rounded-full bg-white/6 loading-shimmer"></div>
+          <div class="h-3 w-2/3 rounded-full bg-white/6 loading-shimmer"></div>
+        </div>
+        <div class="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
+          <p id="bootStatusText" class="text-xs uppercase tracking-[0.24em] text-on-surface-variant">Loading your dashboard</p>
+          <button id="bootRetryBtn" type="button" class="hidden-screen rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">
+            Try again
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -133,12 +363,14 @@ tailwind.config = {
 <div id="authScreen" class="screen hidden-screen fixed inset-0 z-30 flex items-center justify-center px-4">
   <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(204,255,0,0.08),_transparent_60%)]"></div>
   <div class="relative w-full max-w-md rounded-[2rem] border border-white/10 bg-[#111111]/95 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+    <div class="mb-5 flex justify-center">
+      <img src="/AutoKnerd%20Logo.png" alt="AutoKnerd logo" class="h-20 w-auto object-contain" />
+    </div>
     <div class="flex items-center justify-between gap-4">
       <div>
-        <p class="font-label text-xs uppercase tracking-[0.28em] text-on-surface-variant">AutoKnerd</p>
-        <h1 class="mt-2 font-headline text-3xl font-bold text-on-surface">Sign in</h1>
+        <h1 class="font-headline text-3xl font-bold text-on-surface">Sign in</h1>
       </div>
-      <div class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#CCFF00]">Retail</div>
+      <div class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#CCFF00]">v.2</div>
     </div>
 
     <p class="mt-4 text-sm leading-relaxed text-on-surface-variant">
@@ -164,7 +396,7 @@ tailwind.config = {
         <input id="authIdentifierInput" type="text" autocomplete="username" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="name@store.com or user ID" />
       </label>
       <label class="block space-y-2">
-        <span id="authCodeLabel" class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Access code</span>
+        <span id="authCodeLabel" class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Password</span>
         <input id="authCodeInput" type="password" autocomplete="current-password" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Optional if your account requires one" />
       </label>
       <label id="authRoleField" class="hidden block space-y-2">
@@ -190,7 +422,7 @@ tailwind.config = {
         Temporary Developer Login
       </button>
       <p id="authEnrollmentNote" class="text-xs leading-relaxed text-on-surface-variant">
-        Join lets a user create their own account. Owners and GMs can see dealer-level data, managers can see their team, and frontline roles see only themselves.
+        Sign in with your portable AutoKnerd account to bring your coaching history, progress, and role-based dashboard with you from one dealership to the next.
       </p>
       <p id="authStatusText" class="text-xs uppercase tracking-[0.24em] text-on-surface-variant">Waiting for your account</p>
     </div>
@@ -200,7 +432,9 @@ tailwind.config = {
 <div id="homeScreen" class="screen">
   <div id="coachHomePanel">
   <header class="fixed top-0 w-full border-t border-white/10 bg-[#0e0e0e]/60 backdrop-blur-2xl bg-gradient-to-b from-white/5 to-transparent shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] grid grid-cols-[auto,1fr,auto] items-center px-6 h-16 z-50">
-    <button id="homeMenuBtn" class="material-symbols-outlined text-zinc-500 hover:text-[#ccff00] transition-colors duration-300 text-2xl" aria-label="Open menu">menu</button>
+    <button id="homeMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-2 text-zinc-500 transition-colors duration-300 hover:border-[#CCFF00]/30 hover:bg-white/10 hover:text-[#CCFF00]" aria-label="Open developer tools">
+      <img src="/gear-head.png" alt="" aria-hidden="true" class="h-7 w-7 object-contain" />
+    </button>
     <h1 class="justify-self-center font-['Space_Grotesk'] uppercase tracking-widest font-bold text-lg text-[#ccff00]">HOME</h1>
     <div class="justify-self-end flex items-center gap-2">
       <button id="homeManagerToggleBtn" type="button" class="hidden rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.24em] text-[#CCFF00] transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15 active:scale-95">
@@ -242,7 +476,7 @@ tailwind.config = {
             <p id="homeMissionFocus" class="text-sm md:text-base text-on-surface-variant">Focus: Loading...</p>
           </div>
           <div class="flex flex-col gap-3 w-full md:w-auto shrink-0">
-            <button id="startSessionBtn" class="w-full md:w-auto px-8 py-4 bg-[#CCFF00] text-black font-headline font-bold text-lg rounded-full flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:shadow-[0_0_30px_rgba(204,255,0,0.6)] hover:scale-[1.02] transition-all duration-300 active:scale-95 group/btn">
+      <button id="startSessionBtn" class="w-full md:w-auto px-8 py-4 bg-[#CCFF00] text-black font-headline font-bold text-lg rounded-full flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:shadow-[0_0_30px_rgba(204,255,0,0.6)] hover:scale-[1.02] transition-all duration-300 active:scale-95 group/btn">
               <span>START SESSION</span>
               <span class="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">play_arrow</span>
             </button>
@@ -260,7 +494,7 @@ tailwind.config = {
 
     <div class="flex items-start gap-4 p-4 rounded-xl bg-surface-bright/80 backdrop-blur-md border border-outline-variant/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_10px_30px_rgba(0,0,0,0.4)]">
       <div class="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(204,255,0,0.3)]">
-        <span class="material-symbols-outlined text-primary text-xl" data-weight="fill">smart_toy</span>
+        <img src="/favicon.png" alt="" aria-hidden="true" class="h-6 w-6 object-contain" />
       </div>
       <div>
         <p id="homeInsightLabel" class="font-label text-xs tracking-widest text-primary uppercase mb-1">Sprocket Insight</p>
@@ -309,40 +543,19 @@ tailwind.config = {
           </button>
         </div>
       </div>
-      <button id="openSettingsBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
-        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Retail</span>
-        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Settings & Support</span>
-      </button>
       <button id="openHistoryBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
-        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Retail</span>
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Activity</span>
         <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Session History</span>
-      </button>
-      <button id="openLessonLibraryBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
-        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Retail</span>
-        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Lesson Library</span>
       </button>
       <button id="openDeveloperPanelBtn" type="button" class="w-full rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-4 text-left transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15">
         <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Developer</span>
-        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Change roles and test flows</span>
-      </button>
-      <button id="clearDeveloperRoleBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
-        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Live role</span>
-        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Use Firebase role</span>
-      </button>
-      <button id="toggleMockUserBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
-        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Test data</span>
-        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Mock User Mode</span>
-        <span id="mockUserStateLabel" class="block mt-1 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Off · live Firebase user</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Open developer tools</span>
       </button>
       <div id="developerMenuSection" class="hidden-screen space-y-3 rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/5 p-3">
         <p class="font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Developer</p>
         <button id="openDeveloperConsoleBtn" type="button" class="w-full rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-4 text-left transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15">
           <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Live Firebase</span>
-          <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Open Developer Console</span>
-        </button>
-        <button id="openDeveloperToolsBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
-          <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Tools</span>
-          <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Role Switcher & Mock Mode</span>
+          <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Open developer console</span>
         </button>
       </div>
     </div>
@@ -358,6 +571,17 @@ tailwind.config = {
       <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
         <p class="font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Current role</p>
         <p id="developerCurrentRole" class="mt-1 font-headline text-lg font-bold text-[#CCFF00]">Live Firebase Role</p>
+      </div>
+      <div class="grid gap-3 md:grid-cols-2">
+        <button id="clearDeveloperRoleBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
+          <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Live role</span>
+          <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Use Firebase role</span>
+        </button>
+        <button id="toggleMockUserBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
+          <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Test data</span>
+          <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Mock User Mode</span>
+          <span id="mockUserStateLabel" class="block mt-1 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Off · live Firebase user</span>
+        </button>
       </div>
       <div id="developerRoleList" class="grid grid-cols-2 gap-3"></div>
       <div id="mockPersonaSection" class="hidden-screen space-y-3">
@@ -526,44 +750,34 @@ tailwind.config = {
         </div>
       </section>
 
-      <section class="space-y-4">
-        <h2 class="font-headline font-bold text-xl text-on-surface mb-6">Team Monitor</h2>
+      <section id="managerStaffSection" class="space-y-4">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Staff</p>
+            <h2 class="font-headline font-bold text-xl text-on-surface mb-1">Your team</h2>
+          </div>
+          <p class="text-xs uppercase tracking-[0.24em] text-on-surface-variant">Tap a card to open the profile</p>
+        </div>
         <div id="managerTeamMonitorList" class="space-y-3"></div>
       </section>
     </main>
 
-      <nav id="managerMobileNav" class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4 bg-[#000000]/90 backdrop-blur-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-[32px]">
-        <button type="button" class="flex flex-col items-center justify-center text-[#CCFF00] relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-[#CCFF00] after:rounded-full active:scale-90 duration-200">
-          <span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">bolt</span>
-          <span class="font-['Manrope'] text-[10px] font-black tracking-widest uppercase">DRIVE</span>
-      </button>
-      <button type="button" class="flex flex-col items-center justify-center text-zinc-600 hover:text-zinc-300 transition-colors active:scale-90 duration-200">
-        <span class="material-symbols-outlined mb-1">psychology</span>
-        <span class="font-['Manrope'] text-[10px] font-black tracking-widest uppercase">SESSIONS</span>
-      </button>
-      <button type="button" class="flex flex-col items-center justify-center text-zinc-600 hover:text-zinc-300 transition-colors active:scale-90 duration-200">
-        <span class="material-symbols-outlined mb-1">bar_chart</span>
-        <span class="font-['Manrope'] text-[10px] font-black tracking-widest uppercase">SKILLS</span>
-      </button>
-        <button type="button" class="flex flex-col items-center justify-center text-zinc-600 hover:text-zinc-300 transition-colors active:scale-90 duration-200">
-          <span class="material-symbols-outlined mb-1">military_tech</span>
-          <span class="font-['Manrope'] text-[10px] font-black tracking-widest uppercase">BADGES</span>
-        </button>
-      </nav>
-      <footer id="managerModeFooter" class="hidden-screen fixed bottom-20 left-0 w-full z-50 px-4 md:bottom-4">
-        <div class="mx-auto flex max-w-2xl gap-3 rounded-[2rem] border border-white/10 bg-[#101010]/92 p-3 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-          <button id="managerFooterStoreBtn" type="button" class="flex-1 rounded-[1.5rem] border border-white/10 bg-black/35 px-5 py-4 text-center transition active:scale-95">
-            <span class="block font-headline text-[11px] font-bold uppercase tracking-[0.28em] text-on-surface-variant">Store</span>
-            <span class="mt-1 block font-headline text-lg font-bold tracking-tight text-on-surface">Store View</span>
-          </button>
-          <button id="managerFooterPersonalBtn" type="button" class="flex-1 rounded-[1.5rem] border border-white/10 bg-black/35 px-5 py-4 text-center transition active:scale-95">
-            <span class="block font-headline text-[11px] font-bold uppercase tracking-[0.28em] text-on-surface-variant">Personal</span>
-            <span class="mt-1 block font-headline text-lg font-bold tracking-tight text-on-surface">My Coaching</span>
-          </button>
-        </div>
-      </footer>
   </div>
 </div>
+
+<footer id="managerModeFooter" class="hidden-screen fixed bottom-0 left-0 w-full z-50 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:pb-4">
+  <div class="mx-auto flex max-w-md items-center gap-2 rounded-full border border-white/10 bg-[#101010]/92 p-2 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+    <button id="managerFooterToolsBtn" type="button" class="flex-1 rounded-full border border-white/10 bg-black/35 px-4 py-3 text-center transition active:scale-95">
+      <span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] text-on-surface-variant">Tools</span>
+    </button>
+    <button id="managerFooterStoreBtn" type="button" class="flex-1 rounded-full border border-white/10 bg-black/35 px-4 py-3 text-center transition active:scale-95">
+      <span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] text-on-surface-variant">Store</span>
+    </button>
+    <button id="managerFooterPersonalBtn" type="button" class="flex-1 rounded-full border border-white/10 bg-black/35 px-4 py-3 text-center transition active:scale-95">
+      <span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] text-on-surface-variant">Self</span>
+    </button>
+  </div>
+</footer>
 
 <div id="aiOutputScreen" class="screen hidden-screen bg-black text-on-surface font-body antialiased h-screen flex flex-col overflow-hidden">
   <header class="fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-black/60 backdrop-blur-xl shadow-[0_40px_40px_-10px_rgba(0,0,0,0.5)]">
@@ -598,10 +812,31 @@ tailwind.config = {
       <div class="flex-1 min-h-0 overflow-hidden p-6">
         <div class="relative h-full min-h-0 overflow-y-auto scrollbar-hide rounded-[1.5rem] border border-white/10 bg-black/45 p-5 md:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
           <pre id="aiOutputReport" class="whitespace-pre-wrap break-words font-body text-base leading-[1.7] text-on-surface/90"></pre>
-          <div id="aiOutputLoading" class="hidden-screen absolute inset-0 flex items-center justify-center rounded-[1.5rem] bg-black/55 px-6 text-center backdrop-blur-[2px]">
-            <div class="flex flex-col items-center gap-4">
-              <img src="/public/gear-head.png" alt="Loading" class="h-16 w-16 object-contain opacity-90 drop-shadow-[0_0_20px_rgba(204,255,0,0.22)]" />
-              <p id="aiOutputLoadingText" class="max-w-xs text-sm font-medium tracking-wide text-on-surface-variant">Pulling your AutoForge lesson plan...</p>
+          <div id="aiOutputLoading" class="hidden-screen absolute inset-0 flex items-center justify-center rounded-[1.5rem] bg-black/55 px-4 text-center backdrop-blur-[2px]">
+            <div class="w-full max-w-md rounded-[1.75rem] border border-white/10 bg-[#111111]/90 p-6 text-left shadow-[0_25px_80px_rgba(0,0,0,0.55)]">
+              <div class="flex items-start gap-4">
+                <div class="loading-ring relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
+                  <img src="/gear-head.png" alt="AutoKnerd gear logo" class="loading-spin h-9 w-9 object-contain" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="font-label text-[10px] uppercase tracking-[0.28em] text-primary/80">Generating</p>
+                  <p class="mt-2 font-headline text-xl font-bold text-on-surface">Building your AutoForge plan</p>
+                  <p id="aiOutputLoadingText" class="mt-2 max-w-sm text-sm leading-relaxed text-on-surface-variant">Pulling your AutoForge lesson plan...</p>
+                </div>
+              </div>
+              <div class="mt-5 space-y-3">
+                <div class="h-3 rounded-full bg-white/6 loading-shimmer"></div>
+                <div class="h-3 w-11/12 rounded-full bg-white/6 loading-shimmer"></div>
+                <div class="h-3 w-4/5 rounded-full bg-white/6 loading-shimmer"></div>
+              </div>
+              <div class="mt-5 flex items-center justify-between">
+                <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">AutoForge is writing</p>
+                <div class="loading-dots flex items-center gap-2 text-primary">
+                  <span class="loading-dot h-2 w-2 rounded-full bg-current"></span>
+                  <span class="loading-dot h-2 w-2 rounded-full bg-current" style="animation-delay: 0.15s;"></span>
+                  <span class="loading-dot h-2 w-2 rounded-full bg-current" style="animation-delay: 0.3s;"></span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -771,9 +1006,9 @@ tailwind.config = {
       </div>
       <span id="profileRole" class="font-headline tracking-widest font-bold uppercase text-primary text-lg">ELITE COACH</span>
     </button>
-    <div class="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity cursor-pointer active:scale-95 duration-200">
-      <span id="profileLevel" class="font-headline tracking-widest font-bold uppercase text-sm">LVL 28</span>
-    </div>
+    <button id="profileHeaderMenuBtn" type="button" class="h-10 w-10 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest transition-opacity hover:opacity-80 active:scale-95 duration-200" aria-label="Open account menu">
+      <img id="profileHeaderAvatar" alt="Profile avatar" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLobh7LCzxnFHg_XB00lQn0AaoJy0WZgZgXrG6Jy0pQo-j-5SFLta1g8yumiS9rdTIWa1Xum_u-MqKzF3Ny6RB8vLaCYtkSj6EEGM32_9MnhwwVxh7-wDD1JPMMZjIeCPvIIf3jXhbktT18pujzRmffL3CCEg76PXvATWGbDFC8OnqywutSSPqzzsIgsPqtwNCOqQEHTChvzZ1pn-b_IL83fkZicbRVLnDN0zs3u9BCiBEc1XuvwNEstnugkGO5OtlSKGJ8AIGioQJUZ"/>
+    </button>
   </header>
   <div class="bg-background text-on-surface min-h-screen pt-20 pb-32 overflow-x-hidden relative selection:bg-primary/30 selection:text-primary">
     <div class="fixed inset-0 z-[-1] pointer-events-none">
@@ -1051,6 +1286,246 @@ tailwind.config = {
         </div>
         <button id="lessonLibraryHistoryBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-on-surface transition hover:border-white/20 hover:bg-white/10">Open history</button>
       </div>
+      <div id="lessonLibraryRecentList" class="mt-4 space-y-3"></div>
+    </section>
+  </main>
+</div>
+
+<div id="toolsHubScreen" class="screen hidden-screen bg-[#080808] text-[#e2e4cf]">
+  <header class="fixed top-0 w-full z-50 flex h-16 w-full items-center justify-between border-b border-white/5 bg-neutral-950/40 px-4 backdrop-blur-xl md:px-6">
+    <button id="toolsHubBackBtn" class="rounded-full p-2 text-neutral-400 transition-opacity duration-200 hover:opacity-80 active:bg-white/5">
+      <span class="material-symbols-outlined text-[28px]">arrow_back</span>
+    </button>
+    <h1 class="font-['Space_Grotesk'] text-base font-bold uppercase tracking-widest text-white">
+      TOOLS HUB
+    </h1>
+    <div class="w-10"></div>
+  </header>
+
+  <main class="flex-grow pt-24 pb-32 px-4 md:px-6 max-w-7xl mx-auto space-y-6">
+    <section class="liquid-glass liquid-glass-accent-lime glass-depth rounded-[1.5rem] p-5 md:p-6 lg:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.42)]">
+      <div class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-[#CCFF00] text-3xl">grid_view</span>
+            <span class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.32em] text-[#CCFF00]/80">Saved for speed, powered by search</span>
+          </div>
+          <h2 class="tools-hub-hero-title font-['Space_Grotesk'] text-4xl font-bold tracking-tight text-white md:text-5xl">Tools built for the next move.</h2>
+          <p class="tools-hub-hero-copy max-w-2xl text-base leading-relaxed text-[#c4c9ac] md:text-lg">
+            Describe what you need in your own words, pin your go-to tools for quick use, and pull AI insights that explain why a tool fits the moment.
+          </p>
+          <div class="max-w-3xl">
+            <label class="block space-y-2">
+              <span class="block font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.24em] text-[#c4c9ac]">Search tools</span>
+              <div class="relative">
+                <span class="material-symbols-outlined pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">search</span>
+                <input id="toolsHubSearchInput" type="search" class="w-full rounded-[0.75rem] border border-white/10 bg-white/5 py-3 pl-12 pr-4 font-['Inter'] text-sm text-white outline-none placeholder:text-[#c4c9ac]/60 transition focus:border-[#00f2ff]/50 focus:bg-white/7 focus:ring-1 focus:ring-[#00f2ff]/20" placeholder="Describe the tool you need..." />
+              </div>
+            </label>
+          </div>
+          <div class="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+            <span id="toolsHubSavedCount" class="flex-shrink-0 rounded-lg border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-2 font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.1em] text-[#CCFF00] glass-depth">0 SAVED</span>
+            <span id="toolsHubResultCount" class="flex-shrink-0 rounded-lg border border-white/10 bg-white/5 px-4 py-2 font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.1em] text-[#e2e4cf] glass-depth">0 TOTAL</span>
+            <span class="flex-shrink-0 rounded-lg border border-[#00f2ff]/20 bg-[#00f2ff]/10 px-4 py-2 font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.1em] text-[#00f2ff] glass-depth">AI INSIGHT</span>
+          </div>
+          <section id="toolsHubSearchResultsPanel" class="rounded-[1.25rem] border border-white/10 bg-black/25 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.22)]">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.24em] text-[#c4c9ac]">Search results</p>
+                <h3 id="toolsHubSearchResultsTitle" class="mt-1 font-['Space_Grotesk'] text-xl font-bold text-white">Type to find a tool</h3>
+              </div>
+              <span id="toolsHubSearchResultsCount" class="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-[#c4c9ac]">0 RESULTS</span>
+            </div>
+            <div id="toolsHubList" class="mt-4 space-y-3"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="tools-hub-grid grid gap-6 xl:grid-cols-[1.45fr_0.9fr]">
+      <div class="space-y-6">
+        <section class="liquid-glass liquid-glass-accent-lime glass-depth rounded-[1.25rem] p-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.24em] text-[#c4c9ac]">Saved tools</p>
+              <h3 class="tools-hub-section-title mt-1 font-['Space_Grotesk'] text-2xl font-bold text-white">Ready for quick use</h3>
+            </div>
+            <span class="font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.24em] text-[#CCFF00]">Pinned for you</span>
+          </div>
+          <div id="toolsHubSavedList" class="tools-hub-stack-mobile no-scrollbar mt-4 flex gap-4 overflow-x-auto pb-2"></div>
+        </section>
+
+        <section class="liquid-glass liquid-glass-accent-cyan glass-depth rounded-[1.25rem] p-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.24em] text-[#c4c9ac]">Featured intelligence</p>
+              <h3 class="tools-hub-section-title mt-1 font-['Space_Grotesk'] text-2xl font-bold text-white">Recommended right now</h3>
+            </div>
+            <span class="inline-flex items-center gap-1 rounded-full border border-[#00f2ff]/20 bg-[#00f2ff]/10 px-3 py-1 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-[#00f2ff]">
+              <span class="material-symbols-outlined text-sm">auto_awesome</span>
+              AI insight
+            </span>
+          </div>
+          <div id="toolsHubFeaturedList" class="tools-hub-stack-mobile no-scrollbar mt-4 flex gap-4 overflow-x-auto pb-2"></div>
+        </section>
+      </div>
+
+      <aside class="tools-hub-sidebar space-y-6">
+        <section class="liquid-glass liquid-glass-accent-lime glass-depth rounded-[1.25rem] p-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.24em] text-[#CCFF00]/80">Selected tool</p>
+              <h3 id="toolsHubSelectedTitle" class="mt-1 font-['Space_Grotesk'] text-2xl font-bold text-white">Pick a tool</h3>
+            </div>
+            <button id="toolsHubSelectedSaveBtn" type="button" class="rounded-full border border-[#b026ff]/20 bg-[#b026ff]/10 px-4 py-2 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-[#b026ff] transition hover:border-[#b026ff]/40 hover:bg-[#b026ff]/15">Save</button>
+          </div>
+          <p id="toolsHubSelectedSummary" class="mt-3 text-sm leading-relaxed text-[#c4c9ac]">Choose a tool to see the core details and launch it fast.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <div class="rounded-[0.75rem] border border-white/10 bg-black/25 px-4 py-3">
+              <span class="block font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Category</span>
+              <p id="toolsHubSelectedCategory" class="mt-1 font-['Space_Grotesk'] text-lg font-bold text-white">--</p>
+            </div>
+            <div class="rounded-[0.75rem] border border-white/10 bg-black/25 px-4 py-3">
+              <span class="block font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Time</span>
+              <p id="toolsHubSelectedTime" class="mt-1 font-['Space_Grotesk'] text-lg font-bold text-white">--</p>
+            </div>
+            <div class="rounded-[0.75rem] border border-white/10 bg-black/25 px-4 py-3">
+              <span class="block font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Access</span>
+              <p id="toolsHubSelectedAccess" class="mt-1 font-['Space_Grotesk'] text-lg font-bold text-white">--</p>
+            </div>
+            <div class="rounded-[0.75rem] border border-white/10 bg-black/25 px-4 py-3">
+              <span class="block font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Need</span>
+              <p id="toolsHubSelectedNeed" class="mt-1 font-['Space_Grotesk'] text-lg font-bold text-white">--</p>
+            </div>
+          </div>
+          <div class="mt-4 space-y-2">
+            <p class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Role fit</p>
+            <div id="toolsHubSelectedRoles" class="flex flex-wrap gap-2"></div>
+          </div>
+          <div class="mt-4 space-y-2">
+            <p class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Tags</p>
+            <div id="toolsHubSelectedTags" class="flex flex-wrap gap-2"></div>
+          </div>
+          <button id="toolsHubSelectedActionBtn" type="button" class="mt-5 w-full rounded-lg bg-[#CCFF00] px-5 py-3 font-['Space_Grotesk'] text-sm font-bold uppercase tracking-[0.18em] text-black transition hover:shadow-[0_0_20px_rgba(204,255,0,0.25)] active:scale-95">
+            Open tool
+          </button>
+        </section>
+
+        <section class="liquid-glass glass-depth rounded-[1.25rem] p-5">
+          <p class="font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.24em] text-[#c4c9ac]">Recent picks</p>
+          <h3 class="mt-1 font-['Space_Grotesk'] text-2xl font-bold text-white">Last tools opened</h3>
+          <div id="toolsHubRecentList" class="mt-4 space-y-3"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<div id="toolWorkspaceScreen" class="screen hidden-screen bg-[#080808] text-[#e2e4cf]">
+  <header class="fixed top-0 w-full z-50 flex h-16 w-full items-center justify-between border-b border-white/5 bg-neutral-950/40 px-4 backdrop-blur-xl md:px-6">
+    <button id="toolWorkspaceBackBtn" class="rounded-full p-2 text-neutral-400 transition-opacity duration-200 hover:opacity-80 active:bg-white/5">
+      <span class="material-symbols-outlined text-[28px]">arrow_back</span>
+    </button>
+    <h1 id="toolWorkspaceHeaderTitle" class="font-['Space_Grotesk'] text-base font-bold uppercase tracking-widest text-white">
+      TOOL WORKSPACE
+    </h1>
+    <div class="w-10"></div>
+  </header>
+
+  <main class="flex-grow pt-24 pb-32 px-4 md:px-6 max-w-7xl mx-auto space-y-6">
+    <section class="liquid-glass liquid-glass-accent-lime glass-depth rounded-[1.5rem] p-5 md:p-6 lg:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.42)]">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-[#CCFF00] text-3xl">dashboard_customize</span>
+            <span class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.32em] text-[#CCFF00]/80">Open tool, save notes, keep moving</span>
+          </div>
+          <h2 id="toolWorkspaceTitle" class="tools-hub-hero-title font-['Space_Grotesk'] text-4xl font-bold tracking-tight text-white md:text-5xl">Pick a tool</h2>
+          <p id="toolWorkspaceSummary" class="tools-hub-hero-copy max-w-3xl text-base leading-relaxed text-[#c4c9ac] md:text-lg">
+            Open a tool from the hub to work with it here.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <span id="toolWorkspaceCategoryBadge" class="rounded-lg border border-white/10 bg-white/5 px-4 py-2 font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.1em] text-[#e2e4cf] glass-depth">Category</span>
+          <span id="toolWorkspaceNeedBadge" class="rounded-lg border border-[#00f2ff]/20 bg-[#00f2ff]/10 px-4 py-2 font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.1em] text-[#00f2ff] glass-depth">Need</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <div class="space-y-6">
+        <section class="liquid-glass liquid-glass-accent-cyan glass-depth rounded-[1.25rem] p-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.24em] text-[#c4c9ac]">Live tool</p>
+              <h3 id="toolWorkspaceLiveTitle" class="tools-hub-section-title mt-1 font-['Space_Grotesk'] text-2xl font-bold text-white">Open a tool</h3>
+            </div>
+          <a id="toolWorkspaceOpenOriginalLink" href="#" class="rounded-full border border-[#00f2ff]/20 bg-[#00f2ff]/10 px-4 py-2 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-[#00f2ff] transition hover:border-[#00f2ff]/35 hover:bg-[#00f2ff]/15">
+              Open tool
+            </a>
+          </div>
+          <div class="mt-4 rounded-[1rem] border border-white/10 bg-black/25 p-4 text-sm leading-relaxed text-[#c4c9ac]">
+            The tool opens directly in the legacy app without the iframe wrapper.
+          </div>
+        </section>
+
+        <section class="liquid-glass glass-depth rounded-[1.25rem] p-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.24em] text-[#c4c9ac]">Working notes</p>
+              <h3 class="tools-hub-section-title mt-1 font-['Space_Grotesk'] text-2xl font-bold text-white">Capture the move</h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="toolWorkspaceClearBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface transition hover:border-white/20 hover:bg-white/10">Clear</button>
+              <button id="toolWorkspaceSaveBtn" type="button" class="rounded-full border border-[#b026ff]/20 bg-[#b026ff]/10 px-4 py-2 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-[#b026ff] transition hover:border-[#b026ff]/40 hover:bg-[#b026ff]/15">Save</button>
+            </div>
+          </div>
+          <textarea id="toolWorkspaceDraftInput" class="mt-4 min-h-[280px] w-full rounded-[1rem] border border-white/10 bg-black/25 p-4 text-sm leading-relaxed text-[#e2e4cf] outline-none placeholder:text-[#c4c9ac]/55 focus:border-[#00f2ff]/40 focus:ring-1 focus:ring-[#00f2ff]/20" placeholder="Write the notes, plan, or next move you want to save for this tool..."></textarea>
+          <p id="toolWorkspaceDraftMeta" class="mt-3 text-[10px] uppercase tracking-[0.24em] text-[#c4c9ac]">Drafts save locally and back to your profile when you tap Save.</p>
+        </section>
+
+        <section class="liquid-glass liquid-glass-accent-cyan glass-depth rounded-[1.25rem] p-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.24em] text-[#c4c9ac]">Related tools</p>
+              <h3 class="tools-hub-section-title mt-1 font-['Space_Grotesk'] text-2xl font-bold text-white">Keep the flow going</h3>
+            </div>
+            <span class="font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.24em] text-[#00f2ff]">Open another tool</span>
+          </div>
+          <div id="toolWorkspaceRelatedList" class="mt-4 space-y-3"></div>
+        </section>
+      </div>
+
+      <aside class="tools-hub-sidebar space-y-6">
+        <section class="liquid-glass liquid-glass-accent-lime glass-depth rounded-[1.25rem] p-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="font-['Space_Grotesk'] text-[12px] font-bold uppercase tracking-[0.24em] text-[#CCFF00]/80">Current tool</p>
+              <h3 id="toolWorkspaceSideTitle" class="mt-1 font-['Space_Grotesk'] text-2xl font-bold text-white">No tool open</h3>
+            </div>
+            <span id="toolWorkspaceStatusBadge" class="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-[#c4c9ac]">Ready</span>
+          </div>
+          <p id="toolWorkspaceSideSummary" class="mt-3 text-sm leading-relaxed text-[#c4c9ac]">Choose a tool from the hub to work with it here.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <div class="rounded-[0.75rem] border border-white/10 bg-black/25 px-4 py-3">
+              <span class="block font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Access</span>
+              <p id="toolWorkspaceAccess" class="mt-1 font-['Space_Grotesk'] text-lg font-bold text-white">--</p>
+            </div>
+            <div class="rounded-[0.75rem] border border-white/10 bg-black/25 px-4 py-3">
+              <span class="block font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Time</span>
+              <p id="toolWorkspaceTime" class="mt-1 font-['Space_Grotesk'] text-lg font-bold text-white">--</p>
+            </div>
+            <div class="rounded-[0.75rem] border border-white/10 bg-black/25 px-4 py-3">
+              <span class="block font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Roles</span>
+              <p id="toolWorkspaceRolesCount" class="mt-1 font-['Space_Grotesk'] text-lg font-bold text-white">--</p>
+            </div>
+            <div class="rounded-[0.75rem] border border-white/10 bg-black/25 px-4 py-3">
+              <span class="block font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Saved</span>
+              <p id="toolWorkspaceSavedCount" class="mt-1 font-['Space_Grotesk'] text-lg font-bold text-white">--</p>
+            </div>
+          </div>
+        </section>
+      </aside>
     </section>
   </main>
 </div>
@@ -1076,7 +1551,7 @@ tailwind.config = {
         AutoKnerd stores your profile, lessons, scores, and progress so the app can coach you over time. We use this data to power your dashboard, session history, profile, and role-specific lesson library.
       </p>
       <p class="text-sm text-on-surface-variant leading-relaxed">
-        We may use anonymous coaching data to improve the product if you enable sharing in settings. Internal test tools stay hidden in retail mode unless you turn them on.
+        We may use anonymous coaching data to improve the product if you enable sharing in settings. Internal test tools stay hidden in developer mode unless you turn them on.
       </p>
     </section>
 
@@ -1087,7 +1562,7 @@ tailwind.config = {
       </div>
       <div class="rounded-3xl border border-white/10 bg-black/30 p-5">
         <h3 class="font-headline text-xl font-bold text-on-surface">What we do not do</h3>
-        <p class="mt-2 text-sm text-on-surface-variant leading-relaxed">We do not sell your personal coaching data or expose internal test controls in the retail build.</p>
+        <p class="mt-2 text-sm text-on-surface-variant leading-relaxed">We do not sell your personal coaching data or expose internal test controls in the live build.</p>
       </div>
     </section>
   </main>
@@ -1212,7 +1687,7 @@ tailwind.config = {
         </div>
         <div class="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-right">
           <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Build</p>
-          <p class="mt-1 font-headline text-lg font-bold text-[#CCFF00]">Retail v1</p>
+          <p class="mt-1 font-headline text-lg font-bold text-[#CCFF00]">v1</p>
         </div>
       </div>
     </section>
@@ -1221,7 +1696,7 @@ tailwind.config = {
       <div>
         <p class="font-label text-xs tracking-[0.24em] uppercase text-on-surface-variant">Account</p>
         <h2 class="mt-2 font-headline text-2xl font-bold text-on-surface">Edit profile</h2>
-        <p class="mt-2 text-sm text-on-surface-variant">Update the retail profile fields that show up across Home, Profile, and session screens.</p>
+        <p class="mt-2 text-sm text-on-surface-variant">Update the profile fields that show up across Home, Profile, and session screens.</p>
       </div>
       <div class="grid gap-4 md:grid-cols-3">
         <label class="space-y-2">
@@ -1233,9 +1708,20 @@ tailwind.config = {
           <input id="settingsLastNameInput" type="text" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Last name" />
         </label>
         <label class="space-y-2">
-          <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Avatar URL</span>
-          <input id="settingsAvatarInput" type="url" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="https://..." />
+          <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Custom avatar URL</span>
+          <input id="settingsAvatarInput" type="url" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="https://... or choose a gear below" />
         </label>
+      </div>
+      <div class="space-y-3">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Built-in avatars</p>
+            <h3 class="mt-1 font-headline text-lg font-bold text-on-surface">Choose a gear avatar</h3>
+          </div>
+          <span class="text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Tap to apply</span>
+        </div>
+        <div id="settingsAvatarPicker" class="grid grid-cols-2 gap-3 md:grid-cols-3"></div>
+        <p class="text-xs text-on-surface-variant leading-relaxed">These built-in avatars stay consistent with the gear logo and can move with the user from store to store.</p>
       </div>
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <p id="settingsSaveState" class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Changes not saved</p>
@@ -1249,9 +1735,9 @@ tailwind.config = {
       <div class="flex items-center justify-between gap-4">
         <div>
           <p class="font-label text-xs tracking-[0.24em] uppercase text-on-surface-variant">Preferences</p>
-          <h2 class="mt-2 font-headline text-2xl font-bold text-on-surface">Retail controls</h2>
+          <h2 class="mt-2 font-headline text-2xl font-bold text-on-surface">App controls</h2>
         </div>
-        <span class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#CCFF00]">Retail Safe</span>
+        <span class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#CCFF00]">Live Safe</span>
       </div>
 
       <button id="settingsNotificationsToggle" type="button" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/5">
@@ -1297,7 +1783,7 @@ tailwind.config = {
     <section class="bg-surface-variant/40 backdrop-blur-xl rounded-3xl p-6 border border-outline-variant/20 shadow-[0_20px_50px_rgba(0,0,0,0.35)] space-y-3">
       <div>
         <p class="font-label text-xs tracking-[0.24em] uppercase text-on-surface-variant">Release</p>
-        <h2 class="mt-2 font-headline text-2xl font-bold text-on-surface">Retail ready defaults</h2>
+        <h2 class="mt-2 font-headline text-2xl font-bold text-on-surface">Launch ready defaults</h2>
       </div>
       <div class="grid gap-3 md:grid-cols-3">
         <div class="rounded-2xl border border-white/10 bg-black/30 px-4 py-4">
@@ -1310,7 +1796,7 @@ tailwind.config = {
         </div>
         <div class="rounded-2xl border border-white/10 bg-black/30 px-4 py-4">
           <span class="block font-headline text-lg font-bold text-on-surface">Dev tools hidden</span>
-          <span class="mt-1 block text-sm text-on-surface-variant">Internal controls stay off unless retail-safe testing is enabled.</span>
+          <span class="mt-1 block text-sm text-on-surface-variant">Internal controls stay off unless developer-safe testing is enabled.</span>
         </div>
       </div>
     </section>
@@ -1333,6 +1819,7 @@ tailwind.config = {
       <p class="font-label text-xs tracking-[0.24em] uppercase text-on-surface-variant">Overview</p>
       <h2 class="mt-2 font-headline text-3xl font-bold text-on-surface">Your recent lessons</h2>
       <p class="mt-2 text-sm text-on-surface-variant">Review your latest sessions, scores, and coaching momentum.</p>
+      <div id="historySummaryGrid" class="mt-5 grid gap-3 md:grid-cols-3"></div>
     </section>
 
     <section class="space-y-4">
@@ -1345,10 +1832,45 @@ tailwind.config = {
   </main>
 </div>
 
+<div id="profileMenuOverlay" class="hidden-screen fixed inset-0 z-[61] flex items-start justify-end px-4 pt-20">
+  <div class="absolute inset-0 bg-black/35 backdrop-blur-[2px]"></div>
+  <div class="relative w-full max-w-sm rounded-3xl border border-white/10 bg-[#111111]/95 p-4 shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <p class="font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Account</p>
+        <h3 class="mt-1 font-headline text-2xl font-bold text-on-surface">Profile menu</h3>
+      </div>
+      <button id="closeProfileMenuBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-on-surface-variant transition hover:text-on-surface">Close</button>
+    </div>
+    <div class="mt-4 space-y-3">
+      <button id="profileMenuViewProfileBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Account</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">View profile</span>
+      </button>
+      <button id="profileMenuLessonLibraryBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Navigate</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Lesson Library</span>
+      </button>
+      <button id="profileMenuHistoryBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Navigate</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Session History</span>
+      </button>
+      <button id="profileMenuSettingsBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Support</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Settings & Support</span>
+      </button>
+      <button id="profileMenuSignOutBtn" type="button" class="w-full rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-4 text-left transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15">
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Account</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Sign out</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="developerScreen" class="screen hidden-screen">
   <header class="fixed top-0 w-full z-50 bg-[#0e0e0e] dark:bg-[#000000] no-border-tonal-shift-only flat-no-shadows grid grid-cols-[auto,1fr,auto] items-center px-6 h-16 w-full">
-    <button id="developerMenuBtn" class="text-gray-500 hover:opacity-80 transition-opacity scale-95 duration-200 p-2 -ml-2 rounded-full active:bg-surface-container" aria-label="Open developer menu">
-      <span class="material-symbols-outlined text-[28px]">menu</span>
+    <button id="developerMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-2 text-gray-500 transition-opacity duration-200 hover:opacity-80 active:bg-surface-container" aria-label="Open developer tools">
+      <img src="/gear-head.png" alt="" aria-hidden="true" class="h-7 w-7 object-contain" />
     </button>
     <h1 id="developerTitle" class="justify-self-center text-[#f3ffca] dark:text-[#cafd00] font-['Manrope'] font-bold tracking-tighter uppercase text-base">
       DEVELOPER
@@ -1430,6 +1952,24 @@ tailwind.config = {
     internalToolsEnabled: localStorage.getItem("autoknerd:internalTools") === "1",
     sessionRemindersEnabled: localStorage.getItem("autoknerd:sessionReminders") === "1",
     shareAnonymousDataEnabled: localStorage.getItem("autoknerd:shareAnonymousData") === "1",
+    toolHub: {
+      search: '',
+      category: 'All',
+      role: 'All',
+      need: 'All',
+      access: 'All',
+      sort: 'featured',
+      selectedToolId: '',
+      savedToolIds: [],
+      recentToolIds: [],
+      insightText: '',
+      insightMeta: '',
+      insightLoading: false,
+    },
+    toolWorkspace: {
+      activeToolId: '',
+      draftsByToolId: {},
+    },
   };
   const DEVELOPER_ROLE_CHOICES = new Set([
     'Sales Consultant',
@@ -1444,18 +1984,7 @@ tailwind.config = {
     'Owner',
     'Trainer',
   ]);
-  const bootFallbackTimer = setTimeout(() => {
-    const bootScreen = document.getElementById("bootScreen");
-    if (bootScreen && !state.bundle) {
-      bootScreen.classList.add("hidden-screen");
-      if (state.authToken) {
-        homeScreen.classList.remove("hidden-screen");
-      } else {
-        showAuth('Sign in to continue');
-      }
-    }
-  }, 5000);
-
+  const bootScreen = document.getElementById("bootScreen");
   const homeScreen = document.getElementById("homeScreen");
   const authScreen = document.getElementById("authScreen");
   const menuOverlay = document.getElementById("menuOverlay");
@@ -1464,6 +1993,8 @@ tailwind.config = {
   const endScreen = document.getElementById("endScreen");
   const profileScreen = document.getElementById("profileScreen");
   const lessonLibraryScreen = document.getElementById("lessonLibraryScreen");
+  const toolsHubScreen = document.getElementById("toolsHubScreen");
+  const toolWorkspaceScreen = document.getElementById("toolWorkspaceScreen");
   const developerScreen = document.getElementById("developerScreen");
   const developerMenuBtn = document.getElementById("developerMenuBtn");
   const privacyScreen = document.getElementById("privacyScreen");
@@ -1471,6 +2002,53 @@ tailwind.config = {
   const storeRequestScreen = document.getElementById("storeRequestScreen");
   const settingsScreen = document.getElementById("settingsScreen");
   const historyScreen = document.getElementById("historyScreen");
+  const lessonLibraryRecentList = document.getElementById("lessonLibraryRecentList");
+  const toolsHubBackBtn = document.getElementById("toolsHubBackBtn");
+  const toolWorkspaceBackBtn = document.getElementById("toolWorkspaceBackBtn");
+  const toolWorkspaceHeaderTitle = document.getElementById("toolWorkspaceHeaderTitle");
+  const toolWorkspaceTitle = document.getElementById("toolWorkspaceTitle");
+  const toolWorkspaceSummary = document.getElementById("toolWorkspaceSummary");
+  const toolWorkspaceCategoryBadge = document.getElementById("toolWorkspaceCategoryBadge");
+  const toolWorkspaceNeedBadge = document.getElementById("toolWorkspaceNeedBadge");
+  const toolWorkspaceDraftInput = document.getElementById("toolWorkspaceDraftInput");
+  const toolWorkspaceDraftMeta = document.getElementById("toolWorkspaceDraftMeta");
+  const toolWorkspaceSaveBtn = document.getElementById("toolWorkspaceSaveBtn");
+  const toolWorkspaceClearBtn = document.getElementById("toolWorkspaceClearBtn");
+  const toolWorkspaceFrame = document.getElementById("toolWorkspaceFrame");
+  const toolWorkspaceLiveTitle = document.getElementById("toolWorkspaceLiveTitle");
+  const toolWorkspaceOpenOriginalLink = document.getElementById("toolWorkspaceOpenOriginalLink");
+  const toolWorkspaceSideTitle = document.getElementById("toolWorkspaceSideTitle");
+  const toolWorkspaceSideSummary = document.getElementById("toolWorkspaceSideSummary");
+  const toolWorkspaceAccess = document.getElementById("toolWorkspaceAccess");
+  const toolWorkspaceTime = document.getElementById("toolWorkspaceTime");
+  const toolWorkspaceRolesCount = document.getElementById("toolWorkspaceRolesCount");
+  const toolWorkspaceSavedCount = document.getElementById("toolWorkspaceSavedCount");
+  const toolWorkspaceStatusBadge = document.getElementById("toolWorkspaceStatusBadge");
+  const toolWorkspaceRelatedList = document.getElementById("toolWorkspaceRelatedList");
+  const toolsHubSearchInput = document.getElementById("toolsHubSearchInput");
+  const toolsHubSavedCount = document.getElementById("toolsHubSavedCount");
+  const toolsHubResultCount = document.getElementById("toolsHubResultCount");
+  const toolsHubSearchResultsPanel = document.getElementById("toolsHubSearchResultsPanel");
+  const toolsHubSearchResultsTitle = document.getElementById("toolsHubSearchResultsTitle");
+  const toolsHubSearchResultsCount = document.getElementById("toolsHubSearchResultsCount");
+  const toolsHubSavedList = document.getElementById("toolsHubSavedList");
+  const toolsHubFeaturedList = document.getElementById("toolsHubFeaturedList");
+  const toolsHubList = document.getElementById("toolsHubList");
+  const toolsHubSelectedTitle = document.getElementById("toolsHubSelectedTitle");
+  const toolsHubSelectedSummary = document.getElementById("toolsHubSelectedSummary");
+  const toolsHubSelectedCategory = document.getElementById("toolsHubSelectedCategory");
+  const toolsHubSelectedRoles = document.getElementById("toolsHubSelectedRoles");
+  const toolsHubSelectedTags = document.getElementById("toolsHubSelectedTags");
+  const toolsHubSelectedTime = document.getElementById("toolsHubSelectedTime");
+  const toolsHubSelectedAccess = document.getElementById("toolsHubSelectedAccess");
+  const toolsHubSelectedNeed = document.getElementById("toolsHubSelectedNeed");
+  const toolsHubSelectedActionBtn = document.getElementById("toolsHubSelectedActionBtn");
+  const toolsHubSelectedSaveBtn = document.getElementById("toolsHubSelectedSaveBtn");
+  const toolsHubRecentList = document.getElementById("toolsHubRecentList");
+  const historySummaryGrid = document.getElementById("historySummaryGrid");
+  const bootConnectionText = document.getElementById("bootConnectionText");
+  const bootStatusText = document.getElementById("bootStatusText");
+  const bootRetryBtn = document.getElementById("bootRetryBtn");
   const authIdentifierInput = document.getElementById("authIdentifierInput");
   const authNameInput = document.getElementById("authNameInput");
   const authCodeInput = document.getElementById("authCodeInput");
@@ -1489,6 +2067,13 @@ tailwind.config = {
   const freshUpBossBtn = document.getElementById("freshUpBossBtn");
   const homeMenuBtn = document.getElementById("homeMenuBtn");
   const openProfileBtn = document.getElementById("openProfileBtn");
+  const profileMenuOverlay = document.getElementById("profileMenuOverlay");
+  const closeProfileMenuBtn = document.getElementById("closeProfileMenuBtn");
+  const profileMenuViewProfileBtn = document.getElementById("profileMenuViewProfileBtn");
+  const profileMenuLessonLibraryBtn = document.getElementById("profileMenuLessonLibraryBtn");
+  const profileMenuHistoryBtn = document.getElementById("profileMenuHistoryBtn");
+  const profileMenuSettingsBtn = document.getElementById("profileMenuSettingsBtn");
+  const profileMenuSignOutBtn = document.getElementById("profileMenuSignOutBtn");
   const aiOutputMenuBtn = document.getElementById("aiOutputMenuBtn");
   const aiOutputProfileBtn = document.getElementById("aiOutputProfileBtn");
   const aiOutputRegenerateBtn = document.getElementById("aiOutputRegenerateBtn");
@@ -1517,7 +2102,6 @@ tailwind.config = {
   const openDeveloperPanelBtn = document.getElementById("openDeveloperPanelBtn");
   const developerMenuSection = document.getElementById("developerMenuSection");
   const openDeveloperConsoleBtn = document.getElementById("openDeveloperConsoleBtn");
-  const openDeveloperToolsBtn = document.getElementById("openDeveloperToolsBtn");
   const closeMenuBtn = document.getElementById("closeMenuBtn");
   const backFromDeveloperBtn = document.getElementById("backFromDeveloperBtn");
   const clearDeveloperRoleBtn = document.getElementById("clearDeveloperRoleBtn");
@@ -1578,8 +2162,8 @@ tailwind.config = {
     authScreen,
     coachHomePanel: document.getElementById("coachHomePanel"),
     managerDashboardPanel: document.getElementById("managerDashboardPanel"),
-    managerMobileNav: document.getElementById("managerMobileNav"),
     managerModeFooter: document.getElementById("managerModeFooter"),
+    managerFooterToolsBtn: document.getElementById("managerFooterToolsBtn"),
     managerFooterStoreBtn: document.getElementById("managerFooterStoreBtn"),
     managerFooterPersonalBtn: document.getElementById("managerFooterPersonalBtn"),
     developerScreen,
@@ -1622,8 +2206,9 @@ tailwind.config = {
     endAnalysisCard: document.getElementById("endAnalysisCard"),
     endScreenTitle: document.getElementById("endScreenTitle"),
     profileAvatar: document.getElementById("profileAvatar"),
+    profileHeaderMenuBtn: document.getElementById("profileHeaderMenuBtn"),
+    profileHeaderAvatar: document.getElementById("profileHeaderAvatar"),
     profileRole: document.getElementById("profileRole"),
-    profileLevel: document.getElementById("profileLevel"),
     profileAvatarLevel: document.getElementById("profileAvatarLevel"),
     profileName: document.getElementById("profileName"),
     profileTitle: document.getElementById("profileTitle"),
@@ -1648,6 +2233,7 @@ tailwind.config = {
     profileConfidenceBar: document.getElementById("profileConfidenceBar"),
     profileClosingValue: document.getElementById("profileClosingValue"),
     profileClosingBar: document.getElementById("profileClosingBar"),
+    settingsAvatarPicker: document.getElementById("settingsAvatarPicker"),
     profileMomentumChart: document.getElementById("profileMomentumChart"),
     profileMomentumLabels: document.getElementById("profileMomentumLabels"),
     recentSessionsList: document.getElementById("recentSessionsList"),
@@ -1730,6 +2316,104 @@ tailwind.config = {
     aiOutputRegenerateLabel,
   };
 
+  function getActiveSessionStorageKey(userId = '') {
+    const normalizedUserId = String(userId || localStorage.getItem("autoknerd:userId") || 'default').trim() || 'default';
+    return `autoknerd:activeSession:${normalizedUserId}`;
+  }
+
+  function readPersistedActiveSession(userId = '') {
+    const raw = localStorage.getItem(getActiveSessionStorageKey(userId));
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' && parsed.sessionId ? parsed : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function persistActiveSession(session, userId = '') {
+    if (!session?.sessionId) return;
+    localStorage.setItem(getActiveSessionStorageKey(userId), JSON.stringify(session));
+  }
+
+  function clearPersistedActiveSession(userId = '') {
+    localStorage.removeItem(getActiveSessionStorageKey(userId));
+  }
+
+  state.session = readPersistedActiveSession();
+
+  function getLocalAppUrl() {
+    return 'http://localhost:5173/';
+  }
+
+  function isFileRuntime() {
+    return window.location.protocol === 'file:';
+  }
+
+  function updateBootState({
+    connection = 'Pulling live data',
+    status = 'Loading your dashboard',
+    showRetry = false,
+    retryLabel = 'Try again',
+    isError = false,
+  } = {}) {
+    if (bootConnectionText) {
+      bootConnectionText.textContent = connection;
+      bootConnectionText.classList.toggle('text-on-surface', !isError);
+      bootConnectionText.classList.toggle('text-error', isError);
+    }
+    if (bootStatusText) {
+      bootStatusText.textContent = status;
+      bootStatusText.classList.toggle('text-on-surface-variant', !isError);
+      bootStatusText.classList.toggle('text-error', isError);
+    }
+    if (bootRetryBtn) {
+      bootRetryBtn.textContent = retryLabel;
+      bootRetryBtn.classList.toggle('hidden-screen', !showRetry);
+    }
+  }
+
+  function redirectToLocalApp() {
+    window.location.replace(getLocalAppUrl());
+  }
+
+  function showBootConnectionError(message = 'Unable to load the dashboard right now.', options = {}) {
+    if (bootScreen) bootScreen.classList.remove("hidden-screen");
+    updateBootState({
+      connection: options.connection || 'Connection problem',
+      status: message,
+      showRetry: true,
+      retryLabel: options.retryLabel || 'Try again',
+      isError: true,
+    });
+  }
+
+  function getActiveSession() {
+    return state.session || state.bundle?.activeSession || readPersistedActiveSession(state.bundle?.user?.userId || '');
+  }
+
+  function hasActiveSession() {
+    return Boolean(getActiveSession()?.sessionId);
+  }
+
+  const bootFallbackTimer = setTimeout(() => {
+    if (state.bundle) return;
+    if (isFileRuntime()) {
+      showBootConnectionError('AutoKnerd needs the local app server. Opening localhost now.', {
+        connection: 'Switching to app server',
+        retryLabel: 'Open app',
+      });
+      redirectToLocalApp();
+      return;
+    }
+    if (state.authToken) {
+      showBootConnectionError('This is taking longer than expected. Try loading your dashboard again.');
+      return;
+    }
+    showAuth('Sign in to continue');
+  }, 5000);
+
   function hideAllScreens() {
     stopDeveloperLiveRefresh();
     if (authScreen) authScreen.classList.add("hidden-screen");
@@ -1739,13 +2423,17 @@ tailwind.config = {
     endScreen.classList.add("hidden-screen");
     profileScreen.classList.add("hidden-screen");
     if (lessonLibraryScreen) lessonLibraryScreen.classList.add("hidden-screen");
+    if (toolsHubScreen) toolsHubScreen.classList.add("hidden-screen");
+    if (toolWorkspaceScreen) toolWorkspaceScreen.classList.add("hidden-screen");
     if (developerScreen) developerScreen.classList.add("hidden-screen");
     if (privacyScreen) privacyScreen.classList.add("hidden-screen");
     if (storeRequestScreen) storeRequestScreen.classList.add("hidden-screen");
     if (termsScreen) termsScreen.classList.add("hidden-screen");
     settingsScreen.classList.add("hidden-screen");
     historyScreen.classList.add("hidden-screen");
+    if (refs.managerModeFooter) refs.managerModeFooter.classList.add("hidden-screen");
     if (menuOverlay) menuOverlay.classList.add("hidden-screen");
+    if (profileMenuOverlay) profileMenuOverlay.classList.add("hidden-screen");
   }
 
   function showSession() {
@@ -1917,23 +2605,29 @@ tailwind.config = {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function showHome() {
+  function showHome(options = {}) {
+    const { replaceRoute = false } = options;
     if (state.bundle?.user && isDeveloperAccount(state.bundle) && !state.developerImpersonationUserId) {
       showDeveloperConsole();
       return;
     }
     hideAllScreens();
     state.reviewSession = null;
-    const bootScreen = document.getElementById("bootScreen");
     if (bootScreen) bootScreen.classList.add("hidden-screen");
     if (state.bundle) renderHome(state.bundle);
+    if (state.bundle?.user) {
+      updateAppRoute('home', '', { replace: replaceRoute });
+    }
     homeScreen.classList.remove("hidden-screen");
+    if (state.bundle?.user && !isFrontlineFooterRole(formatRoleTitle(state.bundle.user.roleLabel || state.bundle.user.role))) {
+      renderManagerModeFooter(state.managerViewMode, formatRoleTitle(state.bundle.user.roleLabel || state.bundle.user.role), 'home');
+      if (refs.managerModeFooter) refs.managerModeFooter.classList.remove("hidden-screen");
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function showAuth(message = '') {
     hideAllScreens();
-    const bootScreen = document.getElementById("bootScreen");
     if (bootScreen) bootScreen.classList.add("hidden-screen");
     if (authStatusText) {
       authStatusText.textContent = message || 'Waiting for your account';
@@ -1980,10 +2674,10 @@ tailwind.config = {
       authIdentifierInput.autocomplete = isEnroll ? 'email' : 'username';
     }
     if (authCodeLabel) {
-      authCodeLabel.textContent = isEnroll ? 'Invite / dealer code' : 'Access code';
+      authCodeLabel.textContent = isEnroll ? 'Invite / dealer code' : 'Password';
     }
     if (authCodeInput) {
-      authCodeInput.placeholder = isEnroll ? 'Optional if you have a code' : 'Optional if your account requires one';
+      authCodeInput.placeholder = isEnroll ? 'Optional if you have a code' : 'Optional if your password is set';
     }
     if (authSubmitBtn) {
       authSubmitBtn.textContent = isEnroll ? 'Create account' : 'Continue';
@@ -1991,7 +2685,7 @@ tailwind.config = {
     if (authEnrollmentNote) {
       authEnrollmentNote.textContent = isEnroll
         ? 'Self-enrollment creates a personal account first. Owners and GMs see dealer-level data, managers see their team, and frontline roles see only themselves.'
-        : 'Use your dealership email or staff ID to load your coaching profile, lesson history, and role-specific dashboard.';
+        : 'Sign in with your portable AutoKnerd account to bring your coaching history, progress, and role-based dashboard with you from one dealership to the next.';
     }
   }
 
@@ -2014,6 +2708,20 @@ tailwind.config = {
       state.developerSessionUserId ||
       localStorage.getItem("autoknerd:developerUserId")
     );
+  }
+
+  function canOpenDeveloperTools(bundle = state.bundle) {
+    const roleLabel = formatRoleTitle(bundle?.user?.roleLabel || bundle?.user?.role);
+    return Boolean(
+      state.internalToolsEnabled
+      || isDeveloperSession()
+      || isDeveloperAccount(bundle)
+      || isStoreLeadershipRole(roleLabel)
+    );
+  }
+
+  function isDeveloperConsoleVisible() {
+    return Boolean(developerScreen && !developerScreen.classList.contains("hidden-screen"));
   }
 
   function setDeveloperSessionActive(enabled, userId = '') {
@@ -2114,6 +2822,7 @@ tailwind.config = {
   }
 
   function clearAuthSessionState() {
+    clearPersistedActiveSession(state.user?.userId || localStorage.getItem("autoknerd:userId") || '');
     state.authToken = '';
     state.developerSessionActive = false;
     state.developerSessionUserId = '';
@@ -2132,6 +2841,10 @@ tailwind.config = {
       localStorage.setItem("autoknerd:authToken", state.authToken);
     }
     if (userId) {
+      const previousUserId = String(localStorage.getItem("autoknerd:userId") || '').trim();
+      if (previousUserId && previousUserId !== String(userId).trim()) {
+        clearPersistedActiveSession(previousUserId);
+      }
       localStorage.setItem("autoknerd:userId", String(userId).trim());
     }
   }
@@ -2217,11 +2930,13 @@ tailwind.config = {
         startDeveloperLiveRefresh();
       }
       developerScreen.classList.remove("hidden-screen");
+      updateInternalToolsVisibility();
       updateDeveloperImpersonationPanel();
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       console.warn('Unable to open developer console', error);
       developerScreen.classList.remove("hidden-screen");
+      updateInternalToolsVisibility();
       updateDeveloperImpersonationPanel();
     }
   }
@@ -2237,7 +2952,24 @@ tailwind.config = {
 
   function isStoreLeadershipRole(roleLabel) {
     const normalized = normalizeRoleLabel(roleLabel);
-    return normalized === 'General Manager' || normalized === 'Owner';
+    return [
+      'General Manager',
+      'Owner',
+      'Sales Manager',
+      'Service Manager',
+      'Parts Manager',
+      'Finance Manager',
+    ].includes(normalized);
+  }
+
+  function isFrontlineFooterRole(roleLabel) {
+    const normalized = normalizeRoleLabel(roleLabel);
+    return [
+      'Sales Consultant',
+      'BDC',
+      'Service Writer',
+      'Parts Consultant',
+    ].includes(normalized);
   }
 
   function renderManagerModeSwitch(button, currentMode) {
@@ -2258,29 +2990,62 @@ tailwind.config = {
     `;
   }
 
-  function renderManagerModeFooter(currentMode) {
-    if (!refs.managerModeFooter || !refs.managerFooterStoreBtn || !refs.managerFooterPersonalBtn) return;
+  function renderManagerModeFooter(currentMode, roleLabel = '', activeSurface = 'home') {
+    if (!refs.managerModeFooter || !refs.managerFooterToolsBtn || !refs.managerFooterStoreBtn || !refs.managerFooterPersonalBtn) return;
     const isPersonal = currentMode === 'personal';
+    const isLeadershipFooter = isStoreLeadershipRole(roleLabel);
+    const isFrontlineFooter = isFrontlineFooterRole(roleLabel);
     const activeBtnClass = 'border-[#CCFF00]/30 bg-[#CCFF00]/12 text-[#CCFF00] shadow-[0_0_18px_rgba(204,255,0,0.16)]';
     const inactiveBtnClass = 'border-white/10 bg-black/35 text-on-surface-variant';
-    const buttonBase = 'flex-1 rounded-[1.5rem] px-5 py-4 text-center transition active:scale-95';
+    const buttonBase = 'flex-1 rounded-full px-4 py-3 text-center transition active:scale-95';
+    const isToolsActive = activeSurface === 'tools';
+    const isProfileActive = activeSurface === 'profile';
+    const shouldShowStoreActive = !isToolsActive && !isProfileActive && (isLeadershipFooter ? !isPersonal : true);
+    const shouldShowPersonalActive = isLeadershipFooter
+      ? (isProfileActive || (!isToolsActive && isPersonal))
+      : isProfileActive;
+    const showPersonalButton = isLeadershipFooter || isFrontlineFooter;
 
-    refs.managerFooterStoreBtn.className = `${buttonBase} ${isPersonal ? inactiveBtnClass : activeBtnClass}`;
-    refs.managerFooterPersonalBtn.className = `${buttonBase} ${isPersonal ? activeBtnClass : inactiveBtnClass}`;
+    refs.managerFooterToolsBtn.className = `${buttonBase} ${isToolsActive ? activeBtnClass : inactiveBtnClass}`;
+    refs.managerFooterStoreBtn.className = `${buttonBase} ${shouldShowStoreActive ? activeBtnClass : inactiveBtnClass}`;
+    refs.managerFooterPersonalBtn.className = `${buttonBase} ${shouldShowPersonalActive ? activeBtnClass : inactiveBtnClass}`;
 
-    refs.managerFooterStoreBtn.setAttribute('aria-pressed', String(!isPersonal));
-    refs.managerFooterStoreBtn.setAttribute('aria-label', isPersonal ? 'Switch to store view' : 'Store view active');
-    refs.managerFooterPersonalBtn.setAttribute('aria-pressed', String(isPersonal));
-    refs.managerFooterPersonalBtn.setAttribute('aria-label', isPersonal ? 'Personal view active' : 'Switch to personal view');
+    refs.managerFooterToolsBtn.setAttribute('aria-pressed', String(isToolsActive));
+    refs.managerFooterToolsBtn.setAttribute('aria-label', 'Open tools hub');
+    refs.managerFooterStoreBtn.setAttribute('aria-pressed', String(shouldShowStoreActive));
+    refs.managerFooterStoreBtn.setAttribute('aria-label', isToolsActive
+      ? (isFrontlineFooter ? 'Switch to dashboard' : 'Switch to store view')
+      : (isProfileActive
+        ? (isFrontlineFooter ? 'Open dashboard' : 'Open store view')
+        : (isLeadershipFooter
+          ? (isPersonal ? 'Switch to store view' : 'Store view active')
+          : 'Dashboard active')));
+    refs.managerFooterPersonalBtn.setAttribute('aria-pressed', String(shouldShowPersonalActive));
+    refs.managerFooterPersonalBtn.setAttribute('aria-label', isFrontlineFooter
+      ? (isProfileActive ? 'Stats active' : 'Open stats')
+      : (isToolsActive
+        ? 'Switch to self view'
+        : (isPersonal ? 'Self view active' : 'Switch to self view')));
 
-    refs.managerFooterStoreBtn.innerHTML = `
-      <span class="block font-headline text-[11px] font-bold uppercase tracking-[0.28em] ${isPersonal ? 'text-on-surface-variant' : 'text-[#CCFF00]'}">Store</span>
-      <span class="mt-1 block font-headline text-lg font-bold tracking-tight ${isPersonal ? 'text-on-surface' : 'text-[#CCFF00]'}">Store View</span>
+    refs.managerFooterToolsBtn.innerHTML = `
+      <span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] ${isToolsActive ? 'text-[#CCFF00]' : 'text-on-surface-variant'}">Tools</span>
     `;
+    refs.managerFooterStoreBtn.innerHTML = isLeadershipFooter
+      ? `<span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] ${shouldShowStoreActive ? 'text-[#CCFF00]' : 'text-on-surface-variant'}">Store</span>`
+      : `<span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] ${shouldShowStoreActive ? 'text-[#CCFF00]' : 'text-on-surface-variant'}">Dashboard</span>`;
+    refs.managerFooterPersonalBtn.classList.toggle('hidden-screen', !showPersonalButton);
     refs.managerFooterPersonalBtn.innerHTML = `
-      <span class="block font-headline text-[11px] font-bold uppercase tracking-[0.28em] ${isPersonal ? 'text-[#CCFF00]' : 'text-on-surface-variant'}">Personal</span>
-      <span class="mt-1 block font-headline text-lg font-bold tracking-tight ${isPersonal ? 'text-[#CCFF00]' : 'text-on-surface'}">My Coaching</span>
+      <span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] ${isFrontlineFooter ? (shouldShowPersonalActive ? 'text-[#CCFF00]' : 'text-on-surface-variant') : (shouldShowPersonalActive ? 'text-[#CCFF00]' : 'text-on-surface-variant')}">${isFrontlineFooter ? 'Stats' : 'Self'}</span>
     `;
+  }
+
+  function openManagerFooterPrimaryView() {
+    const roleLabel = formatRoleTitle(state.bundle?.user?.roleLabel || state.bundle?.user?.role);
+    if (isFrontlineFooterRole(roleLabel)) {
+      showHome();
+      return;
+    }
+    setManagerViewMode('store');
   }
 
   function getManagerStoreSelectionKey(userId) {
@@ -2307,14 +3072,33 @@ tailwind.config = {
     return stores.find((store) => String(store.dealershipId || '').trim() === normalized) || managerDashboard;
   }
 
-  function showProfile(mode = 'self') {
+  function showProfile(mode = 'self', { replaceRoute = false } = {}) {
     state.profileMode = mode;
     hideAllScreens();
     if (mode === 'self' && state.bundle) {
       renderProfile(state.bundle);
     }
     profileScreen.classList.remove("hidden-screen");
+    if (mode === 'self' && state.bundle?.user) {
+      updateAppRoute('profile', '', { replace: replaceRoute });
+      const roleLabel = formatRoleTitle(state.bundle.user.roleLabel || state.bundle.user.role);
+      if (refs.managerModeFooter) {
+        refs.managerModeFooter.classList.remove("hidden-screen");
+        renderManagerModeFooter(state.managerViewMode, roleLabel, 'profile');
+      }
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function openProfileMenu() {
+    if (!profileMenuOverlay) return;
+    if (menuOverlay) menuOverlay.classList.add("hidden-screen");
+    profileMenuOverlay.classList.remove("hidden-screen");
+  }
+
+  function closeProfileMenu() {
+    if (!profileMenuOverlay) return;
+    profileMenuOverlay.classList.add("hidden-screen");
   }
 
   function showSettings() {
@@ -2401,6 +3185,7 @@ tailwind.config = {
 
   function openMenu() {
     if (!menuOverlay) return;
+    closeProfileMenu();
     menuOverlay.classList.remove("hidden-screen");
     if (menuMainPanel) menuMainPanel.classList.remove("hidden-screen");
     if (developerPanel) developerPanel.classList.add("hidden-screen");
@@ -2587,6 +3372,10 @@ tailwind.config = {
 
   function updateInternalToolsVisibility() {
     const enabled = Boolean(state.internalToolsEnabled || isDeveloperSession() || isDeveloperAccount(state.bundle));
+    const showDeveloperTrigger = canOpenDeveloperTools();
+    const showDeveloperMenuBtn = showDeveloperTrigger || isDeveloperConsoleVisible();
+    if (homeMenuBtn) homeMenuBtn.classList.toggle('hidden-screen', !showDeveloperTrigger);
+    if (developerMenuBtn) developerMenuBtn.classList.toggle('hidden-screen', !showDeveloperMenuBtn);
     if (openDeveloperPanelBtn) openDeveloperPanelBtn.classList.toggle('hidden-screen', !enabled);
     if (clearDeveloperRoleBtn) clearDeveloperRoleBtn.classList.toggle('hidden-screen', !enabled);
     if (toggleMockUserBtn) toggleMockUserBtn.classList.toggle('hidden-screen', !enabled);
@@ -2606,9 +3395,720 @@ tailwind.config = {
     if (settingsInternalToolsState) {
       settingsInternalToolsState.textContent = (state.internalToolsEnabled || isDeveloperSession() || isDeveloperAccount(state.bundle))
         ? 'Visible · developer tools enabled'
-        : 'Hidden · retail mode';
+        : 'Hidden · developer tools off';
     }
     updateInternalToolsVisibility();
+  }
+
+  const avatarAsset = (path) => `${window.location.origin}${path}`;
+
+  const gearAvatarOptions = [
+    { id: 'lime', label: 'Lime gear', src: avatarAsset('/avatar-gear-lime.svg') },
+    { id: 'cyan', label: 'Cyan gear', src: avatarAsset('/avatar-gear-cyan.svg') },
+    { id: 'amber', label: 'Amber gear', src: avatarAsset('/avatar-gear-amber.svg') },
+    { id: 'coral', label: 'Coral gear', src: avatarAsset('/avatar-gear-coral.svg') },
+    { id: 'violet', label: 'Violet gear', src: avatarAsset('/avatar-gear-violet.svg') },
+    { id: 'blue', label: 'Blue gear', src: avatarAsset('/avatar-gear-blue.svg') },
+  ];
+
+  const TOOL_CATALOG = [
+    { id: 'pressure-diffuser', name: 'Pressure Diffuser', category: 'Sales', summary: 'Calm a high-pressure customer conversation and keep the deal moving.', roles: ['Sales Consultant', 'Sales Manager', 'Finance Manager'], needTags: ['trust', 'objection', 'next-step'], tags: ['pressure', 'calm', 'pace'], estimatedTime: '4 min', access: 'all', status: 'featured', featured: true, isNew: false, actionLabel: 'Open coach' },
+    { id: 'fee-transparency-coach', name: 'Fee Transparency Coach', category: 'Sales', summary: 'Explain fees cleanly so the customer hears clarity instead of defensiveness.', roles: ['Sales Consultant', 'Finance Manager', 'Sales Manager'], needTags: ['price', 'trust', 'objection'], tags: ['fees', 'numbers', 'clarity'], estimatedTime: '5 min', access: 'all', status: 'stable', featured: true, isNew: false, actionLabel: 'Open coach' },
+    { id: 'pickup-experience-designer', name: 'Pickup Experience Designer', category: 'Service', summary: 'Make the final handoff feel organized, human, and easy to follow.', roles: ['Service Writer', 'Service Manager'], needTags: ['handoff', 'trust', 'service'], tags: ['pickup', 'delivery', 'flow'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: true, isNew: false, actionLabel: 'Design pickup' },
+    { id: 'repair-trust-builder', name: 'Repair Trust Builder', category: 'Service', summary: 'Strengthen confidence when a guest is unsure about a diagnosis or recommendation.', roles: ['Service Writer', 'Service Manager'], needTags: ['trust', 'objection', 'service'], tags: ['repair', 'diagnosis', 'confidence'], estimatedTime: '5 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Build trust' },
+    { id: 'wait-experience-coach', name: 'Wait Experience Coach', category: 'Service', summary: 'Keep a waiting guest informed without over-explaining or over-promising.', roles: ['Service Writer', 'Service Manager'], needTags: ['service', 'follow-up', 'trust'], tags: ['wait', 'updates', 'clarity'], estimatedTime: '3 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Coach updates' },
+    { id: 'pressure-drop-planner', name: 'Pressure Drop Planner', category: 'Sales', summary: 'Lower friction when a customer feels rushed or unsure about the next step.', roles: ['Sales Consultant', 'BDC', 'Finance Manager'], needTags: ['trust', 'next-step', 'objection'], tags: ['pressure', 'pace', 'calm'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Plan the step' },
+    { id: 'clarity-check-builder', name: 'Clarity Check Builder', category: 'Universal', summary: 'Turn any fuzzy conversation into one clean ask and one clear next step.', roles: ['Sales Consultant', 'Service Writer', 'Parts Consultant', 'Finance Manager', 'Sales Manager', 'Service Manager', 'Parts Manager', 'General Manager', 'Owner'], needTags: ['next-step', 'service', 'trust'], tags: ['clarity', 'check-back', 'next step'], estimatedTime: '3 min', access: 'all', status: 'new', featured: false, isNew: true, actionLabel: 'Build clarity' },
+    { id: 'what-happens-next', name: 'What Happens Next', category: 'Universal', summary: 'Give the customer a simple roadmap so they always know what comes next.', roles: ['Sales Consultant', 'Service Writer', 'Parts Consultant', 'Finance Manager'], needTags: ['next-step', 'trust', 'follow-up'], tags: ['roadmap', 'timeline', 'expectations'], estimatedTime: '3 min', access: 'all', status: 'new', featured: false, isNew: true, actionLabel: 'Map next step' },
+    { id: 'first-90-second-trust-test', name: 'First 90-Second Trust Test', category: 'Sales', summary: 'Evaluate whether your opening earns permission to keep the conversation going.', roles: ['Sales Consultant', 'BDC'], needTags: ['trust', 'next-step'], tags: ['opening', 'rapport', 'first impression'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Test the opening' },
+    { id: 'first-impression-calibrator', name: 'First Impression Calibrator', category: 'Universal', summary: 'Fine-tune the opening so the customer feels welcomed and understood quickly.', roles: ['Sales Consultant', 'Service Writer', 'BDC'], needTags: ['trust', 'service'], tags: ['greeting', 'tone', 'welcome'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Calibrate opening' },
+    { id: 'consistency-gap-check', name: 'Consistency Gap Check', category: 'Management', summary: 'Spot where the team is saying one thing and doing another.', roles: ['Sales Manager', 'Service Manager', 'Parts Manager', 'General Manager', 'Owner'], needTags: ['coaching', 'trust'], tags: ['audit', 'standards', 'consistency'], estimatedTime: '5 min', access: 'advanced', status: 'stable', featured: false, isNew: false, actionLabel: 'Check gaps' },
+    { id: 'inventory-substitution-guide', name: 'Inventory Substitution Guide', category: 'Sales', summary: 'Offer strong alternatives when the exact vehicle or part is not available.', roles: ['Sales Consultant', 'Parts Consultant'], needTags: ['inventory', 'objection', 'next-step'], tags: ['substitute', 'options', 'availability'], estimatedTime: '5 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Offer alternatives' },
+    { id: 'special-order-confidence-builder', name: 'Special Order Confidence Builder', category: 'Parts', summary: 'Set expectations clearly so special orders feel safe and specific.', roles: ['Parts Consultant', 'Parts Manager'], needTags: ['trust', 'follow-up', 'service'], tags: ['special order', 'eta', 'confidence'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Build confidence' },
+    { id: 'parts-objection-defuser', name: 'Parts Objection Defuser', category: 'Parts', summary: 'Turn price or availability pushback into a clean, helpful conversation.', roles: ['Parts Consultant', 'Parts Manager'], needTags: ['objection', 'price', 'trust'], tags: ['counter', 'availability', 'pricing'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Defuse objection' },
+    { id: 'mpi-conversation-designer', name: 'MPI Conversation Designer', category: 'Service', summary: 'Structure an MPI presentation that feels clear, calm, and customer-first.', roles: ['Service Writer', 'Service Manager'], needTags: ['service', 'objection', 'next-step'], tags: ['mpi', 'inspection', 'presentation'], estimatedTime: '5 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Design MPI' },
+    { id: 'upsell-timing-advisor', name: 'Upsell Timing Advisor', category: 'Service', summary: 'Help you choose the right moment to make a recommendation without force.', roles: ['Service Writer', 'Service Manager'], needTags: ['service', 'trust', 'objection'], tags: ['timing', 'recommendation', 'flow'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Time the ask' },
+    { id: 'waiter-update-flow', name: 'Waiter Update Flow', category: 'Service', summary: 'Keep long waits feeling intentional with crisp status updates.', roles: ['Service Writer', 'Service Manager'], needTags: ['service', 'follow-up', 'trust'], tags: ['status', 'wait', 'update'], estimatedTime: '3 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Flow updates' },
+    { id: 'be-back-conversion-planner', name: 'Be-Back Conversion Planner', category: 'Sales', summary: 'Turn a maybe-later customer into a real next step with less pressure.', roles: ['Sales Consultant', 'BDC'], needTags: ['follow-up', 'next-step', 'trust'], tags: ['be back', 'appointment', 'conversion'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Plan the return' },
+    { id: 'walkaround-path-builder', name: 'Walkaround Path Builder', category: 'Sales', summary: 'Lay out a cleaner walkaround that links features to customer value.', roles: ['Sales Consultant'], needTags: ['presentation', 'trust', 'next-step'], tags: ['walkaround', 'demo', 'features'], estimatedTime: '5 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Build walkaround' },
+    { id: 'payment-comfort-mapper', name: 'Payment Comfort Mapper', category: 'Finance', summary: 'Present payment options without making the customer feel cornered.', roles: ['Finance Manager', 'Sales Consultant', 'Sales Manager'], needTags: ['price', 'trust', 'objection'], tags: ['payment', 'comfort', 'numbers'], estimatedTime: '5 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Map comfort' },
+    { id: 'buyer-temperature-tracker', name: 'Buyer Temperature Tracker', category: 'Sales', summary: 'Gauge readiness so you know when to advance and when to slow down.', roles: ['Sales Consultant', 'BDC', 'Sales Manager'], needTags: ['next-step', 'trust', 'follow-up'], tags: ['readiness', 'temperature', 'intent'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Track readiness' },
+    { id: 'gross-protection-strategist', name: 'Gross Protection Strategist', category: 'Finance', summary: 'Protect margin while keeping the conversation helpful and customer-friendly.', roles: ['Finance Manager', 'Sales Manager', 'Owner'], needTags: ['coaching', 'price', 'objection'], tags: ['gross', 'margin', 'strategy'], estimatedTime: '5 min', access: 'advanced', status: 'stable', featured: false, isNew: false, actionLabel: 'Protect gross' },
+    { id: 'team-coaching-converter', name: 'Team Coaching Converter', category: 'Management', summary: 'Turn observations into coaching language the team can actually use.', roles: ['Sales Manager', 'Service Manager', 'Parts Manager', 'General Manager', 'Owner'], needTags: ['coaching', 'next-step'], tags: ['feedback', 'coaching', 'conversion'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Convert coaching' },
+    { id: 'desk-conversation', name: 'Desk Conversation', category: 'Management', summary: 'Structure the desk talk around clarity, alignment, and a clean decision.', roles: ['Sales Manager', 'Finance Manager'], needTags: ['coaching', 'objection', 'next-step'], tags: ['desk', 'decision', 'clarity'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Shape the desk' },
+    { id: 'declined-work-recovery', name: 'Declined Work Recovery', category: 'Service', summary: 'Recover a declined repair without sounding pushy or dismissive.', roles: ['Service Writer', 'Service Manager'], needTags: ['recovery', 'trust', 'follow-up'], tags: ['declined', 'repair', 'recovery'], estimatedTime: '5 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Recover work' },
+    { id: 'status-update', name: 'Status Update', category: 'Service', summary: 'Send the right update at the right time while a guest is waiting.', roles: ['Service Writer', 'Service Manager'], needTags: ['service', 'follow-up'], tags: ['status', 'message', 'update'], estimatedTime: '3 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Write update' },
+    { id: 'repair-approval', name: 'Repair Approval', category: 'Service', summary: 'Build confidence for a repair approval without overwhelming the guest.', roles: ['Service Writer', 'Service Manager'], needTags: ['service', 'trust', 'objection'], tags: ['approval', 'repair', 'confidence'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Approve repair' },
+    { id: 'test-drive-debrief', name: 'Test Drive Debrief', category: 'Sales', summary: 'Turn a test drive into a useful discussion instead of a rushed close.', roles: ['Sales Consultant', 'BDC'], needTags: ['next-step', 'trust', 'presentation'], tags: ['test drive', 'debrief', 'value'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Debrief drive' },
+    { id: 'trade-value-bridge', name: 'Trade Value Bridge', category: 'Sales', summary: 'Connect trade value back to the deal without getting stuck in a number fight.', roles: ['Sales Consultant', 'Sales Manager'], needTags: ['price', 'objection', 'next-step'], tags: ['trade-in', 'value', 'bridge'], estimatedTime: '5 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Bridge value' },
+    { id: 'commitment-ladder', name: 'Commitment Ladder', category: 'Universal', summary: 'Move from interest to commitment using smaller, cleaner asks.', roles: ['Sales Consultant', 'BDC', 'Finance Manager', 'Service Writer'], needTags: ['next-step', 'trust', 'follow-up'], tags: ['commitment', 'ladder', 'asks'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Build ladder' },
+    { id: 'next-move-engine', name: 'Next Move Engine', category: 'Universal', summary: 'Recommend the most useful next tool based on the situation at hand.', roles: ['Sales Consultant', 'Service Writer', 'Parts Consultant', 'Finance Manager', 'Sales Manager', 'Service Manager', 'Parts Manager', 'General Manager', 'Owner'], needTags: ['next-step', 'coaching'], tags: ['recommendation', 'routing', 'decision'], estimatedTime: '2 min', access: 'advanced', status: 'new', featured: false, isNew: true, actionLabel: 'Find next move' },
+    { id: 'objection-reframe', name: 'Objection Reframe', category: 'Universal', summary: 'Reframe resistance into a conversation that keeps trust intact.', roles: ['Sales Consultant', 'Service Writer', 'Parts Consultant', 'Finance Manager'], needTags: ['objection', 'trust', 'next-step'], tags: ['reframe', 'pushback', 'language'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Reframe objection' },
+    { id: 'follow-up-cadence', name: 'Follow-Up Cadence', category: 'Universal', summary: 'Create a simple follow-up rhythm that does not feel spammy.', roles: ['Sales Consultant', 'BDC', 'Service Writer', 'Parts Consultant'], needTags: ['follow-up', 'next-step'], tags: ['cadence', 'follow-up', 'timing'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Set cadence' },
+    { id: 'handoff-script', name: 'Handoff Script', category: 'Universal', summary: 'Make handoffs cleaner between roles so the customer never feels dropped.', roles: ['Sales Consultant', 'Service Writer', 'Parts Consultant', 'Finance Manager', 'Sales Manager', 'Service Manager', 'Parts Manager', 'General Manager', 'Owner'], needTags: ['handoff', 'trust', 'service'], tags: ['handoff', 'transfer', 'clarity'], estimatedTime: '3 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Write handoff' },
+    { id: 'deal-recovery', name: 'Deal Recovery', category: 'Sales', summary: 'Get a stalled deal moving again without making the customer defensive.', roles: ['Sales Consultant', 'Sales Manager', 'Finance Manager'], needTags: ['recovery', 'objection', 'next-step'], tags: ['salvage', 'stalled deal', 'restart'], estimatedTime: '5 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Recover deal' },
+    { id: 'loyalty-loop', name: 'Loyalty Loop', category: 'Universal', summary: 'Turn a one-time visit into the start of a repeat relationship.', roles: ['Sales Consultant', 'Service Writer', 'BDC'], needTags: ['follow-up', 'trust', 'service'], tags: ['retention', 'relationship', 'repeat'], estimatedTime: '4 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Build loyalty' },
+    { id: 'price-presentation', name: 'Price Presentation', category: 'Finance', summary: 'Present price with confidence and context instead of apology.', roles: ['Finance Manager', 'Sales Consultant', 'Sales Manager'], needTags: ['price', 'trust', 'objection'], tags: ['presentation', 'numbers', 'value'], estimatedTime: '5 min', access: 'all', status: 'stable', featured: false, isNew: false, actionLabel: 'Present price' },
+    { id: 'consistency-leak-finder', name: 'Consistency Leak Finder', category: 'Management', summary: 'Expose where process drift is causing trust or performance leaks.', roles: ['Sales Manager', 'Service Manager', 'Parts Manager', 'General Manager', 'Owner'], needTags: ['coaching', 'trust'], tags: ['consistency', 'process', 'audit'], estimatedTime: '5 min', access: 'advanced', status: 'stable', featured: false, isNew: false, actionLabel: 'Find leaks' },
+  ];
+
+  const TOOL_HUB_DEFAULTS = {
+    search: '',
+    category: 'All',
+    role: 'All',
+    need: 'All',
+    access: 'All',
+    sort: 'featured',
+    selectedToolId: '',
+    savedToolIds: [],
+    recentToolIds: [],
+    insightText: '',
+    insightMeta: '',
+    insightLoading: false,
+  };
+
+  const TOOL_WORKSPACE_DEFAULTS = {
+    activeToolId: '',
+    draftsByToolId: {},
+  };
+
+  function getToolHubStorageKey(userId = '') {
+    const normalized = String(userId || localStorage.getItem("autoknerd:userId") || 'default').trim() || 'default';
+    return `autoknerd:toolHub:${normalized}`;
+  }
+
+  function getToolWorkspaceStorageKey(userId = '') {
+    const normalized = String(userId || localStorage.getItem("autoknerd:userId") || 'default').trim() || 'default';
+    return `autoknerd:toolWorkspace:${normalized}`;
+  }
+
+  function readToolHubLocalState(userId = '') {
+    const raw = localStorage.getItem(getToolHubStorageKey(userId));
+    if (!raw) return {};
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function normalizeToolIds(values) {
+    return Array.from(new Set((Array.isArray(values) ? values : []).map((value) => String(value || '').trim()).filter(Boolean)));
+  }
+
+  function normalizeToolHubState(partial = {}) {
+    return {
+      ...TOOL_HUB_DEFAULTS,
+      ...partial,
+      search: String(partial.search || '').trim(),
+      category: String(partial.category || 'All').trim() || 'All',
+      role: String(partial.role || 'All').trim() || 'All',
+      need: String(partial.need || 'All').trim() || 'All',
+      access: String(partial.access || 'All').trim() || 'All',
+      sort: String(partial.sort || 'featured').trim() || 'featured',
+      selectedToolId: String(partial.selectedToolId || '').trim(),
+      savedToolIds: normalizeToolIds(partial.savedToolIds),
+      recentToolIds: normalizeToolIds(partial.recentToolIds).slice(0, 8),
+      insightText: String(partial.insightText || ''),
+      insightMeta: String(partial.insightMeta || ''),
+      insightLoading: Boolean(partial.insightLoading),
+    };
+  }
+
+  function normalizeToolWorkspaceState(partial = {}) {
+    const draftsByToolId = partial.draftsByToolId && typeof partial.draftsByToolId === 'object'
+      ? Object.entries(partial.draftsByToolId).reduce((acc, [toolId, value]) => {
+          const content = String(value?.content || value || '').trim();
+          if (!content) return acc;
+          acc[String(toolId || '').trim()] = {
+            content,
+            updatedAt: String(value?.updatedAt || value?.createdAt || new Date().toISOString()),
+          };
+          return acc;
+        }, {})
+      : {};
+    return {
+      ...TOOL_WORKSPACE_DEFAULTS,
+      ...partial,
+      activeToolId: String(partial.activeToolId || '').trim(),
+      draftsByToolId,
+    };
+  }
+
+  function readToolWorkspaceLocalState(userId = '') {
+    const raw = localStorage.getItem(getToolWorkspaceStorageKey(userId));
+    if (!raw) return {};
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function getToolHubBundlePreferences(bundle = state.bundle) {
+    const prefs = bundle?.user?.preferences && typeof bundle.user.preferences === 'object'
+      ? bundle.user.preferences
+      : {};
+    const toolHub = prefs.toolHub && typeof prefs.toolHub === 'object' ? prefs.toolHub : {};
+    return normalizeToolHubState(toolHub);
+  }
+
+  function hydrateToolHubState(bundle = state.bundle) {
+    const userId = bundle?.user?.userId || state.bundle?.user?.userId || localStorage.getItem("autoknerd:userId") || '';
+    const remote = getToolHubBundlePreferences(bundle);
+    const local = normalizeToolHubState(readToolHubLocalState(userId));
+    const merged = normalizeToolHubState({
+      ...remote,
+      ...local,
+      savedToolIds: Array.from(new Set([...(remote.savedToolIds || []), ...(local.savedToolIds || [])])),
+      recentToolIds: Array.from(new Set([...(local.recentToolIds || []), ...(remote.recentToolIds || [])])).slice(0, 8),
+    });
+    const availableIds = new Set(TOOL_CATALOG.map((tool) => tool.id));
+    merged.savedToolIds = merged.savedToolIds.filter((toolId) => availableIds.has(toolId));
+    merged.recentToolIds = merged.recentToolIds.filter((toolId) => availableIds.has(toolId));
+    if (!availableIds.has(merged.selectedToolId)) {
+      merged.selectedToolId = merged.savedToolIds[0] || TOOL_CATALOG[0]?.id || '';
+    }
+    state.toolHub = merged;
+    persistToolHubLocalState(userId);
+    return merged;
+  }
+
+  function getToolWorkspaceBundlePreferences(bundle = state.bundle) {
+    const prefs = bundle?.user?.preferences && typeof bundle.user.preferences === 'object'
+      ? bundle.user.preferences
+      : {};
+    const toolWorkspace = prefs.toolWorkspace && typeof prefs.toolWorkspace === 'object' ? prefs.toolWorkspace : {};
+    return normalizeToolWorkspaceState(toolWorkspace);
+  }
+
+  function hydrateToolWorkspaceState(bundle = state.bundle) {
+    const userId = bundle?.user?.userId || state.bundle?.user?.userId || localStorage.getItem("autoknerd:userId") || '';
+    const remote = getToolWorkspaceBundlePreferences(bundle);
+    const local = normalizeToolWorkspaceState(readToolWorkspaceLocalState(userId));
+    const merged = normalizeToolWorkspaceState({
+      ...remote,
+      ...local,
+      draftsByToolId: {
+        ...(remote.draftsByToolId || {}),
+        ...(local.draftsByToolId || {}),
+      },
+    });
+    const availableIds = new Set(TOOL_CATALOG.map((tool) => tool.id));
+    merged.activeToolId = availableIds.has(merged.activeToolId) ? merged.activeToolId : '';
+    merged.draftsByToolId = Object.fromEntries(
+      Object.entries(merged.draftsByToolId).filter(([toolId]) => availableIds.has(toolId))
+    );
+    state.toolWorkspace = merged;
+    persistToolWorkspaceLocalState(userId);
+    return merged;
+  }
+
+  function persistToolHubLocalState(userId = '') {
+    try {
+      localStorage.setItem(getToolHubStorageKey(userId), JSON.stringify({
+        search: state.toolHub.search,
+        category: state.toolHub.category,
+        role: state.toolHub.role,
+        need: state.toolHub.need,
+        access: state.toolHub.access,
+        sort: state.toolHub.sort,
+        selectedToolId: state.toolHub.selectedToolId,
+        savedToolIds: state.toolHub.savedToolIds,
+        recentToolIds: state.toolHub.recentToolIds,
+      }));
+    } catch (error) {
+      console.warn('Unable to persist tools hub state locally', error);
+    }
+  }
+
+  function persistToolWorkspaceLocalState(userId = '') {
+    try {
+      localStorage.setItem(getToolWorkspaceStorageKey(userId), JSON.stringify({
+        activeToolId: state.toolWorkspace.activeToolId,
+        draftsByToolId: state.toolWorkspace.draftsByToolId,
+      }));
+    } catch (error) {
+      console.warn('Unable to persist tool workspace state locally', error);
+    }
+  }
+
+  async function syncToolHubPreferences() {
+    if (!state.bundle?.user) return;
+    const userId = state.bundle.user.userId;
+    try {
+      const response = await fetch('/api/user/update', {
+        method: 'POST',
+        headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({
+          userId,
+          roleOverride: getDeveloperRoleOverride() || undefined,
+          mockMode: state.mockUserMode || undefined,
+          mockRoleOverride: getMockRoleOverride() || undefined,
+          name: state.bundle.user.name || 'Current account',
+          avatarUrl: state.bundle.user.avatarUrl || '',
+          preferences: {
+            ...(state.bundle.user.preferences && typeof state.bundle.user.preferences === 'object' ? state.bundle.user.preferences : {}),
+            toolHub: {
+              search: state.toolHub.search,
+              category: state.toolHub.category,
+              role: state.toolHub.role,
+              need: state.toolHub.need,
+              access: state.toolHub.access,
+              sort: state.toolHub.sort,
+              selectedToolId: state.toolHub.selectedToolId,
+              savedToolIds: state.toolHub.savedToolIds,
+              recentToolIds: state.toolHub.recentToolIds,
+            },
+            toolWorkspace: {
+              activeToolId: state.toolWorkspace.activeToolId,
+              draftsByToolId: state.toolWorkspace.draftsByToolId,
+            },
+          },
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (response.ok && payload.ok) {
+        state.bundle = payload.bundle || state.bundle;
+        state.user = payload.user || state.bundle.user;
+      }
+    } catch (error) {
+      console.warn('Unable to sync tools hub preferences', error);
+    }
+  }
+
+  function getToolById(toolId) {
+    return TOOL_CATALOG.find((tool) => tool.id === toolId) || null;
+  }
+
+  function getToolNeedLabel(tool) {
+    const need = Array.isArray(tool?.needTags) && tool.needTags.length ? tool.needTags[0] : 'next-step';
+    const labels = {
+      trust: 'Build trust',
+      'next-step': 'Next step',
+      'follow-up': 'Follow-up',
+      objection: 'Objection',
+      price: 'Price',
+      service: 'Service',
+      coaching: 'Coaching',
+      recovery: 'Recovery',
+      handoff: 'Handoff',
+      presentation: 'Presentation',
+      inventory: 'Inventory',
+    };
+    return labels[need] || need;
+  }
+
+  function getToolIconName(tool) {
+    const category = String(tool?.category || '').toLowerCase();
+    const need = Array.isArray(tool?.needTags) ? tool.needTags.join(' ').toLowerCase() : '';
+    if (tool?.featured) return 'auto_awesome';
+    if (need.includes('trust')) return 'handshake';
+    if (need.includes('objection')) return 'forum';
+    if (need.includes('follow')) return 'history_edu';
+    if (need.includes('recovery')) return 'reset_wrench';
+    if (category.includes('service')) return 'engineering';
+    if (category.includes('parts')) return 'package';
+    if (category.includes('finance')) return 'payments';
+    if (category.includes('management')) return 'strategy';
+    if (category.includes('universal')) return 'grid_view';
+    return 'bolt';
+  }
+
+  function normalizeSearchText(value) {
+    return String(value || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function stemSearchToken(token) {
+    const normalized = String(token || '').trim().toLowerCase();
+    if (!normalized) return '';
+    if (normalized.length > 4) {
+      if (normalized.endsWith('ing')) return normalized.slice(0, -3);
+      if (normalized.endsWith('ed')) return normalized.slice(0, -2);
+    }
+    if (normalized.length > 3 && normalized.endsWith('es')) return normalized.slice(0, -2);
+    if (normalized.length > 3 && normalized.endsWith('s')) return normalized.slice(0, -1);
+    return normalized;
+  }
+
+  function toolSearchText(tool) {
+    return normalizeSearchText([
+      tool.name,
+      tool.summary,
+      tool.category,
+      ...(tool.roles || []),
+      ...(tool.needTags || []),
+      ...(tool.tags || []),
+      ...(tool.intentTags || []),
+      ...(tool.recommendedWhen || []),
+    ].join(' '));
+  }
+
+  function toolMatchesSearch(tool, query) {
+    const normalizedQuery = normalizeSearchText(query);
+    if (!normalizedQuery) return true;
+    const haystack = toolSearchText(tool);
+    if (haystack.includes(normalizedQuery)) return true;
+    const haystackTokens = new Set(haystack.split(' ').map(stemSearchToken).filter(Boolean));
+    const queryTokens = normalizedQuery.split(' ').map(stemSearchToken).filter(Boolean);
+    return queryTokens.some((token) => haystackTokens.has(token) || [...haystackTokens].some((candidate) => candidate.includes(token) || token.includes(candidate)));
+  }
+
+  function toggleToolSave(toolId) {
+    const normalized = String(toolId || '').trim();
+    if (!normalized) return;
+    const nextSaved = new Set(state.toolHub.savedToolIds);
+    if (nextSaved.has(normalized)) nextSaved.delete(normalized);
+    else nextSaved.add(normalized);
+    state.toolHub.savedToolIds = Array.from(nextSaved);
+    persistToolHubLocalState(state.bundle?.user?.userId || '');
+    renderToolsHub(state.bundle);
+    void syncToolHubPreferences();
+  }
+
+  function recordToolHubRecentTool(toolId) {
+    const normalized = String(toolId || '').trim();
+    if (!normalized) return;
+    const nextRecent = [normalized, ...state.toolHub.recentToolIds.filter((id) => id !== normalized)].slice(0, 8);
+    state.toolHub.recentToolIds = nextRecent;
+    state.toolHub.selectedToolId = normalized;
+    persistToolHubLocalState(state.bundle?.user?.userId || '');
+    void syncToolHubPreferences();
+  }
+
+  function setToolHubSelection(toolId, { generateInsight = true } = {}) {
+    const normalized = String(toolId || '').trim();
+    if (!normalized) return;
+    state.toolHub.selectedToolId = normalized;
+    recordToolHubRecentTool(normalized);
+    renderToolsHub(state.bundle);
+  }
+
+  function getToolWorkspaceDraft(toolId) {
+    const normalized = String(toolId || '').trim();
+    if (!normalized) return '';
+    return String(state.toolWorkspace.draftsByToolId?.[normalized]?.content || '');
+  }
+
+  function updateAppRoute(nextRoute, toolId = '', { replace = false } = {}) {
+    if (typeof window === 'undefined' || !window.history?.replaceState) return;
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.delete('view');
+    nextUrl.searchParams.delete('tool');
+    if (nextRoute === 'tools') {
+      nextUrl.searchParams.set('view', 'tools');
+    } else if (nextRoute === 'profile') {
+      nextUrl.searchParams.set('view', 'profile');
+    } else if (nextRoute === 'tool' && String(toolId || '').trim()) {
+      nextUrl.searchParams.set('tool', String(toolId).trim());
+    }
+    const nextHref = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+    if (replace) {
+      window.history.replaceState({}, '', nextHref);
+    } else {
+      window.history.pushState({}, '', nextHref);
+    }
+  }
+
+  function getRequestedAppRoute() {
+    if (typeof window === 'undefined') {
+      return { route: 'home', toolId: '' };
+    }
+    const params = new URLSearchParams(window.location.search);
+    const toolId = String(params.get('tool') || '').trim();
+    const view = String(params.get('view') || '').trim().toLowerCase();
+    if (toolId) {
+      return { route: 'tool', toolId };
+    }
+    if (view === 'tools') {
+      return { route: 'tools', toolId: '' };
+    }
+    if (view === 'profile') {
+      return { route: 'profile', toolId: '' };
+    }
+    return { route: 'home', toolId: '' };
+  }
+
+  function applyAppRouteFromLocation() {
+    const { route, toolId } = getRequestedAppRoute();
+    if (route === 'tool' && toolId) {
+      const tool = getToolById(toolId);
+      if (tool) {
+        window.location.replace(getLegacyToolUrl(toolId, { embed: true }));
+        return;
+      }
+      showToolsHub({ replaceRoute: true });
+      return;
+    }
+    if (route === 'tools') {
+      showToolsHub({ replaceRoute: true });
+      return;
+    }
+    if (route === 'profile') {
+      showProfile('self', { replaceRoute: true });
+      return;
+    }
+    showHome({ replaceRoute: true });
+  }
+
+  function getToolWorkspaceRelatedTools(tool) {
+    if (!tool) return [];
+    const selectedRoles = new Set(Array.isArray(tool.roles) ? tool.roles : []);
+    const selectedNeed = Array.isArray(tool.needTags) ? tool.needTags[0] : '';
+    return TOOL_CATALOG
+      .filter((candidate) => candidate.id !== tool.id)
+      .sort((a, b) => {
+        const aRoleMatch = Array.isArray(a.roles) && a.roles.some((role) => selectedRoles.has(role)) ? 1 : 0;
+        const bRoleMatch = Array.isArray(b.roles) && b.roles.some((role) => selectedRoles.has(role)) ? 1 : 0;
+        const aNeedMatch = selectedNeed && Array.isArray(a.needTags) && a.needTags.includes(selectedNeed) ? 1 : 0;
+        const bNeedMatch = selectedNeed && Array.isArray(b.needTags) && b.needTags.includes(selectedNeed) ? 1 : 0;
+        const aScore = aRoleMatch * 2 + aNeedMatch;
+        const bScore = bRoleMatch * 2 + bNeedMatch;
+        return bScore - aScore || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      })
+      .slice(0, 3);
+  }
+
+  function getLegacyToolBaseUrl() {
+    if (typeof window === 'undefined') return 'http://localhost:3000';
+    return `${window.location.protocol}//${window.location.hostname}:3000`;
+  }
+
+  function getLegacyToolUrl(toolId, { embed = true } = {}) {
+    const normalized = String(toolId || '').trim();
+    if (!normalized) return getLegacyToolBaseUrl();
+    return `${getLegacyToolBaseUrl()}/autoshop/${encodeURIComponent(normalized)}${embed ? '?embed=1' : ''}`;
+  }
+
+  function setToolWorkspaceDraft(toolId, value, { persist = true, sync = false } = {}) {
+    const normalized = String(toolId || '').trim();
+    if (!normalized) return;
+    const nextContent = String(value || '');
+    state.toolWorkspace.draftsByToolId = {
+      ...(state.toolWorkspace.draftsByToolId || {}),
+      [normalized]: {
+        content: nextContent,
+        updatedAt: new Date().toISOString(),
+      },
+    };
+    persistToolWorkspaceLocalState(state.bundle?.user?.userId || '');
+    if (persist) {
+      if (toolWorkspaceDraftInput && state.toolWorkspace.activeToolId === normalized) {
+        toolWorkspaceDraftInput.value = nextContent;
+      }
+      if (toolWorkspaceDraftMeta && state.toolWorkspace.activeToolId === normalized) {
+        toolWorkspaceDraftMeta.textContent = 'Draft saved locally.';
+      }
+    }
+    if (sync) {
+      void syncToolHubPreferences();
+    }
+  }
+
+  function canOpenTool(tool) {
+    if (!tool) return false;
+    if (tool.access !== 'advanced') return true;
+    const roleLabel = formatRoleTitle(state.bundle?.user?.roleLabel || state.bundle?.user?.role || '');
+    return isStoreLeadershipRole(roleLabel) || isDeveloperAccount(state.bundle);
+  }
+
+  function requireFeature(feature, contextMessage = '', pendingTool = null) {
+    const toolName = pendingTool?.name || 'This tool';
+    const message = contextMessage || `${toolName} is not available for your current role yet.`;
+    alert(message);
+    return false;
+  }
+
+  function openToolWorkspace(toolId) {
+    const normalized = String(toolId || '').trim();
+    const tool = getToolById(normalized);
+    if (!tool) return;
+    if (!canOpenTool(tool)) {
+      requireFeature('tool_access', undefined, tool);
+      return;
+    }
+    state.toolWorkspace.activeToolId = normalized;
+    state.toolHub.selectedToolId = normalized;
+    recordToolHubRecentTool(normalized);
+    persistToolWorkspaceLocalState(state.bundle?.user?.userId || '');
+    window.location.href = getLegacyToolUrl(normalized, { embed: true });
+  }
+
+  function showToolWorkspace() {
+    hideAllScreens();
+    if (state.bundle) {
+      hydrateToolWorkspaceState(state.bundle);
+      renderToolWorkspace(state.bundle);
+    }
+    toolWorkspaceScreen?.classList.remove("hidden-screen");
+    if (refs.managerModeFooter) refs.managerModeFooter.classList.add("hidden-screen");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function syncAvatarPreview(avatarUrl) {
+    const nextAvatar = String(avatarUrl || '').trim();
+    if (!nextAvatar) return;
+    if (refs.profileAvatar) refs.profileAvatar.src = nextAvatar;
+    if (refs.profileHeaderAvatar) refs.profileHeaderAvatar.src = nextAvatar;
+    if (refs.managerAvatarImage) refs.managerAvatarImage.src = nextAvatar;
+    if (refs.aiOutputAvatarImage) refs.aiOutputAvatarImage.src = nextAvatar;
+  }
+
+  function syncAvatarPickerSelection(selectedUrl) {
+    if (!refs.settingsAvatarPicker) return;
+    const normalized = String(selectedUrl || '').trim();
+    refs.settingsAvatarPicker.querySelectorAll('[data-avatar-url]').forEach((button) => {
+      const buttonUrl = String(button.getAttribute('data-avatar-url') || '').trim();
+      const selected = normalized && buttonUrl === normalized;
+      button.classList.toggle('border-[#CCFF00]/50', selected);
+      button.classList.toggle('bg-[#CCFF00]/10', selected);
+      button.classList.toggle('border-white/10', !selected);
+      button.style.boxShadow = selected
+        ? '0 0 0 1px rgba(204, 255, 0, 0.18), 0 0 24px rgba(204, 255, 0, 0.14)'
+        : '';
+    });
+  }
+
+  function renderToolWorkspace(bundle) {
+    if (!bundle?.user) return;
+    const availableIds = new Set(TOOL_CATALOG.map((tool) => tool.id));
+    const selectedToolId = availableIds.has(state.toolWorkspace.activeToolId)
+      ? state.toolWorkspace.activeToolId
+      : (availableIds.has(state.toolHub.selectedToolId) ? state.toolHub.selectedToolId : (TOOL_CATALOG[0]?.id || ''));
+    const tool = getToolById(selectedToolId);
+    if (!tool) {
+      if (toolWorkspaceHeaderTitle) toolWorkspaceHeaderTitle.textContent = 'TOOL WORKSPACE';
+      if (toolWorkspaceTitle) toolWorkspaceTitle.textContent = 'Pick a tool';
+      if (toolWorkspaceSummary) toolWorkspaceSummary.textContent = 'Open a tool from the hub to work with it here.';
+      if (toolWorkspaceCategoryBadge) toolWorkspaceCategoryBadge.textContent = 'Category';
+      if (toolWorkspaceNeedBadge) toolWorkspaceNeedBadge.textContent = 'Need';
+      if (toolWorkspaceDraftInput && toolWorkspaceDraftInput.value !== '') toolWorkspaceDraftInput.value = '';
+      if (toolWorkspaceDraftMeta) toolWorkspaceDraftMeta.textContent = 'Drafts save locally and back to your profile when you tap Save.';
+      if (toolWorkspaceSideTitle) toolWorkspaceSideTitle.textContent = 'No tool open';
+      if (toolWorkspaceSideSummary) toolWorkspaceSideSummary.textContent = 'Choose a tool from the hub to work with it here.';
+      if (toolWorkspaceAccess) toolWorkspaceAccess.textContent = '--';
+      if (toolWorkspaceTime) toolWorkspaceTime.textContent = '--';
+      if (toolWorkspaceRolesCount) toolWorkspaceRolesCount.textContent = '--';
+      if (toolWorkspaceSavedCount) toolWorkspaceSavedCount.textContent = '--';
+      if (toolWorkspaceStatusBadge) toolWorkspaceStatusBadge.textContent = 'Ready';
+      if (toolWorkspaceRelatedList) {
+        toolWorkspaceRelatedList.innerHTML = '<div class="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-[#c4c9ac]">Open a tool to see related options here.</div>';
+      }
+      if (toolWorkspaceLiveTitle) toolWorkspaceLiveTitle.textContent = 'Open a tool';
+      if (toolWorkspaceFrame && toolWorkspaceFrame.getAttribute('src') !== 'about:blank') {
+        toolWorkspaceFrame.setAttribute('src', 'about:blank');
+      }
+      if (toolWorkspaceOpenOriginalLink) {
+        toolWorkspaceOpenOriginalLink.href = getLegacyToolBaseUrl();
+      }
+      return;
+    }
+
+    state.toolWorkspace.activeToolId = tool.id;
+    state.toolHub.selectedToolId = tool.id;
+    const draft = getToolWorkspaceDraft(tool.id);
+    const relatedTools = getToolWorkspaceRelatedTools(tool);
+    const isSaved = state.toolHub.savedToolIds.includes(tool.id);
+    const toolNeed = getToolNeedLabel(tool);
+    const toolAccess = tool.access === 'advanced' ? 'Advanced' : 'Standard';
+    const roleCount = Array.isArray(tool.roles) ? tool.roles.length : 0;
+
+    if (toolWorkspaceHeaderTitle) toolWorkspaceHeaderTitle.textContent = 'TOOL WORKSPACE';
+    if (toolWorkspaceTitle) toolWorkspaceTitle.textContent = tool.name || 'Tool workspace';
+    if (toolWorkspaceSummary) toolWorkspaceSummary.textContent = tool.summary || 'Open a tool from the hub to work with it here.';
+    if (toolWorkspaceCategoryBadge) toolWorkspaceCategoryBadge.textContent = tool.category || 'Category';
+    if (toolWorkspaceNeedBadge) toolWorkspaceNeedBadge.textContent = toolNeed;
+    if (toolWorkspaceDraftInput && toolWorkspaceDraftInput.value !== draft) {
+      toolWorkspaceDraftInput.value = draft;
+    }
+    if (toolWorkspaceDraftMeta) {
+      toolWorkspaceDraftMeta.textContent = draft
+        ? `Last draft update: ${new Date(state.toolWorkspace.draftsByToolId?.[tool.id]?.updatedAt || Date.now()).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`
+        : 'Drafts save locally and back to your profile when you tap Save.';
+    }
+    if (toolWorkspaceSideTitle) toolWorkspaceSideTitle.textContent = tool.name || 'Tool workspace';
+    if (toolWorkspaceSideSummary) toolWorkspaceSideSummary.textContent = tool.summary || '';
+    if (toolWorkspaceAccess) toolWorkspaceAccess.textContent = toolAccess;
+    if (toolWorkspaceTime) toolWorkspaceTime.textContent = tool.estimatedTime || '--';
+    if (toolWorkspaceRolesCount) toolWorkspaceRolesCount.textContent = roleCount ? `${roleCount}` : 'All';
+    if (toolWorkspaceSavedCount) toolWorkspaceSavedCount.textContent = isSaved ? 'Saved' : 'No';
+    if (toolWorkspaceStatusBadge) toolWorkspaceStatusBadge.textContent = tool.status === 'new' ? 'New' : (tool.status || 'Stable');
+    if (toolWorkspaceLiveTitle) toolWorkspaceLiveTitle.textContent = tool.name || 'Live tool';
+    if (toolWorkspaceFrame) {
+      const nextToolUrl = getLegacyToolUrl(tool.id, { embed: true });
+      if (toolWorkspaceFrame.getAttribute('src') !== nextToolUrl) {
+        toolWorkspaceFrame.setAttribute('src', nextToolUrl);
+      }
+    }
+    if (toolWorkspaceOpenOriginalLink) {
+      toolWorkspaceOpenOriginalLink.href = getLegacyToolUrl(tool.id, { embed: true });
+    }
+    if (toolWorkspaceSaveBtn) {
+      toolWorkspaceSaveBtn.textContent = isSaved ? 'Saved' : 'Save';
+      toolWorkspaceSaveBtn.className = isSaved
+        ? "rounded-full border border-[#b026ff]/35 bg-[#b026ff]/10 px-4 py-2 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-[#e7b0ff] transition hover:border-[#b026ff]/55 hover:bg-[#b026ff]/15"
+        : "rounded-full border border-[#b026ff]/20 bg-[#b026ff]/10 px-4 py-2 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-[#b026ff] transition hover:border-[#b026ff]/40 hover:bg-[#b026ff]/15";
+    }
+    if (toolWorkspaceRelatedList) {
+      toolWorkspaceRelatedList.innerHTML = relatedTools.length
+        ? relatedTools.map((relatedTool) => `
+          <button type="button" data-workspace-open="${escapeHtml(relatedTool.id)}" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-4 text-left transition hover:border-[#CCFF00]/25 hover:bg-[#CCFF00]/5">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="font-['Space_Grotesk'] text-base font-bold text-white">${escapeHtml(relatedTool.name)}</p>
+                <p class="mt-1 text-sm text-[#c4c9ac]">${escapeHtml(relatedTool.summary || '')}</p>
+              </div>
+              <span class="material-symbols-outlined text-[#c4c9ac]">north_east</span>
+            </div>
+          </button>
+        `).join('')
+        : '<div class="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-[#c4c9ac]">No related tools found yet.</div>';
+      toolWorkspaceRelatedList.querySelectorAll('[data-workspace-open]').forEach((button) => {
+        button.addEventListener('click', () => openToolWorkspace(button.getAttribute('data-workspace-open')));
+      });
+    }
+    document.title = `${bundle.user.name || 'Account'} - ${tool.name || 'Tool Workspace'}`;
+  }
+
+  function renderAvatarPicker() {
+    if (!refs.settingsAvatarPicker) return;
+    if (!refs.settingsAvatarPicker.dataset.rendered) {
+      refs.settingsAvatarPicker.innerHTML = gearAvatarOptions.map((option) => `
+        <button
+          type="button"
+          class="group rounded-[1.25rem] border border-white/10 bg-black/30 p-3 text-left transition hover:border-[#CCFF00]/35 hover:bg-white/5 active:scale-[0.99]"
+          data-avatar-url="${escapeHtml(option.src)}"
+          aria-label="${escapeHtml(option.label)}"
+        >
+          <div class="flex items-center gap-3">
+            <img src="${escapeHtml(option.src)}" alt="" aria-hidden="true" class="h-14 w-14 rounded-full border border-white/10 object-cover shadow-[0_0_18px_rgba(0,0,0,0.3)] transition-transform group-hover:scale-[1.03]" />
+            <div class="min-w-0">
+              <p class="truncate font-headline text-sm font-bold text-on-surface">${escapeHtml(option.label)}</p>
+              <p class="mt-1 text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Built-in avatar</p>
+            </div>
+          </div>
+        </button>
+      `).join('');
+      refs.settingsAvatarPicker.querySelectorAll('[data-avatar-url]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const avatarUrl = String(button.getAttribute('data-avatar-url') || '').trim();
+          if (settingsAvatarInput) {
+            settingsAvatarInput.value = avatarUrl;
+          }
+          syncAvatarPreview(avatarUrl);
+          syncAvatarPickerSelection(avatarUrl);
+          void saveProfileSettings();
+        });
+      });
+      refs.settingsAvatarPicker.dataset.rendered = '1';
+    }
+    syncAvatarPickerSelection(settingsAvatarInput?.value || '');
   }
 
   function setSessionRemindersEnabled(enabled) {
@@ -2689,6 +4189,7 @@ tailwind.config = {
       renderSettings(state.bundle);
       renderHistory(state.bundle);
       renderLessonLibrary(state.bundle);
+      renderToolsHub(state.bundle);
       if (state.bundle.managerDashboard) {
         renderManagerDashboard(state.bundle);
       }
@@ -2742,6 +4243,10 @@ tailwind.config = {
     return value;
   }
 
+  function normalizeRoleLabel(role) {
+    return formatRoleTitle(role);
+  }
+
   function traitLabel(trait) {
     const labels = {
       empathy: "Empathy",
@@ -2776,6 +4281,32 @@ tailwind.config = {
       relationship: "Use one personal detail so the customer feels remembered.",
     };
     return bodies[trait] || "Keep the conversation grounded and customer-first.";
+  }
+
+  function getRecentSessions(bundle) {
+    if (Array.isArray(bundle?.recentSessions)) return bundle.recentSessions;
+    if (Array.isArray(bundle?.user?.recentSessions)) return bundle.user.recentSessions;
+    return [];
+  }
+
+  function getSessionDisplayTitle(session) {
+    const fallback = String(session?.lessonCategory || session?.lessonTitle || session?.title || 'Session').trim();
+    const rawTitle = String(session?.title || '').trim();
+    if (!rawTitle) return fallback;
+    if (/^auto-[a-z0-9-]+$/i.test(rawTitle) && fallback) return fallback;
+    return rawTitle;
+  }
+
+  function getSessionSourceLabel(session) {
+    return String(session?.activitySource || '').trim() === 'fresh-up' ? 'Fresh Up' : 'Core';
+  }
+
+  function getCompletedLessonCategories(sessions = []) {
+    return new Set(
+      sessions
+        .map((session) => String(session?.lessonCategory || '').trim())
+        .filter(Boolean)
+    );
   }
 
   function normalizeMomentumSeries(series, labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']) {
@@ -2945,6 +4476,42 @@ tailwind.config = {
       .replaceAll("'", '&#39;');
   }
 
+  function makeEncouragingInsight(text, roleProfile, focus) {
+    const clean = String(text || '').trim();
+    const focusLabel = String(focus?.microFocus || focus?.title || focus?.lessonTitle || 'the next rep').trim();
+    const supportiveFallback = `You are building solid momentum. Keep leaning into ${focusLabel.toLowerCase()} and the next step will feel smoother.`;
+    if (!clean) return supportiveFallback;
+
+    const lowered = clean.toLowerCase();
+    const discouragedPatterns = [
+      /dragging/,
+      /falling/,
+      /losing/,
+      /behind/,
+      /struggl/,
+      /weak/,
+      /bad/,
+      /rush/i,
+      /don't/,
+      /do not/,
+      /not enough/,
+      /down/,
+    ];
+    if (discouragedPatterns.some((pattern) => pattern.test(clean))) {
+      return supportiveFallback;
+    }
+
+    const prefix = roleProfile?.insightLabel ? `${roleProfile.insightLabel}: ` : '';
+    const sentence = clean.endsWith('.') ? clean : `${clean}.`;
+    if (/you are\s/i.test(clean) || /^you['’]re\s/i.test(clean)) {
+      return sentence;
+    }
+    if (/keep|stay|lean|build|great|strong|solid|steady|confident|progress|momentum/i.test(lowered)) {
+      return `${prefix}${sentence}`.trim();
+    }
+    return `${prefix}You are building solid momentum. ${sentence}`.trim();
+  }
+
   function getMessageSpeaker(message, fallback) {
     return String(message?.speaker || fallback || (message?.sender === 'user' ? 'You' : 'Sprocket'));
   }
@@ -3026,10 +4593,13 @@ tailwind.config = {
     if (!bundle?.user) return;
     const isManagerDashboard = Boolean(bundle.managerDashboard);
     const roleLabel = formatRoleTitle(bundle.user.roleLabel || bundle.user.role);
+    const teamMonitor = Array.isArray(bundle.managerDashboard?.teamMonitor) ? bundle.managerDashboard.teamMonitor : [];
+    const teamMembers = Array.isArray(bundle.managerDashboard?.teamMembers) ? bundle.managerDashboard.teamMembers : [];
     const useStoreLeadershipFooter = isManagerDashboard && isStoreLeadershipRole(roleLabel);
     const managerViewMode = isManagerDashboard && state.managerViewMode === 'personal' ? 'personal' : 'store';
     const showManagerDashboard = isManagerDashboard && managerViewMode === 'store';
     const showPersonalHome = !isManagerDashboard || managerViewMode === 'personal';
+    const useFrontlineFooter = showPersonalHome && isFrontlineFooterRole(roleLabel);
     if (refs.coachHomePanel) refs.coachHomePanel.classList.toggle("hidden-screen", !showPersonalHome);
     if (refs.managerDashboardPanel) refs.managerDashboardPanel.classList.toggle("hidden-screen", !showManagerDashboard);
     if (refs.homeManagerToggleBtn) {
@@ -3043,8 +4613,9 @@ tailwind.config = {
       if (showManagerToggle) renderManagerModeSwitch(refs.managerViewToggleBtn, 'store');
     }
     if (refs.managerModeFooter) {
-      refs.managerModeFooter.classList.toggle("hidden-screen", !useStoreLeadershipFooter);
-      if (useStoreLeadershipFooter) renderManagerModeFooter(managerViewMode);
+      const showFooter = useStoreLeadershipFooter || useFrontlineFooter;
+      refs.managerModeFooter.classList.toggle("hidden-screen", !showFooter);
+      if (showFooter) renderManagerModeFooter(managerViewMode, roleLabel, 'home');
     }
     if (showManagerDashboard) {
       renderManagerDashboard(bundle);
@@ -3057,7 +4628,6 @@ tailwind.config = {
     const level = user.level?.level || 1;
     const xp = user.xp || 0;
     const [firstName] = splitName(user.name);
-    const roleLabel = formatRoleTitle(user.roleLabel || user.role);
     const freshUpMeter = clamp(user.freshUpMeter || 0);
     const freshUpCoreSessionsSinceLast = Math.max(0, Math.round(Number(user.freshUpCoreSessionsSinceLast || 0)));
     const freshUpSessionsRemaining = Math.max(0, 3 - freshUpCoreSessionsSinceLast);
@@ -3091,12 +4661,21 @@ tailwind.config = {
     refs.homeMissionTitle.textContent = focus?.lessonTitle || focus?.title || focus?.phaseTitle || `${roleLabel} Phase III`;
     refs.homeDescription.textContent = focus?.description || "Your neural momentum is peaking. Today's focus is on rapid calibration and advanced client alignment.";
     refs.homeMissionFocus.textContent = focus?.microFocus || "Focus: Lead Qualification → Helps build trust faster";
-    refs.homeInsight.textContent = insight || "Don't rush your opening today. That's where you lose people.";
+    refs.homeInsight.textContent = makeEncouragingInsight(
+      insight,
+      roleProfile,
+      focus
+    );
     refs.sessionStreakValue.textContent = `${user.streak || 0} Day${Number(user.streak) === 1 ? "" : "s"}`;
     refs.momentumScoreValue.textContent = `${Math.max(0, Math.round(user.momentumScore || 0))}%`;
     refs.momentumCopy.textContent = user.momentumScore >= 85
       ? "You've been consistent this week."
       : "Stay focused on one clean rep today.";
+    if (startSessionBtn) {
+      startSessionBtn.innerHTML = hasActiveSession()
+        ? '<span>RESUME SESSION</span><span class="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">resume</span>'
+        : '<span>START SESSION</span><span class="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">play_arrow</span>';
+    }
     if (user.avatarUrl) {
       const img = document.querySelector("#openProfileBtn span");
       refs.profileAvatar.src = user.avatarUrl;
@@ -3123,6 +4702,7 @@ tailwind.config = {
       : storeSelection;
     const storePerformance = Math.max(0, Math.round(selectedDashboard.storePerformance || managerDashboard.storePerformance || user.momentumScore || 0));
     const teamMonitor = Array.isArray(selectedDashboard.teamMonitor) ? selectedDashboard.teamMonitor : Array.isArray(managerDashboard.teamMonitor) ? managerDashboard.teamMonitor : [];
+    const teamMembers = Array.isArray(selectedDashboard.teamMembers) ? selectedDashboard.teamMembers : Array.isArray(managerDashboard.teamMembers) ? managerDashboard.teamMembers : [];
     const storeNameLabel = isAggregateView
       ? (managerDashboard.scopeLabel || 'All Stores')
       : (selectedDashboard.dealershipName || selectedDashboard.scopeLabel || 'Selected Store');
@@ -3216,7 +4796,6 @@ tailwind.config = {
     const momentumSeries = (state.mockUserMode || bundle.mockMode || user.mockMode) && !useStoreMomentumSeries
       ? buildMockMomentumSeries(mockMomentumRole, mockMomentumRoleType, user.focusTrait || bundle.roleProfile?.focusTrait || 'trust')
       : Array.isArray(selectedDashboard.momentumSeries) ? selectedDashboard.momentumSeries : Array.isArray(managerDashboard.momentumSeries) ? managerDashboard.momentumSeries : [];
-    const teamMembers = Array.isArray(selectedDashboard.teamMembers) ? selectedDashboard.teamMembers : Array.isArray(managerDashboard.teamMembers) ? managerDashboard.teamMembers : [];
     const cxMetrics = [
       {
         label: 'Empathy',
@@ -3382,6 +4961,8 @@ tailwind.config = {
     if (settingsFirstNameInput) settingsFirstNameInput.value = firstName || '';
     if (settingsLastNameInput) settingsLastNameInput.value = lastName || '';
     if (settingsAvatarInput) settingsAvatarInput.value = bundle.user.avatarUrl || '';
+    renderAvatarPicker();
+    syncAvatarPreview(bundle.user.avatarUrl || '');
     if (settingsSaveState) settingsSaveState.textContent = 'Changes not saved';
     const shareAnonymousData = bundle.user.preferences?.shareAnonymousData === true || state.shareAnonymousDataEnabled;
     state.shareAnonymousDataEnabled = Boolean(shareAnonymousData);
@@ -3391,13 +4972,38 @@ tailwind.config = {
 
   function renderHistory(bundle) {
     if (!bundle?.user) return;
-    const sessions = Array.isArray(bundle.recentSessions)
-      ? bundle.recentSessions
-      : Array.isArray(bundle.user.recentSessions)
-        ? bundle.user.recentSessions
-        : [];
+    const sessions = getRecentSessions(bundle);
+    const activeSession = getActiveSession();
+    const completedCount = sessions.length;
+    const avgScore = completedCount
+      ? Math.round(sessions.reduce((sum, session) => sum + Math.max(0, Number(session.score || session.xp || 0)), 0) / completedCount)
+      : 0;
     if (document.getElementById('historyCount')) {
       document.getElementById('historyCount').textContent = `${sessions.length} session${sessions.length === 1 ? '' : 's'}`;
+    }
+    if (historySummaryGrid) {
+      historySummaryGrid.innerHTML = [
+        {
+          label: 'Completed',
+          value: `${completedCount}`,
+          tone: 'text-on-surface',
+        },
+        {
+          label: 'Average score',
+          value: completedCount ? `${avgScore}` : '--',
+          tone: avgScore >= 80 ? 'text-[#CCFF00]' : 'text-on-surface',
+        },
+        {
+          label: 'Current status',
+          value: activeSession?.sessionId ? 'Active session' : 'Ready to train',
+          tone: activeSession?.sessionId ? 'text-[#06EBF7]' : 'text-on-surface',
+        },
+      ].map((item) => `
+        <div class="rounded-2xl border border-white/10 bg-black/25 px-4 py-4">
+          <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">${item.label}</p>
+          <p class="mt-2 font-headline text-2xl font-bold ${item.tone}">${item.value}</p>
+        </div>
+      `).join('');
     }
     const list = document.getElementById('historySessionsList');
     if (!list) return;
@@ -3409,11 +5015,16 @@ tailwind.config = {
       const score = Math.max(0, Math.round(Number(session.score || session.xp || 0)));
       const dateLabel = session.timestamp ? new Date(session.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent';
       const duration = Number(session.duration || 0);
+      const sourceLabel = getSessionSourceLabel(session);
       return `
         <button type="button" data-history-session="${index}" class="w-full rounded-2xl border border-white/10 bg-[#111111] p-5 text-left shadow-[0_15px_30px_rgba(0,0,0,0.28)] transition hover:border-[#CCFF00]/30 hover:bg-[#CCFF00]/5 active:scale-[0.99]">
           <div class="flex items-start justify-between gap-4">
             <div>
-              <p class="font-headline text-lg font-bold text-on-surface">${escapeHtml(session.title || session.lessonTitle || 'Session')}</p>
+              <div class="flex flex-wrap items-center gap-2">
+                <p class="font-headline text-lg font-bold text-on-surface">${escapeHtml(getSessionDisplayTitle(session))}</p>
+                <span class="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">${escapeHtml(sourceLabel)}</span>
+                <span class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#CCFF00]">Completed</span>
+              </div>
               <p class="mt-1 text-sm text-on-surface-variant">${escapeHtml(dateLabel)} • ${duration} mins</p>
             </div>
             <div class="text-right">
@@ -3439,6 +5050,10 @@ tailwind.config = {
   function renderLessonLibrary(bundle) {
     if (!bundle?.user) return;
     const lessonLibrary = Array.isArray(bundle.lessonLibrary) ? bundle.lessonLibrary : [];
+    const recentSessions = getRecentSessions(bundle);
+    const completedCategories = getCompletedLessonCategories(recentSessions);
+    const activeSession = getActiveSession();
+    const activeLessonCategory = String(activeSession?.lessonCategory || '').trim();
     const currentCategory = bundle.lessonCategory || bundle.user.lessonCategory || lessonLibrary[0]?.category || 'Product Knowledge';
     const currentLesson = lessonLibrary.find((lesson) => lesson.category === currentCategory) || lessonLibrary[0] || {
       category: currentCategory,
@@ -3456,22 +5071,30 @@ tailwind.config = {
       lessonLibraryCurrentBody.textContent = currentLesson.description || currentLesson.microFocus || 'Role-specific practice session.';
     }
     if (lessonLibraryStartBtn) {
-      lessonLibraryStartBtn.textContent = currentLesson.current ? 'Continue current lesson' : 'Start current lesson';
+      lessonLibraryStartBtn.textContent = hasActiveSession() ? 'Resume active session' : (currentLesson.current ? 'Continue current lesson' : 'Start current lesson');
       lessonLibraryStartBtn.onclick = () => {
+        if (hasActiveSession()) {
+          const activeSession = getActiveSession();
+          state.session = activeSession;
+          state.bundle.activeSession = activeSession;
+          renderSession(bundle, activeSession);
+          showSession();
+          return;
+        }
         void startSession(currentLesson.category || currentCategory);
       };
     }
     if (lessonLibraryResumeText) {
-      if (state.session?.sessionId) {
-        lessonLibraryResumeText.textContent = `You have an active ${state.session.lessonTitle || state.session.lessonCategory || 'session'} running right now.`;
-      } else if (Array.isArray(bundle.recentSessions) && bundle.recentSessions.length) {
-        lessonLibraryResumeText.textContent = `Your latest lesson was ${bundle.recentSessions[0].title || 'a recent session'}.`;
+      if (activeSession?.sessionId) {
+        lessonLibraryResumeText.textContent = `You have an active ${activeSession.lessonTitle || activeSession.lessonCategory || 'session'} running right now.`;
+      } else if (recentSessions.length) {
+        lessonLibraryResumeText.textContent = `Your latest lesson was ${getSessionDisplayTitle(recentSessions[0])}.`;
       } else {
         lessonLibraryResumeText.textContent = 'No active lesson right now. Start a recommended lesson below.';
       }
     }
     if (lessonLibraryCount) {
-      lessonLibraryCount.textContent = `${lessonLibrary.length} lesson${lessonLibrary.length === 1 ? '' : 's'}`;
+      lessonLibraryCount.textContent = `${completedCategories.size}/${lessonLibrary.length} completed`;
     }
     if (lessonLibraryList) {
       if (!lessonLibrary.length) {
@@ -3480,13 +5103,22 @@ tailwind.config = {
         lessonLibraryList.innerHTML = lessonLibrary.map((lesson) => {
           const recommended = Boolean(lesson.recommended || lesson.current);
           const current = Boolean(lesson.current);
+          const isActive = activeLessonCategory && String(lesson.category || '').trim() === activeLessonCategory;
+          const isCompleted = completedCategories.has(String(lesson.category || '').trim());
+          const statusTone = isActive
+            ? 'border-[#06EBF7]/35 bg-[#06EBF7]/10 text-[#06EBF7]'
+            : isCompleted
+              ? 'border-[#CCFF00]/20 bg-[#CCFF00]/10 text-[#CCFF00]'
+              : 'border-white/10 bg-white/5 text-on-surface-variant';
+          const statusLabel = isActive ? 'Active' : isCompleted ? 'Completed' : recommended ? 'Recommended' : 'Available';
           return `
-            <button type="button" data-lesson-category="${escapeHtml(lesson.category || '')}" class="w-full text-left rounded-3xl border px-5 py-5 transition ${current ? 'border-[#CCFF00]/40 bg-[#CCFF00]/10' : recommended ? 'border-white/15 bg-white/5 hover:border-[#CCFF00]/30 hover:bg-[#CCFF00]/8' : 'border-white/10 bg-black/25 hover:border-white/20 hover:bg-white/8'}">
+            <button type="button" data-lesson-category="${escapeHtml(lesson.category || '')}" class="w-full text-left rounded-3xl border px-5 py-5 transition ${isActive ? 'border-[#06EBF7]/35 bg-[#06171a]/80 hover:border-[#06EBF7]/45' : current ? 'border-[#CCFF00]/40 bg-[#CCFF00]/10' : recommended ? 'border-white/15 bg-white/5 hover:border-[#CCFF00]/30 hover:bg-[#CCFF00]/8' : 'border-white/10 bg-black/25 hover:border-white/20 hover:bg-white/8'}">
               <div class="flex items-start justify-between gap-4">
                 <div class="space-y-2">
                   <div class="flex items-center gap-2">
                     <span class="font-headline text-xl font-bold text-on-surface">${escapeHtml(lesson.title || lesson.category || 'Lesson')}</span>
                     ${current ? '<span class="rounded-full bg-[#CCFF00]/15 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#CCFF00]">Current</span>' : ''}
+                    <span class="rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] ${statusTone}">${statusLabel}</span>
                   </div>
                   <p class="text-sm text-on-surface-variant">${escapeHtml(lesson.description || '')}</p>
                   <p class="text-xs uppercase tracking-[0.22em] ${current ? 'text-[#CCFF00]' : 'text-primary'}">${escapeHtml(lesson.microFocus || '')}</p>
@@ -3506,7 +5138,289 @@ tailwind.config = {
         });
       }
     }
+    if (lessonLibraryRecentList) {
+      if (!recentSessions.length) {
+        lessonLibraryRecentList.innerHTML = '<div class="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-on-surface-variant">No completed sessions yet. Your recent activity will show up here after the first finished lesson.</div>';
+      } else {
+        lessonLibraryRecentList.innerHTML = recentSessions.slice(0, 3).map((session, index) => {
+          const score = Math.max(0, Math.round(Number(session.score || session.xp || 0)));
+          const tone = score >= 80 ? 'text-[#CCFF00]' : 'text-on-surface';
+          return `
+            <button type="button" data-library-history-session="${index}" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-headline text-base font-bold text-on-surface">${escapeHtml(getSessionDisplayTitle(session))}</p>
+                  <p class="mt-1 text-xs uppercase tracking-[0.22em] text-on-surface-variant">${escapeHtml(getSessionSourceLabel(session))}</p>
+                </div>
+                <div class="text-right">
+                  <p class="font-headline text-lg font-bold ${tone}">${score}</p>
+                  <p class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Score</p>
+                </div>
+              </div>
+            </button>
+          `;
+        }).join('');
+        lessonLibraryRecentList.querySelectorAll('[data-library-history-session]').forEach((button) => {
+          button.addEventListener('click', () => {
+            const index = Number(button.getAttribute('data-library-history-session'));
+            const session = recentSessions[index];
+            if (session) {
+              showSessionReview(session);
+            }
+          });
+        });
+      }
+    }
     document.title = `${bundle.user.name || 'Account'} - Lesson Library`;
+  }
+
+  function renderToolsHub(bundle) {
+    if (!bundle?.user) return;
+    const currentUserId = bundle.user.userId;
+
+    const roleLabel = formatRoleTitle(bundle.user.roleLabel || bundle.user.role);
+    const savedToolSet = new Set(state.toolHub.savedToolIds);
+    const recentToolSet = new Set(state.toolHub.recentToolIds);
+    const query = String(state.toolHub.search || '').trim();
+    const allTools = TOOL_CATALOG.filter((tool) => (!query || toolMatchesSearch(tool, query)));
+
+    const selectedTool = getToolById(state.toolHub.selectedToolId)
+      || getToolById(state.toolHub.savedToolIds[0])
+      || TOOL_CATALOG[0]
+      || null;
+
+    if (selectedTool && selectedTool.id !== state.toolHub.selectedToolId) {
+      state.toolHub.selectedToolId = selectedTool.id;
+      persistToolHubLocalState(currentUserId);
+    }
+
+    const featuredTool = [...TOOL_CATALOG].reverse().find((tool) => tool.isNew)
+      || TOOL_CATALOG.find((tool) => tool.featured)
+      || TOOL_CATALOG[0]
+      || null;
+
+    const savedTools = state.toolHub.savedToolIds
+      .map((toolId) => getToolById(toolId))
+      .filter(Boolean);
+
+    const selectedNeed = selectedTool ? getToolNeedLabel(selectedTool) : '--';
+    const selectedAccess = selectedTool ? (selectedTool.access === 'advanced' ? 'Advanced' : 'Standard') : '--';
+    const selectedTime = selectedTool?.estimatedTime || '--';
+    const selectedCategory = selectedTool?.category || '--';
+    const selectedTags = Array.isArray(selectedTool?.tags) ? selectedTool.tags : [];
+    const selectedRoles = Array.isArray(selectedTool?.roles) ? selectedTool.roles : [];
+
+    if (toolsHubSearchInput && toolsHubSearchInput.value !== state.toolHub.search) {
+      toolsHubSearchInput.value = state.toolHub.search;
+    }
+    if (toolsHubSavedCount) {
+      toolsHubSavedCount.textContent = `${savedToolSet.size} saved`;
+    }
+    if (toolsHubResultCount) {
+      toolsHubResultCount.textContent = `${allTools.length} tool${allTools.length === 1 ? '' : 's'}`;
+    }
+    if (toolsHubSearchResultsPanel) {
+      toolsHubSearchResultsPanel.classList.toggle('is-open', Boolean(query));
+      toolsHubSearchResultsPanel.setAttribute('aria-hidden', query ? 'false' : 'true');
+    }
+    if (toolsHubSearchResultsTitle) {
+      toolsHubSearchResultsTitle.textContent = query
+        ? `Results for "${query}"`
+        : 'Type to find a tool';
+    }
+    if (toolsHubSearchResultsCount) {
+      toolsHubSearchResultsCount.textContent = `${allTools.length} result${allTools.length === 1 ? '' : 's'}`;
+    }
+
+    function renderToolCard(tool, { compact = false } = {}) {
+      const isSaved = savedToolSet.has(tool.id);
+      const isSelected = selectedTool?.id === tool.id;
+      const isRecent = recentToolSet.has(tool.id);
+      const accentClass = tool.featured
+        ? 'liquid-glass-accent-lime'
+        : tool.isNew
+          ? 'liquid-glass-accent-cyan'
+          : '';
+      const shell = compact
+        ? `liquid-glass ${accentClass} glass-depth w-full md:w-[18rem] shrink-0 rounded-[0.9rem] border px-4 py-4 ${isSelected ? 'border-[#CCFF00]/35 bg-[#CCFF00]/8' : 'border-white/10'}`
+        : `liquid-glass ${accentClass} glass-depth rounded-[1rem] border px-5 py-5 ${isSelected ? 'border-[#CCFF00]/35 bg-[#CCFF00]/8' : 'border-white/10'}`;
+      const actionTone = isSaved
+        ? 'border-[#b026ff]/35 bg-[#b026ff]/10 text-[#e7b0ff] shadow-[0_0_18px_rgba(176,38,255,0.18)]'
+        : 'border-white/10 bg-[#1a1d10] text-[#c4c9ac] hover:border-[#CCFF00]/20 hover:bg-[#ccff00]/10 hover:text-[#CCFF00]';
+      return `
+        <div class="${shell}">
+          <div class="flex items-start justify-between gap-4">
+            <button type="button" data-tool-open="${escapeHtml(tool.id)}" class="flex-1 text-left">
+              <div class="flex items-start gap-3">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/30 text-[#CCFF00]">
+                  <span class="material-symbols-outlined text-[22px]">${escapeHtml(getToolIconName(tool))}</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h4 class="font-['Space_Grotesk'] text-lg font-bold text-white">${escapeHtml(tool.name)}</h4>
+                    ${tool.featured ? '<span class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#CCFF00]">Featured</span>' : ''}
+                    ${tool.isNew ? '<span class="rounded-full border border-[#00f2ff]/20 bg-[#00f2ff]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00f2ff]">New</span>' : ''}
+                    ${isRecent ? '<span class="rounded-full border border-white/10 bg-[#1a1d10] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#c4c9ac]">Recent</span>' : ''}
+                  </div>
+                  <p class="mt-2 text-sm leading-relaxed text-[#c4c9ac]">${escapeHtml(tool.summary || '')}</p>
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    <span class="rounded-full border border-white/10 bg-[#111508] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#e2e4cf]">${escapeHtml(tool.category)}</span>
+                    <span class="rounded-full border border-white/10 bg-[#111508] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#e2e4cf]">${escapeHtml(tool.estimatedTime || '--')}</span>
+                    <span class="rounded-full border border-[#00f2ff]/20 bg-[#00f2ff]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#00f2ff]">${escapeHtml(getToolNeedLabel(tool))}</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+            <button type="button" data-tool-save="${escapeHtml(tool.id)}" class="rounded-full border px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] transition ${actionTone}">
+              ${isSaved ? 'Saved' : 'Save'}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    const rankedTools = allTools.slice().sort((a, b) => {
+      const aSaved = savedToolSet.has(a.id) ? 1 : 0;
+      const bSaved = savedToolSet.has(b.id) ? 1 : 0;
+      const aRecent = state.toolHub.recentToolIds.indexOf(a.id);
+      const bRecent = state.toolHub.recentToolIds.indexOf(b.id);
+      const aScore = Number(a.featured) * 100 + Number(a.isNew) * 40 + aSaved * 30 + (a.id === selectedTool?.id ? 20 : 0);
+      const bScore = Number(b.featured) * 100 + Number(b.isNew) * 40 + bSaved * 30 + (b.id === selectedTool?.id ? 20 : 0);
+      switch (state.toolHub.sort) {
+        case 'saved':
+          return (bSaved - aSaved) || (bScore - aScore) || a.name.localeCompare(b.name);
+        case 'recent':
+          return ((aRecent >= 0 ? aRecent : 999) - (bRecent >= 0 ? bRecent : 999)) || (bScore - aScore) || a.name.localeCompare(b.name);
+        case 'new':
+          return (Number(b.isNew) - Number(a.isNew)) || (bScore - aScore) || a.name.localeCompare(b.name);
+        case 'az':
+          return a.name.localeCompare(b.name);
+        case 'recommended':
+          return bScore - aScore || a.name.localeCompare(b.name);
+        case 'featured':
+        default:
+          return bScore - aScore || a.name.localeCompare(b.name);
+      }
+    });
+
+    if (toolsHubSavedList) {
+      toolsHubSavedList.innerHTML = savedTools.length
+        ? savedTools.map((tool) => renderToolCard(tool, { compact: true })).join('')
+        : '<div class="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-on-surface-variant">Save a few tools to keep them in quick reach.</div>';
+      toolsHubSavedList.querySelectorAll('[data-tool-open]').forEach((button) => {
+        button.addEventListener('click', () => openToolWorkspace(button.getAttribute('data-tool-open')));
+      });
+      toolsHubSavedList.querySelectorAll('[data-tool-save]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          toggleToolSave(button.getAttribute('data-tool-save'));
+        });
+      });
+    }
+
+    if (toolsHubFeaturedList) {
+      toolsHubFeaturedList.innerHTML = featuredTool
+        ? renderToolCard(featuredTool, { compact: true })
+        : '<div class="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-on-surface-variant">No featured tool available.</div>';
+      toolsHubFeaturedList.querySelectorAll('[data-tool-open]').forEach((button) => {
+        button.addEventListener('click', () => openToolWorkspace(button.getAttribute('data-tool-open')));
+      });
+      toolsHubFeaturedList.querySelectorAll('[data-tool-save]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          toggleToolSave(button.getAttribute('data-tool-save'));
+        });
+      });
+    }
+
+    if (toolsHubList) {
+      toolsHubList.innerHTML = rankedTools.length
+        ? rankedTools.map((tool) => renderToolCard(tool, { compact: false })).join('')
+        : '<div class="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-on-surface-variant">No tools match that search yet. Try different wording or describe the need another way.</div>';
+      toolsHubList.querySelectorAll('[data-tool-open]').forEach((button) => {
+        button.addEventListener('click', () => openToolWorkspace(button.getAttribute('data-tool-open')));
+      });
+      toolsHubList.querySelectorAll('[data-tool-save]').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          toggleToolSave(button.getAttribute('data-tool-save'));
+        });
+      });
+    }
+
+    if (toolsHubSelectedTitle) toolsHubSelectedTitle.textContent = selectedTool?.name || 'Pick a tool';
+    if (toolsHubSelectedSummary) toolsHubSelectedSummary.textContent = selectedTool?.summary || 'Choose a tool to see the core details and launch it fast.';
+    if (toolsHubSelectedCategory) toolsHubSelectedCategory.textContent = selectedCategory;
+    if (toolsHubSelectedTime) toolsHubSelectedTime.textContent = selectedTime;
+    if (toolsHubSelectedAccess) toolsHubSelectedAccess.textContent = selectedAccess;
+    if (toolsHubSelectedNeed) toolsHubSelectedNeed.textContent = selectedNeed;
+    if (toolsHubSelectedRoles) {
+      toolsHubSelectedRoles.innerHTML = selectedRoles.length
+        ? selectedRoles.map((role) => `<span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">${escapeHtml(role)}</span>`).join('')
+        : '<span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">All roles</span>';
+    }
+    if (toolsHubSelectedTags) {
+      toolsHubSelectedTags.innerHTML = selectedTags.length
+        ? selectedTags.map((tag) => `<span class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#CCFF00]">${escapeHtml(tag)}</span>`).join('')
+        : '<span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">No tags yet</span>';
+    }
+    if (toolsHubSelectedSaveBtn) {
+      const isSaved = Boolean(selectedTool && savedToolSet.has(selectedTool.id));
+      toolsHubSelectedSaveBtn.textContent = isSaved ? 'Saved' : 'Save';
+      toolsHubSelectedSaveBtn.className = isSaved
+        ? "rounded-full border border-[#b026ff]/35 bg-[#b026ff]/10 px-4 py-2 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-[#e7b0ff] transition hover:border-[#b026ff]/55 hover:bg-[#b026ff]/15"
+        : "rounded-full border border-[#b026ff]/20 bg-[#b026ff]/10 px-4 py-2 font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-[0.22em] text-[#b026ff] transition hover:border-[#b026ff]/40 hover:bg-[#b026ff]/15";
+    }
+    if (toolsHubSelectedActionBtn) {
+      toolsHubSelectedActionBtn.textContent = selectedTool?.actionLabel || 'Open tool';
+    }
+
+    if (toolsHubRecentList) {
+      const recentTools = state.toolHub.recentToolIds
+        .map((toolId) => getToolById(toolId))
+        .filter(Boolean);
+      toolsHubRecentList.innerHTML = recentTools.length
+        ? recentTools.map((tool) => `
+          <button type="button" data-tool-open="${escapeHtml(tool.id)}" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-4 text-left transition hover:border-[#CCFF00]/25 hover:bg-[#CCFF00]/5">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="font-headline text-base font-bold text-on-surface">${escapeHtml(tool.name)}</p>
+                <p class="mt-1 text-sm text-on-surface-variant">${escapeHtml(tool.summary || '')}</p>
+              </div>
+              <span class="material-symbols-outlined text-on-surface-variant">north_east</span>
+            </div>
+          </button>
+        `).join('')
+        : '<div class="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-on-surface-variant">Your recent tools will show up here once you start opening the hub.</div>';
+      toolsHubRecentList.querySelectorAll('[data-tool-open]').forEach((button) => {
+        button.addEventListener('click', () => openToolWorkspace(button.getAttribute('data-tool-open')));
+      });
+    }
+
+    if (state.toolHub.selectedToolId && selectedTool && state.toolHub.selectedToolId !== selectedTool.id) {
+      state.toolHub.selectedToolId = selectedTool.id;
+    }
+    persistToolHubLocalState(currentUserId);
+    document.title = `${bundle.user.name || 'Account'} - Tools Hub`;
+  }
+
+  function showToolsHub(options = {}) {
+    const { replaceRoute = false } = options;
+    hideAllScreens();
+    if (state.bundle) {
+      hydrateToolHubState(state.bundle);
+      renderToolsHub(state.bundle);
+    }
+    toolsHubScreen.classList.remove("hidden-screen");
+    if (state.bundle?.user) {
+      updateAppRoute('tools', '', { replace: replaceRoute });
+      const roleLabel = formatRoleTitle(state.bundle.user.roleLabel || state.bundle.user.role);
+      if (refs.managerModeFooter) {
+        refs.managerModeFooter.classList.remove("hidden-screen");
+        renderManagerModeFooter(state.managerViewMode, roleLabel, 'tools');
+      }
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function renderAIOutput(bundle, lessonPlan = null) {
@@ -3752,7 +5666,6 @@ tailwind.config = {
     const [firstName, lastName] = splitName(user.name);
     const roleLabel = formatRoleTitle(user.roleLabel || user.role);
     refs.profileRole.textContent = state.profileMode === 'team' ? 'TEAM MEMBER' : roleLabel.toUpperCase();
-    refs.profileLevel.textContent = getLevelLabel(level);
     refs.profileAvatarLevel.textContent = getLevelLabel(level);
     refs.profileName.innerHTML = `${firstName.toUpperCase()}<br/><span class="text-surface-variant">${lastName.toUpperCase()}</span>`;
     refs.profileTitle.textContent = roleLabel;
@@ -3840,8 +5753,10 @@ tailwind.config = {
       }
     }
 
-    if (user.avatarUrl) {
-      refs.profileAvatar.src = user.avatarUrl;
+    const avatarSrc = user.avatarUrl || refs.profileAvatar?.src;
+    if (avatarSrc) {
+      refs.profileAvatar.src = avatarSrc;
+      if (refs.profileHeaderAvatar) refs.profileHeaderAvatar.src = avatarSrc;
     }
 
     document.title = state.profileMode === 'team'
@@ -4022,16 +5937,33 @@ tailwind.config = {
   }
 
   async function loadBootstrap() {
+    if (isFileRuntime()) {
+      clearTimeout(bootFallbackTimer);
+      showBootConnectionError('AutoKnerd was opened as a local file. Redirecting to the live app server now.', {
+        connection: 'Opening app server',
+        retryLabel: 'Open app',
+      });
+      window.setTimeout(() => {
+        if (isFileRuntime()) redirectToLocalApp();
+      }, 120);
+      return null;
+    }
     const token = getAuthToken();
     if (!token) {
       clearTimeout(bootFallbackTimer);
-      const bootScreen = document.getElementById("bootScreen");
       if (bootScreen) bootScreen.classList.add("hidden-screen");
       showAuth('Sign in to continue');
       return null;
     }
+    if (bootScreen) bootScreen.classList.remove("hidden-screen");
+    updateBootState({
+      connection: 'Pulling live data',
+      status: 'Loading your dashboard',
+    });
     const roleOverride = getDeveloperRoleOverride();
     const mockRoleOverride = getMockRoleOverride() || roleOverride;
+    const controller = new AbortController();
+    const bootstrapTimeout = window.setTimeout(() => controller.abort(new Error('BOOTSTRAP_TIMEOUT')), 12000);
     try {
       const query = new URLSearchParams();
       const userId = getBootstrapUserId();
@@ -4046,6 +5978,7 @@ tailwind.config = {
       const response = await fetch(`/api/bootstrap${query.toString() ? `?${query.toString()}` : ''}`, {
         method: 'GET',
         headers: buildApiHeaders(),
+        signal: controller.signal,
       });
       const payload = await response.json();
       if (response.status === 401 || payload.authRequired) {
@@ -4066,18 +5999,30 @@ tailwind.config = {
       } else if (roleOverride) {
         setDeveloperRoleOverride('');
       }
-      state.bundle = payload;
+      const restoredActiveSession = payload.activeSession || readPersistedActiveSession(payload.user?.userId) || null;
+      state.bundle = {
+        ...payload,
+        activeSession: restoredActiveSession,
+      };
       state.user = payload.user;
+      state.session = restoredActiveSession;
+      if (restoredActiveSession?.sessionId && payload.user?.userId) {
+        persistActiveSession(restoredActiveSession, payload.user.userId);
+      } else if (payload.user?.userId) {
+        clearPersistedActiveSession(payload.user.userId);
+      }
       state.mockUserMode = Boolean(payload.mockMode || payload.user?.mockMode || state.mockUserMode);
       if (state.mockUserMode && mockRoleOverride && !getMockRoleOverride()) {
         setMockRoleOverride(mockRoleOverride);
       }
+      hydrateToolHubState(state.bundle);
+      hydrateToolWorkspaceState(state.bundle);
       state.profileMode = 'self';
       state.autoForgeReport = '';
       state.autoForgeMeta = null;
       state.developerDashboard = payload.developerDashboard || null;
-      renderProfile(payload);
-      renderLessonLibrary(payload);
+      renderProfile(state.bundle);
+      renderLessonLibrary(state.bundle);
       renderDeveloperRoleList();
       updateMockPersonaPanel();
       updateMockUserToggle();
@@ -4088,17 +6033,21 @@ tailwind.config = {
         aiOutputScreen.classList.remove("hidden-screen");
         state.autoForgeReport = '';
         state.autoForgeMeta = null;
-        renderAIOutput(payload, null);
+        renderAIOutput(state.bundle, null);
         void refreshAutoForgeOutput({ reason: 'open' });
         return payload;
       }
-      if (isDeveloperAccount(payload) && !state.developerImpersonationUserId) {
+      if (isDeveloperAccount(state.bundle) && !state.developerImpersonationUserId) {
         showDeveloperConsole();
       } else {
-        showHome();
+        applyAppRouteFromLocation();
       }
-      return payload;
+      return state.bundle;
     } catch (error) {
+      if (String(error?.name || '') === 'AbortError' || String(error?.message || '') === 'BOOTSTRAP_TIMEOUT') {
+        showBootConnectionError('Loading is taking too long. Tap retry to reconnect your dashboard.');
+        return null;
+      }
       if (String(error?.message || error || '').includes('AUTH_REQUIRED')) {
         clearAuthSessionState();
         state.bundle = null;
@@ -4111,11 +6060,15 @@ tailwind.config = {
         showAuth('Sign in to continue');
         return null;
       }
-      throw error;
+      const message = error instanceof Error ? error.message : 'Unable to load app data.';
+      showBootConnectionError(message);
+      return null;
     } finally {
+      clearTimeout(bootstrapTimeout);
       clearTimeout(bootFallbackTimer);
-      const bootScreen = document.getElementById("bootScreen");
-      if (bootScreen) bootScreen.classList.add("hidden-screen");
+      if (bootScreen && state.bundle) {
+        bootScreen.classList.add("hidden-screen");
+      }
     }
   }
 
@@ -4157,26 +6110,10 @@ tailwind.config = {
         throw new Error(payload.message || 'Unable to sign in.');
       }
       saveAuthSession(payload.token, payload.bundle?.user?.userId || '');
-      state.bundle = payload.bundle;
-      state.user = payload.bundle?.user || null;
-      state.reviewSession = null;
-      state.session = null;
-      state.profileMode = 'self';
-      state.autoForgeReport = '';
-      state.autoForgeMeta = null;
-      state.developerDashboard = payload.bundle?.developerDashboard || null;
-      state.mockUserMode = Boolean(payload.bundle?.mockMode || payload.bundle?.user?.mockMode || state.mockUserMode);
-      if (payload.bundle?.user?.roleOverride) {
-        setDeveloperRoleOverride(payload.bundle.user.roleOverride);
-      }
       if (payload.bundle?.user?.roleLabel === 'Developer') {
-        setDeveloperSessionActive(true, payload.bundle.user.userId);
-        state.developerSessionBundle = payload.bundle;
         setInternalToolsEnabled(true);
-        showDeveloperConsole();
-      } else {
-        showHome();
       }
+      await loadBootstrap();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to sign in.';
       if (authStatusText) {
@@ -4247,30 +6184,14 @@ tailwind.config = {
         throw new Error(payload.message || 'Unable to create account.');
       }
       saveAuthSession(payload.token, payload.bundle?.user?.userId || '');
-      state.bundle = payload.bundle;
-      state.user = payload.bundle?.user || null;
-      state.reviewSession = null;
-      state.session = null;
-      state.profileMode = 'self';
-      state.autoForgeReport = '';
-      state.autoForgeMeta = null;
-      state.developerDashboard = payload.bundle?.developerDashboard || null;
-      state.mockUserMode = Boolean(payload.bundle?.mockMode || payload.bundle?.user?.mockMode || state.mockUserMode);
-      if (payload.bundle?.user?.roleOverride) {
-        setDeveloperRoleOverride(payload.bundle.user.roleOverride);
-      }
       setAuthMode('signin');
       if (authStatusText) {
         authStatusText.textContent = 'Account created.';
       }
       if (payload.bundle?.user?.roleLabel === 'Developer') {
-        setDeveloperSessionActive(true, payload.bundle.user.userId);
-        state.developerSessionBundle = payload.bundle;
         setInternalToolsEnabled(true);
-        showDeveloperConsole();
-      } else {
-        showHome();
       }
+      await loadBootstrap();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to create account.';
       if (authStatusText) {
@@ -4299,13 +6220,26 @@ tailwind.config = {
 
   async function startSession(lessonCategory = '', options = {}) {
     if (!state.bundle?.user) return;
+    const freshUp = Boolean(options?.freshUp);
+    const selectedLessonCategory = String(lessonCategory || state.bundle.lessonCategory || state.user?.lessonCategory || '').trim();
+    const activeSession = getActiveSession();
+    const activeLessonCategory = String(activeSession?.lessonCategory || '').trim();
+    if (hasActiveSession()) {
+      const isSameCoreLesson = !freshUp && (!selectedLessonCategory || selectedLessonCategory === activeLessonCategory);
+      const isSameFreshUp = freshUp && activeSession?.activitySource === 'fresh-up';
+      if (isSameCoreLesson || isSameFreshUp) {
+        state.session = activeSession;
+        state.bundle.activeSession = activeSession;
+        renderSession(state.bundle, activeSession);
+        showSession();
+        return;
+      }
+    }
     startSessionBtn.disabled = true;
     startSessionBtn.innerHTML = '<span>LAUNCHING...</span><span class="material-symbols-outlined animate-pulse">hourglass_top</span>';
     try {
       const roleOverride = getDeveloperRoleOverride() || undefined;
       const mockRoleOverride = getMockRoleOverride() || (state.mockUserMode ? roleOverride : undefined);
-      const freshUp = Boolean(options?.freshUp);
-      const selectedLessonCategory = String(lessonCategory || state.bundle.lessonCategory || state.user?.lessonCategory || '').trim();
       const response = await fetch('/api/session/start', {
         method: 'POST',
         headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
@@ -4321,13 +6255,21 @@ tailwind.config = {
       const payload = await response.json();
       if (!payload.ok) throw new Error(payload.message || 'Unable to start session.');
       state.session = payload.session || payload.mission || payload;
-      renderSession(payload, state.session);
+      state.bundle.activeSession = state.session;
+      persistActiveSession(state.session, state.bundle.user.userId);
+      renderSession(state.bundle, state.session);
+      renderLessonLibrary(state.bundle);
+      renderHome(state.bundle);
       showSession();
     } catch (error) {
       alert(error.message || 'Unable to start session.');
     } finally {
       startSessionBtn.disabled = false;
-      startSessionBtn.innerHTML = '<span>START SESSION</span><span class="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">play_arrow</span>';
+      if (state.bundle) {
+        renderHome(state.bundle);
+      } else {
+        startSessionBtn.innerHTML = '<span>START SESSION</span><span class="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">play_arrow</span>';
+      }
     }
   }
 
@@ -4383,7 +6325,11 @@ tailwind.config = {
 
       if (payload.stage === 'continue') {
         state.session = payload.session || state.session;
+        state.bundle.activeSession = state.session;
+        persistActiveSession(state.session, state.bundle.user.userId);
         renderSession(state.bundle, state.session);
+        renderLessonLibrary(state.bundle);
+        renderHome(state.bundle);
         refs.sessionInput.value = '';
         continueBtn.textContent = 'SEND RESPONSE';
         return;
@@ -4400,7 +6346,10 @@ tailwind.config = {
       state.user = payload.updatedUser;
       renderHome(state.bundle);
       renderProfile(state.bundle);
-      state.session = payload.session || state.session;
+      clearPersistedActiveSession(state.bundle.user.userId);
+      state.bundle.activeSession = null;
+      state.session = null;
+      renderLessonLibrary(state.bundle);
       if (payload.result) {
         renderEndScreen(payload.result, payload.updatedUser, previousUser);
         showEnd();
@@ -4427,12 +6376,21 @@ tailwind.config = {
     }
     showHome();
   });
-  openProfileBtn.addEventListener("click", () => showProfile('self'));
+  openProfileBtn.addEventListener("click", openProfileMenu);
+  if (refs.profileHeaderMenuBtn) refs.profileHeaderMenuBtn.addEventListener("click", openProfileMenu);
   if (aiOutputMenuBtn) aiOutputMenuBtn.addEventListener("click", openMenu);
   if (aiOutputProfileBtn) aiOutputProfileBtn.addEventListener("click", () => showProfile('self'));
   if (refs.managerViewToggleBtn) refs.managerViewToggleBtn.addEventListener("click", () => setManagerViewMode('personal'));
-  if (refs.managerFooterStoreBtn) refs.managerFooterStoreBtn.addEventListener("click", () => setManagerViewMode('store'));
-  if (refs.managerFooterPersonalBtn) refs.managerFooterPersonalBtn.addEventListener("click", () => setManagerViewMode('personal'));
+  if (refs.managerFooterToolsBtn) refs.managerFooterToolsBtn.addEventListener("click", showToolsHub);
+  if (refs.managerFooterStoreBtn) refs.managerFooterStoreBtn.addEventListener("click", openManagerFooterPrimaryView);
+  if (refs.managerFooterPersonalBtn) refs.managerFooterPersonalBtn.addEventListener("click", () => {
+    const roleLabel = formatRoleTitle(state.bundle?.user?.roleLabel || state.bundle?.user?.role);
+    if (isFrontlineFooterRole(roleLabel)) {
+      showProfile('self');
+      return;
+    }
+    setManagerViewMode('personal');
+  });
   if (refs.managerOpenProfileBtn) refs.managerOpenProfileBtn.addEventListener("click", () => showProfile('self'));
   if (refs.managerMenuBtn) refs.managerMenuBtn.addEventListener("click", openMenu);
   if (refs.managerStoreSelectorSelect) {
@@ -4453,6 +6411,45 @@ tailwind.config = {
   }
   backToHomeBtn.addEventListener("click", showHome);
   if (lessonLibraryBackBtn) lessonLibraryBackBtn.addEventListener("click", showHome);
+  if (toolsHubBackBtn) toolsHubBackBtn.addEventListener("click", () => showHome({ replaceRoute: true }));
+  if (toolWorkspaceBackBtn) toolWorkspaceBackBtn.addEventListener("click", () => showToolsHub({ replaceRoute: true }));
+  if (toolsHubSearchInput) toolsHubSearchInput.addEventListener("input", () => {
+    state.toolHub.search = String(toolsHubSearchInput.value || '');
+    persistToolHubLocalState(state.bundle?.user?.userId || '');
+    renderToolsHub(state.bundle);
+  });
+  if (toolsHubSelectedSaveBtn) toolsHubSelectedSaveBtn.addEventListener("click", () => {
+    if (state.toolHub.selectedToolId) {
+      toggleToolSave(state.toolHub.selectedToolId);
+    }
+  });
+  if (toolsHubSelectedActionBtn) toolsHubSelectedActionBtn.addEventListener("click", () => {
+    if (state.toolHub.selectedToolId) {
+      openToolWorkspace(state.toolHub.selectedToolId);
+    }
+  });
+  if (toolWorkspaceDraftInput) toolWorkspaceDraftInput.addEventListener("input", () => {
+    const activeToolId = state.toolWorkspace.activeToolId;
+    if (!activeToolId) return;
+    setToolWorkspaceDraft(activeToolId, toolWorkspaceDraftInput.value, { persist: true, sync: false });
+  });
+  if (toolWorkspaceSaveBtn) toolWorkspaceSaveBtn.addEventListener("click", () => {
+    const activeToolId = state.toolWorkspace.activeToolId;
+    if (!activeToolId) return;
+    setToolWorkspaceDraft(activeToolId, toolWorkspaceDraftInput?.value || '', { persist: true, sync: true });
+    if (toolWorkspaceDraftMeta) {
+      toolWorkspaceDraftMeta.textContent = 'Draft saved to your profile.';
+    }
+  });
+  if (toolWorkspaceClearBtn) toolWorkspaceClearBtn.addEventListener("click", () => {
+    const activeToolId = state.toolWorkspace.activeToolId;
+    if (!activeToolId) return;
+    setToolWorkspaceDraft(activeToolId, '', { persist: true, sync: false });
+    if (toolWorkspaceDraftInput) toolWorkspaceDraftInput.value = '';
+    if (toolWorkspaceDraftMeta) {
+      toolWorkspaceDraftMeta.textContent = 'Draft cleared.';
+    }
+  });
   if (privacyBackBtn) privacyBackBtn.addEventListener("click", showSettings);
   if (termsBackBtn) termsBackBtn.addEventListener("click", showSettings);
   if (storeRequestBackBtn) storeRequestBackBtn.addEventListener("click", showHome);
@@ -4509,9 +6506,6 @@ tailwind.config = {
     closeMenu();
     void showDeveloperConsole();
   });
-  if (openDeveloperToolsBtn) openDeveloperToolsBtn.addEventListener("click", () => {
-    openDeveloperPanel();
-  });
   if (backFromDeveloperBtn) backFromDeveloperBtn.addEventListener("click", backToMenuPanel);
   if (developerBackBtn) developerBackBtn.addEventListener("click", () => {
     void signOutAndShowAuth('Sign in to continue');
@@ -4532,6 +6526,27 @@ tailwind.config = {
     closeMenu();
     showTerms();
   });
+  if (closeProfileMenuBtn) closeProfileMenuBtn.addEventListener("click", closeProfileMenu);
+  if (profileMenuViewProfileBtn) profileMenuViewProfileBtn.addEventListener("click", () => {
+    closeProfileMenu();
+    showProfile('self');
+  });
+  if (profileMenuLessonLibraryBtn) profileMenuLessonLibraryBtn.addEventListener("click", () => {
+    closeProfileMenu();
+    showLessonLibrary();
+  });
+  if (profileMenuHistoryBtn) profileMenuHistoryBtn.addEventListener("click", () => {
+    closeProfileMenu();
+    showHistory();
+  });
+  if (profileMenuSettingsBtn) profileMenuSettingsBtn.addEventListener("click", () => {
+    closeProfileMenu();
+    showSettings();
+  });
+  if (profileMenuSignOutBtn) profileMenuSignOutBtn.addEventListener("click", () => {
+    closeProfileMenu();
+    void signOutAndShowAuth('Signed out');
+  });
   if (settingsNotificationsToggle) settingsNotificationsToggle.addEventListener("click", () => {
     setSessionRemindersEnabled(!state.sessionRemindersEnabled);
   });
@@ -4540,6 +6555,13 @@ tailwind.config = {
   });
   if (settingsInternalToolsToggle) settingsInternalToolsToggle.addEventListener("click", () => {
     setInternalToolsEnabled(!state.internalToolsEnabled);
+  });
+  if (settingsAvatarInput) settingsAvatarInput.addEventListener("input", () => {
+    syncAvatarPickerSelection(String(settingsAvatarInput.value || '').trim());
+    syncAvatarPreview(String(settingsAvatarInput.value || '').trim());
+    if (settingsSaveState) {
+      settingsSaveState.textContent = 'Avatar updated';
+    }
   });
   if (settingsSaveBtn) settingsSaveBtn.addEventListener("click", () => {
     void saveProfileSettings();
@@ -4608,12 +6630,32 @@ tailwind.config = {
       }
     });
   }
+  if (bootRetryBtn) {
+    bootRetryBtn.addEventListener("click", () => {
+      if (isFileRuntime()) {
+        redirectToLocalApp();
+        return;
+      }
+      updateBootState({
+        connection: 'Retrying connection',
+        status: 'Loading your dashboard',
+      });
+      void loadBootstrap();
+    });
+  }
   if (menuOverlay) {
     menuOverlay.addEventListener("click", (event) => {
       if (event.target === menuOverlay) closeMenu();
     });
   }
+  if (profileMenuOverlay) {
+    profileMenuOverlay.addEventListener("click", (event) => {
+      if (event.target === profileMenuOverlay) closeProfileMenu();
+    });
+  }
   returnToDriveBtn.addEventListener("click", () => {
+    clearPersistedActiveSession(state.bundle?.user?.userId || '');
+    if (state.bundle) state.bundle.activeSession = null;
     state.session = null;
     showHome();
   });
@@ -4636,10 +6678,11 @@ tailwind.config = {
 
   loadBootstrap().catch((error) => {
     console.error(error);
-    refs.homeInsight.textContent = 'Live data is not available yet.';
-    const bootScreen = document.getElementById("bootScreen");
-    if (bootScreen) bootScreen.classList.add("hidden-screen");
-    homeScreen.classList.remove("hidden-screen");
+    showBootConnectionError('Unable to load the dashboard right now.');
+  });
+  window.addEventListener('popstate', () => {
+    if (!state.bundle?.user) return;
+    applyAppRouteFromLocation();
   });
   updateMockUserToggle();
 </script>

@@ -658,7 +658,13 @@ function normalizeStoredRecentSessions(recentSessions, recentSession) {
     .slice(0, 3);
 }
 
-function getDeveloperDashboardCacheKey({ currentUserId = '', roleProfile = null, mockMode = false, mockRoleOverride = '' } = {}) {
+function getDeveloperDashboardCacheKey({
+  currentUserId = '',
+  roleProfile = null,
+  mockMode = false,
+  mockRoleOverride = '',
+  dealershipId = '',
+} = {}) {
   return [
     'developer-dashboard',
     currentUserId || 'anonymous',
@@ -666,6 +672,7 @@ function getDeveloperDashboardCacheKey({ currentUserId = '', roleProfile = null,
     roleProfile?.roleType || 'unknown',
     isTruthyFlag(mockMode) ? 'mock' : 'live',
     String(mockRoleOverride || '').trim() || 'default',
+    String(dealershipId || '').trim() || 'all',
   ].join(':');
 }
 
@@ -2078,6 +2085,10 @@ function buildMockUserBundle(roleOverride = null) {
     role: preset.role,
     avatarUrl: '',
     xp: preset.xp,
+    dealershipId: 'mock-dealership',
+    dealershipIds: ['mock-dealership'],
+    selfDeclaredDealershipId: 'mock-dealership',
+    dealershipName: 'Mock Dealership',
     stats,
     freshUpMeter: preset.freshUpMeter,
     freshUpAvailable: true,
@@ -2107,7 +2118,7 @@ function buildMockUserBundle(roleOverride = null) {
         userData,
       })
     : null;
-  const developerDashboard = roleProfile.roleLabel === 'Developer'
+  const developerDashboard = isPrivilegedDealershipRole(roleProfile.roleLabel)
     ? {
         generatedAt: new Date().toISOString(),
         summary: {
@@ -2214,7 +2225,7 @@ function buildMockUserBundle(roleOverride = null) {
       { id: 'mock-badge-2', timestamp: makeMockIsoDate(2, 9, 0) },
     ],
     focus,
-    insight: 'Your highs are strong, but the valleys are dragging the department average down.',
+    insight: 'You have strong highs already. Keep smoothing the valleys and your average will climb with it.',
     roleProfile,
     freshUpExperience,
     freshUpSystemLabel: freshUpExperience.systemLabel,
@@ -2582,6 +2593,166 @@ function safeFilename(value) {
     .toLowerCase();
 }
 
+function normalizeEnrollmentCode(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isPrivilegedDealershipRole(roleLabel) {
+  const normalized = normalizeRoleLabel(roleLabel);
+  return ['Developer', 'Admin'].includes(normalized);
+}
+
+function slugifyDealershipName(value) {
+  return safeFilename(value) || 'dealership';
+}
+
+function chunkArray(values, size = 10) {
+  const source = Array.isArray(values) ? values : [];
+  const safeSize = Math.max(1, Number(size) || 10);
+  const chunks = [];
+  for (let index = 0; index < source.length; index += safeSize) {
+    chunks.push(source.slice(index, index + safeSize));
+  }
+  return chunks;
+}
+
+function resolveUserDealershipData(userData = {}) {
+  const dealershipIds = new Set();
+  const addValue = (value) => {
+    const normalized = String(value || '').trim();
+    if (normalized) dealershipIds.add(normalized);
+  };
+
+  addValue(userData?.dealershipId);
+  addValue(userData?.selfDeclaredDealershipId);
+  if (Array.isArray(userData?.dealershipIds)) {
+    userData.dealershipIds.forEach(addValue);
+  }
+
+  const primaryDealershipId = String(userData?.dealershipId || userData?.selfDeclaredDealershipId || '').trim()
+    || Array.from(dealershipIds)[0]
+    || '';
+
+  return {
+    dealershipId: primaryDealershipId,
+    dealershipIds: Array.from(dealershipIds),
+    hasDealershipId: Boolean(primaryDealershipId),
+  };
+}
+
+function getResolvedDealershipId(userData = {}) {
+  return resolveUserDealershipData(userData).dealershipId || '';
+}
+
+function getResolvedDealershipIds(userData = {}) {
+  return resolveUserDealershipData(userData).dealershipIds || [];
+}
+
+async function lookupDealershipByEnrollmentCode(code) {
+  if (!firebaseDb) return null;
+  const normalizedCode = normalizeEnrollmentCode(code);
+  if (!normalizedCode) return null;
+
+  const directSnap = await firebaseDb.collection('dealerships').where('enrollmentCode', '==', normalizedCode).limit(1).get().catch(() => null);
+  if (directSnap && !directSnap.empty) {
+    const doc = directSnap.docs[0];
+    return { id: doc.id, data: doc.data() || {}, field: 'enrollmentCode' };
+  }
+
+  const dealershipsSnap = await firebaseDb.collection('dealerships').get().catch(() => null);
+  const docs = dealershipsSnap?.docs || [];
+  const match = docs.find((doc) => normalizeEnrollmentCode(doc.data()?.enrollmentCode) === normalizedCode);
+  if (match) {
+    return { id: match.id, data: match.data() || {}, field: 'scan' };
+  }
+
+  return null;
+}
+
+async function generateUniqueDealershipId(name) {
+  if (!firebaseDb) return slugifyDealershipName(name);
+  const baseId = slugifyDealershipName(name);
+  let attempt = 0;
+  while (attempt < 100) {
+    const candidateId = attempt === 0 ? baseId : `${baseId}-${attempt + 1}`;
+    const snap = await firebaseDb.collection('dealerships').doc(candidateId).get().catch(() => null);
+    if (!snap?.exists) {
+      return candidateId;
+    }
+    attempt += 1;
+  }
+  return `${baseId}-${Date.now()}`;
+}
+
+async function persistSessionDocument(sessionId, data = {}, options = {}) {
+  if (!firebaseDb || !sessionId) return null;
+  const merge = options.merge !== false;
+  const payload = {
+    ...data,
+    sessionId,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+  if (options.includeCreatedAt === true) {
+    payload.createdAt = admin.firestore.FieldValue.serverTimestamp();
+  }
+  const ref = firebaseDb.collection('sessions').doc(sessionId);
+  await ref.set(payload, { merge });
+  return ref;
+}
+
+async function fetchUsersByDealershipScope({
+  dealershipIds = [],
+  selectFields = [],
+  allowAll = false,
+  limit = null,
+} = {}) {
+  if (!firebaseDb) return [];
+
+  const normalizedIds = Array.from(new Set(
+    (Array.isArray(dealershipIds) ? dealershipIds : [dealershipIds])
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
+  ));
+  const fields = Array.isArray(selectFields) ? selectFields.map((field) => String(field || '').trim()).filter(Boolean) : [];
+  const hasLimit = Number.isFinite(Number(limit)) && Number(limit) > 0;
+
+  const mapDoc = (doc) => ({
+    id: doc.id,
+    data: () => doc.data() || {},
+  });
+
+  const applyQueryOptions = (query) => {
+    let activeQuery = query;
+    if (fields.length) {
+      activeQuery = activeQuery.select(...fields);
+    }
+    if (hasLimit) {
+      activeQuery = activeQuery.limit(Number(limit));
+    }
+    return activeQuery;
+  };
+
+  if (!normalizedIds.length) {
+    if (!allowAll) return [];
+    const snap = await applyQueryOptions(firebaseDb.collection('users')).get().catch(() => null);
+    return (snap?.docs || []).map(mapDoc);
+  }
+
+  const docsById = new Map();
+  for (const batch of chunkArray(normalizedIds, 10)) {
+    if (!batch.length) continue;
+    const query = batch.length === 1
+      ? firebaseDb.collection('users').where('dealershipId', '==', batch[0])
+      : firebaseDb.collection('users').where('dealershipId', 'in', batch);
+    const snap = await applyQueryOptions(query).get().catch(() => null);
+    for (const doc of snap?.docs || []) {
+      docsById.set(doc.id, mapDoc(doc));
+    }
+  }
+
+  return Array.from(docsById.values());
+}
+
 function stripMarkdownInline(text) {
   return String(text || '')
     .replace(/\*\*/g, '')
@@ -2764,6 +2935,88 @@ async function callGeminiText(prompt, fallbackText) {
     return text.trim() || fallbackText;
   } catch {
     return fallbackText;
+  }
+}
+
+function buildToolInsightFallback({ roleLabel, selectedTool, selectedNeed, search }) {
+  const toolName = String(selectedTool?.name || 'This tool').trim();
+  const needLabel = String(selectedNeed || '').trim() || String(selectedTool?.needTags?.[0] || 'next step').replace(/-/g, ' ');
+  const summary = String(selectedTool?.summary || 'It helps keep the next step clear.').trim();
+  const roleText = String(roleLabel || 'your role').trim();
+  const searchText = String(search || '').trim();
+  const searchLine = searchText ? ` You searched for "${searchText}".` : '';
+  return [
+    `${toolName} fits when you need to ${needLabel} and keep the conversation moving.`,
+    `Why it works: ${summary} It gives ${roleText} a clean way to reduce friction quickly.${searchLine}`,
+    'Best first move: open the tool, use the shortest version first, then tighten the wording around the customer or teammate response.',
+  ].join('\n');
+}
+
+function buildToolInsightPrompt({ roleLabel, selectedTool, selectedNeed, search, savedToolIds = [], recentToolIds = [] }) {
+  const roles = Array.isArray(selectedTool?.roles) ? selectedTool.roles.join(', ') : 'all roles';
+  const tags = Array.isArray(selectedTool?.tags) ? selectedTool.tags.join(', ') : '';
+  const needTags = Array.isArray(selectedTool?.needTags) ? selectedTool.needTags.join(', ') : '';
+  const savedLine = savedToolIds.length ? `${savedToolIds.length} saved tools` : 'no saved tools yet';
+  const recentLine = recentToolIds.length ? `${recentToolIds.length} recently opened tools` : 'no recent tools yet';
+  return [
+    'Write a short dealership tool insight in plain language.',
+    'Use these exact headings on separate lines: Why it fits, Best first move, How to use it next.',
+    'Keep it concise, useful, and specific to the user role.',
+    `User role: ${roleLabel || 'Sales Consultant'}`,
+    `Search intent: ${search || 'none'}`,
+    `Selected need: ${selectedNeed || 'none'}`,
+    `Tool name: ${selectedTool?.name || 'Unknown tool'}`,
+    `Tool summary: ${selectedTool?.summary || ''}`,
+    `Category: ${selectedTool?.category || ''}`,
+    `Role fit: ${roles}`,
+    `Need tags: ${needTags}`,
+    `Tags: ${tags}`,
+    `Saved tools: ${savedLine}`,
+    `Recent tools: ${recentLine}`,
+    'Aim for 80 to 110 words total.',
+  ].join('\n');
+}
+
+async function handleToolInsight(req, res) {
+  try {
+    const body = await readBody(req);
+    const userId = String(body.userId || '').trim();
+    if (!userId) {
+      return sendJson(res, 400, { ok: false, message: 'A userId is required.' });
+    }
+
+    const bundle = await fetchUserBundle(userId, body.roleOverride, body.mockMode, body.mockRoleOverride);
+    if (!bundle?.user) {
+      return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
+    }
+
+    const selectedTool = body.selectedTool && typeof body.selectedTool === 'object' ? body.selectedTool : {};
+    const roleLabel = normalizeRoleLabel(bundle.user.roleLabel || bundle.user.role);
+    const prompt = buildToolInsightPrompt({
+      roleLabel,
+      selectedTool,
+      selectedNeed: body.selectedNeed,
+      search: body.search,
+      savedToolIds: Array.isArray(body.savedToolIds) ? body.savedToolIds : [],
+      recentToolIds: Array.isArray(body.recentToolIds) ? body.recentToolIds : [],
+    });
+    const fallback = buildToolInsightFallback({
+      roleLabel,
+      selectedTool,
+      selectedNeed: body.selectedNeed,
+      search: body.search,
+    });
+    const insight = await withTimeout(callGeminiText(prompt, fallback), 9000, fallback);
+    return sendJson(res, 200, {
+      ok: true,
+      insight: String(insight || fallback).trim(),
+      generatedAt: new Date().toISOString(),
+      toolId: String(selectedTool.id || '').trim(),
+      roleLabel,
+    });
+  } catch (error) {
+    console.error('[tools-insight] failed', error);
+    return sendJson(res, 500, { ok: false, message: 'Unable to generate a tool insight.' });
   }
 }
 
@@ -3386,11 +3639,62 @@ function formatRelativeTime(value) {
 async function buildManagerDashboardData({ currentUserId, userData, roleProfile, focusTrait, recentLogs }) {
   if (!firebaseDb) return null;
 
-  const usersSnap = await firebaseDb.collection('users').get().catch(() => null);
   const dealershipScopeIds = getUserDealershipScopeIds(userData);
   const dealershipIds = Array.from(dealershipScopeIds || []);
+  if (!dealershipIds.length) {
+    const emptySummary = await buildManagerDashboardSummary({
+      currentUserId,
+      monitorCandidates: [],
+      averageCandidates: [],
+      roleProfile,
+      focusTraitOverride: focusTrait,
+      recentLogs,
+      dealershipId: '',
+      dealershipName: String(userData.dealershipName || userData.storeName || userData.companyName || 'Current dealership'),
+      scopeLabel: 'Current store',
+    });
+
+    return {
+      ...emptySummary,
+      mode: 'single-store',
+      aggregate: emptySummary,
+      stores: [emptySummary],
+      storeCount: 1,
+      scopeLabel: emptySummary.scopeLabel || 'Current scope',
+    };
+  }
+
+  const userDocs = await fetchUsersByDealershipScope({
+    dealershipIds,
+    selectFields: [
+      'avatarUrl',
+      'name',
+      'email',
+      'loginEmail',
+      'role',
+      'roleLabel',
+      'roleType',
+      'roleScope',
+      'visibilityScope',
+      'xp',
+      'stats',
+      'freshUpMeter',
+      'freshUpAvailable',
+      'lessonCategory',
+      'lastActiveAt',
+      'lastLessonAt',
+      'lastLesson',
+      'lastLessonCategory',
+      'recentSession',
+      'recentSessions',
+      'updatedAt',
+      'dealershipId',
+      'selfDeclaredDealershipId',
+      'dealershipIds',
+    ],
+  });
   const frontLineRoles = new Set(['Sales Consultant', 'BDC', 'Service Writer', 'Parts Consultant']);
-  const allCandidates = (usersSnap?.docs || [])
+  const allCandidates = (userDocs || [])
     .map((doc) => ({
       id: doc.id,
       data: doc.data() || {},
@@ -3450,7 +3754,7 @@ async function buildManagerDashboardData({ currentUserId, userData, roleProfile,
   };
 }
 
-async function buildDeveloperDashboardData({ currentUserId = '', userData = {}, roleProfile = null } = {}) {
+async function buildDeveloperDashboardData({ currentUserId = '', userData = {}, roleProfile = null, dealershipId = '' } = {}) {
   if (!firebaseDb) return null;
 
   const cacheKey = getDeveloperDashboardCacheKey({
@@ -3458,15 +3762,19 @@ async function buildDeveloperDashboardData({ currentUserId = '', userData = {}, 
     roleProfile,
     mockMode: userData?.mockMode,
     mockRoleOverride: userData?.mockRoleOverride,
+    dealershipId,
   });
   const cachedDashboard = getDeveloperDashboardCache(cacheKey);
   if (cachedDashboard) {
     return cachedDashboard;
   }
 
-  const usersSnap = await firebaseDb
-    .collection('users')
-    .select(
+  const users = [];
+  const requestedDealershipId = String(dealershipId || '').trim();
+  const userDocs = await fetchUsersByDealershipScope({
+    dealershipIds: requestedDealershipId ? [requestedDealershipId] : [],
+    allowAll: !requestedDealershipId,
+    selectFields: [
       'avatarUrl',
       'name',
       'email',
@@ -3488,13 +3796,14 @@ async function buildDeveloperDashboardData({ currentUserId = '', userData = {}, 
       'recentSession',
       'recentSessions',
       'updatedAt',
-    )
-    .get()
-    .catch(() => null);
-  const users = [];
-  const docs = (usersSnap?.docs || []).slice(0, 100);
+      'dealershipId',
+      'selfDeclaredDealershipId',
+      'dealershipIds',
+    ],
+    limit: 100,
+  });
 
-  for (const doc of docs) {
+  for (const doc of userDocs) {
     const data = doc.data() || {};
     const storedRecentSessions = normalizeStoredRecentSessions(data.recentSessions, data.recentSession);
     const recentLog = storedRecentSessions[0] || null;
@@ -3556,6 +3865,7 @@ async function buildDeveloperDashboardData({ currentUserId = '', userData = {}, 
 
   const dashboard = {
     generatedAt: new Date().toISOString(),
+    dealershipId: requestedDealershipId || null,
     summary: {
       totalUsers,
       avgXp,
@@ -3898,6 +4208,31 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
   if (!userDoc) return null;
 
   const userData = userDoc.data() || {};
+  const resolvedDealershipData = resolveUserDealershipData(userData);
+  const nextDealershipId = resolvedDealershipData.dealershipId || '';
+  const nextDealershipIds = resolvedDealershipData.dealershipIds;
+  let resolvedDealershipName = String(userData.dealershipName || userData.storeName || userData.companyName || '').trim();
+  if (!resolvedDealershipName && nextDealershipId) {
+    const dealershipSnap = await firebaseDb.collection('dealerships').doc(nextDealershipId).get().catch(() => null);
+    resolvedDealershipName = String(dealershipSnap?.data()?.name || dealershipSnap?.data()?.dealer_name || dealershipSnap?.data()?.storeName || '').trim();
+  }
+  const shouldBackfillDealership = Boolean(nextDealershipId)
+    && (
+      String(userData.dealershipId || '').trim() !== nextDealershipId
+      || !Array.isArray(userData.dealershipIds)
+      || !userData.dealershipIds.includes(nextDealershipId)
+    );
+  if (shouldBackfillDealership) {
+    try {
+      await firebaseDb.collection('users').doc(userDoc.id).set({
+        dealershipId: nextDealershipId,
+        selfDeclaredDealershipId: nextDealershipId,
+        dealershipIds: Array.from(new Set([nextDealershipId, ...nextDealershipIds])),
+      }, { merge: true });
+    } catch (error) {
+      console.warn('[bundle] unable to backfill dealership fields', error.message);
+    }
+  }
   const badgesSnap = await firebaseDb.collection('users').doc(userDoc.id).collection('earnedBadges').orderBy('timestamp', 'desc').limit(12).get().catch(() => ({ empty: true, docs: [] }));
 
   const badges = badgesSnap.docs ? badgesSnap.docs.map((doc) => ({
@@ -3945,10 +4280,10 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
   const focus = buildMissionFocus(focusTrait, roleProfile.roleLabel || 'Sales Consultant', lessonCategory);
   const freshUpExperience = getFreshUpExperience(roleProfile.roleLabel || effectiveRole, roleType);
   const insightFallback = momentumScore >= 85
-    ? 'You are moving well. Keep the same pace and protect the trust you already built.'
+    ? 'You are building strong momentum. Keep the same pace and protect the trust you already built.'
     : focusTrait === 'trust'
-      ? 'Slow the opening down today. Trust comes first.'
-      : `Keep your eye on ${TRAIT_LABELS[focusTrait] || focusTrait}. That is where the next jump lives.`;
+      ? 'You are making steady progress. Slow the opening down today and let trust lead the way.'
+      : `You are building in the right direction. Keep your eye on ${TRAIT_LABELS[focusTrait] || focusTrait}; that is where the next jump lives.`;
   const aiInsightPromise = buildInsightCopy({
     userName: userData.name || 'Consultant',
     role: roleProfile.roleLabel || 'Sales Consultant',
@@ -3963,6 +4298,9 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
         currentUserId: userDoc.id,
         userData: {
           ...userData,
+          dealershipId: nextDealershipId || userData.dealershipId || '',
+          dealershipIds: Array.from(new Set([...(nextDealershipIds || []), String(userData.dealershipId || '').trim()].filter(Boolean))),
+          dealershipName: resolvedDealershipName,
           momentumScore,
         },
         roleProfile,
@@ -3970,14 +4308,18 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
         recentLogs: recentLogsToUse,
       })
     : null;
-  const developerDashboard = roleProfile.roleLabel === 'Developer'
+  const developerDashboard = isPrivilegedDealershipRole(roleProfile.roleLabel)
     ? await buildDeveloperDashboardData({
         currentUserId: userDoc.id,
         userData: {
           ...userData,
+          dealershipId: nextDealershipId || userData.dealershipId || '',
+          dealershipIds: Array.from(new Set([...(nextDealershipIds || []), String(userData.dealershipId || '').trim()].filter(Boolean))),
+          dealershipName: resolvedDealershipName,
           momentumScore,
         },
         roleProfile,
+        dealershipId: nextDealershipId || userData.dealershipId || '',
       })
     : null;
 
@@ -3993,6 +4335,9 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
       level,
       streak,
       momentumScore,
+      dealershipId: nextDealershipId || userData.dealershipId || '',
+      dealershipIds: Array.from(new Set([...(nextDealershipIds || []), String(userData.dealershipId || '').trim()].filter(Boolean))),
+      dealershipName: resolvedDealershipName,
       focusTrait,
       strongTrait,
       freshUpMeter,
@@ -4023,7 +4368,7 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
 async function buildInsightCopy({ userName, role, focusTrait, strongTrait, streak, momentumScore }) {
   const prompt = [
     'You are Sprocket AI, a dealership coaching assistant.',
-    `Rewrite the coaching insight into one short, direct, human sentence.`,
+    `Rewrite the coaching insight into one short, direct, encouraging sentence.`,
     `User: ${userName}. Role: ${role}.`,
     `Weakest skill: ${TRAIT_LABELS[focusTrait] || focusTrait}. Strongest skill: ${TRAIT_LABELS[strongTrait] || strongTrait}.`,
     `Streak: ${streak}. Momentum score: ${momentumScore}.`,
@@ -4032,14 +4377,16 @@ async function buildInsightCopy({ userName, role, focusTrait, strongTrait, strea
     '- No markdown.',
     '- No phrase like "pattern recognized".',
     '- Sound like a real coach speaking directly to the consultant.',
+    '- Be strengths-based and supportive, even when pointing to a growth area.',
+    '- Avoid harsh, discouraging, or negative phrasing.',
     '- Keep it under 18 words.',
   ].join('\n');
 
   const fallback = momentumScore >= 85
-    ? 'You are moving well. Keep the same pace and protect the trust you already built.'
+    ? 'You are building strong momentum. Keep the same pace and protect the trust you already built.'
     : focusTrait === 'trust'
-      ? 'Slow the opening down today. Trust comes first.'
-      : `Keep your eye on ${TRAIT_LABELS[focusTrait] || focusTrait}. That is where the next jump lives.`;
+      ? 'You are making steady progress. Slow the opening down today and let trust lead the way.'
+      : `You are building in the right direction. Keep your eye on ${TRAIT_LABELS[focusTrait] || focusTrait}; that is where the next jump lives.`;
 
   const text = await callGemini(prompt, fallback);
   return text.replace(/\s+/g, ' ').trim();
@@ -4062,7 +4409,7 @@ async function generateFreshUpStartSession(bundle) {
   const prompt = [
     'You are Sprocket, AutoKnerd\'s dealership coaching assistant.',
     `Create a ${freshUpProgram.bossLabel} scenario for a ${roleProfile.roleLabel}.`,
-    'This is a boss encounter in the game-like retail experience, but it must still feel professional, realistic, and dealership-native.',
+    'This is a boss encounter in the game-like coaching experience, but it must still feel professional, realistic, and dealership-native.',
     `Current level: ${level.level}. XP: ${user.xp}. Streak: ${user.streak}. Momentum: ${user.momentumScore}.`,
     `Weakest skill: ${weakest}. Strongest skill: ${strongest}.`,
     `Role tone: ${roleTheme.tone}. Customer mindset: ${roleTheme.customerMindset}. Language: ${roleTheme.languageStyle}.`,
@@ -4302,6 +4649,84 @@ function serveIndex(res) {
   res.end(html);
 }
 
+function serializeActiveSession(session) {
+  if (!session) return null;
+  return {
+    sessionId: session.sessionId,
+    title: session.title,
+    dealershipId: session.dealershipId || null,
+    dealershipIds: Array.isArray(session.dealershipIds) ? session.dealershipIds : [],
+    dealershipName: session.dealershipName || null,
+    lessonCategory: session.lessonCategory || null,
+    lessonTitle: session.lessonTitle || null,
+    freshUpSystemLabel: session.freshUpSystemLabel || null,
+    freshUpBossLabel: session.freshUpBossLabel || null,
+    freshUpAudience: session.freshUpAudience || null,
+    freshUpReadyCopy: session.freshUpReadyCopy || null,
+    freshUpLockedCopy: session.freshUpLockedCopy || null,
+    activitySource: session.activitySource || 'core',
+    lessonId: session.lessonId || session.lessonCategory || session.sessionId,
+    description: session.description,
+    coachLine: session.coachLine,
+    customerName: session.customerName,
+    customerOpening: session.customerOpening,
+    focus: session.focus,
+    trustLabel: session.trustLabel,
+    targetUserTurns: session.targetUserTurns,
+    currentUserTurns: session.currentUserTurns,
+    progress: Math.round((Math.max(0, Number(session.currentUserTurns || 0)) / Math.max(1, Number(session.targetUserTurns || 1))) * 100),
+    scenarioSummary: session.scenarioSummary,
+    customerConcern: session.customerConcern,
+    choices: Array.isArray(session.choices) ? session.choices : [],
+    messages: Array.isArray(session.messages) ? session.messages : [],
+    startedAt: session.startedAt || null,
+  };
+}
+
+function buildSessionUserKeys(userLike) {
+  const rawValues = [
+    userLike?.userId,
+    userLike?.id,
+    userLike?.email,
+    userLike?.loginEmail,
+    userLike,
+  ];
+  return Array.from(new Set(
+    rawValues
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
+      .flatMap((value) => {
+        const normalizedEmail = normalizeEmail(value);
+        return normalizedEmail && normalizedEmail !== value
+          ? [value, normalizedEmail]
+          : [value];
+      })
+  ));
+}
+
+function getActiveSessionForUser(userLike) {
+  const userKeys = buildSessionUserKeys(userLike);
+  if (!userKeys.length) return null;
+  const matches = Array.from(activeSessions.values())
+    .filter((session) => {
+      const sessionKeys = Array.isArray(session?.userLookupKeys) ? session.userLookupKeys : buildSessionUserKeys(session?.userId);
+      return sessionKeys.some((key) => userKeys.includes(key));
+    })
+    .sort((a, b) => String(b?.startedAt || '').localeCompare(String(a?.startedAt || '')));
+  return matches[0] || null;
+}
+
+function clearActiveSessionsForUser(userLike) {
+  const userKeys = buildSessionUserKeys(userLike);
+  if (!userKeys.length) return;
+  activeSessions.forEach((session, sessionId) => {
+    const sessionKeys = Array.isArray(session?.userLookupKeys) ? session.userLookupKeys : buildSessionUserKeys(session?.userId);
+    if (sessionKeys.some((key) => userKeys.includes(key))) {
+      activeSessions.delete(sessionId);
+    }
+  });
+}
+
 async function handleBootstrap(req, res, url) {
   const token = getRequestToken(req, url);
   const sessionUserId = getAuthSession(token)?.userId || '';
@@ -4313,11 +4738,16 @@ async function handleBootstrap(req, res, url) {
     if (!userId && !isTruthyFlag(mockMode)) {
       return sendJson(res, 401, { ok: false, authRequired: true, message: 'Sign in required.' });
     }
-    const bundle = await fetchUserBundle(userId, roleOverride, mockMode, mockRoleOverride);
+    const bundle = await withTimeout(
+      fetchUserBundle(userId, roleOverride, mockMode, mockRoleOverride),
+      8000,
+      null,
+    );
     if (!bundle) {
-      return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
+      return sendJson(res, 504, { ok: false, message: 'User data took too long to load. Please try again.' });
     }
-    return sendJson(res, 200, { ok: true, ...bundle });
+    const activeSession = serializeActiveSession(getActiveSessionForUser(bundle.user));
+    return sendJson(res, 200, { ok: true, ...bundle, activeSession });
   } catch (error) {
     console.error('[bootstrap] failed', error);
     return sendJson(res, 500, { ok: false, message: 'Unable to load user data.' });
@@ -4332,6 +4762,19 @@ async function handleAuthSignIn(req, res) {
     const isTemporaryDeveloperLogin = normalizeEmail(identifier) === normalizeEmail('andrew@autoknerd.com');
     if (!identifier) {
       return sendJson(res, 400, { ok: false, message: 'Email or staff ID is required.' });
+    }
+    if (isTemporaryDeveloperLogin && !code) {
+      const bundle = await buildTemporaryDeveloperBundle({
+        userId: normalizeEmail(identifier) || 'developer-session',
+        mockMode: body.mockMode,
+        mockRoleOverride: body.mockRoleOverride,
+      });
+      const token = createAuthSession(bundle.user.userId);
+      return sendJson(res, 200, {
+        ok: true,
+        token,
+        bundle,
+      });
     }
     const userDoc = await findUserDocByIdentifier(identifier);
     if (!userDoc && isTemporaryDeveloperLogin) {
@@ -4355,14 +4798,18 @@ async function handleAuthSignIn(req, res) {
       return sendJson(res, 401, { ok: false, message: 'Incorrect access code.' });
     }
 
-    const bundle = await fetchUserBundle(
-      userDoc.id,
-      isTemporaryDeveloperLogin ? 'Developer' : body.roleOverride,
-      body.mockMode,
-      body.mockRoleOverride,
+    const bundle = await withTimeout(
+      fetchUserBundle(
+        userDoc.id,
+        isTemporaryDeveloperLogin ? 'Developer' : body.roleOverride,
+        body.mockMode,
+        body.mockRoleOverride,
+      ),
+      8000,
+      null,
     );
     if (!bundle) {
-      return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
+      return sendJson(res, 504, { ok: false, message: 'User data took too long to load. Please try again.' });
     }
 
     if (isTemporaryDeveloperLogin && bundle?.user) {
@@ -4399,6 +4846,7 @@ async function buildTemporaryDeveloperBundle({ userId = 'developer-session', moc
   const level = calculateLevel(xp);
   const focusTrait = 'trust';
   const strongTrait = 'relationship';
+  const dealershipId = 'developer-lab';
   const lessonCategory = pickRoleLessonCategory('Developer', roleProfile.roleType, focusTrait, `${userId}:${dateKey(new Date())}`);
   const lessonProfile = getLessonCategoryProfile(lessonCategory);
   const lessonLibrary = buildLessonLibrary('Developer', roleProfile.roleType, focusTrait, lessonCategory);
@@ -4414,6 +4862,10 @@ async function buildTemporaryDeveloperBundle({ userId = 'developer-session', moc
       xp,
       freshUpMeter: 0,
       freshUpAvailable: false,
+      dealershipId: 'developer-lab',
+      dealershipIds: ['developer-lab'],
+      selfDeclaredDealershipId: 'developer-lab',
+      dealershipName: 'Developer Lab',
     },
     roleProfile,
   });
@@ -4426,6 +4878,10 @@ async function buildTemporaryDeveloperBundle({ userId = 'developer-session', moc
       sourceRole: 'Developer',
       role: 'Developer',
       roleLabel: 'Developer',
+      dealershipId,
+      dealershipIds: [dealershipId],
+      selfDeclaredDealershipId: dealershipId,
+      dealershipName: 'Developer Lab',
       stats,
       xp,
       level,
@@ -4472,46 +4928,14 @@ function buildEnrollmentProfile(roleLabel) {
 }
 
 async function lookupEnrollmentLink(code) {
-  const normalized = String(code || '').trim();
-  if (!firebaseDb || !normalized) return null;
-  const normalizedEmail = normalizeEmail(normalized);
-  const collections = [
-    { name: 'dealerships', fields: ['enrollmentCode', 'dealerCode', 'joinCode', 'accessCode'] },
-    { name: 'dealer_accounts', fields: ['enrollmentCode', 'dealerCode', 'joinCode', 'accessCode'] },
-    { name: 'users', fields: ['inviteCode', 'enrollmentCode', 'dealerCode', 'joinCode'] },
-  ];
-
-  for (const entry of collections) {
-    for (const field of entry.fields) {
-      const querySnap = await firebaseDb.collection(entry.name).where(field, '==', normalized).limit(1).get().catch(() => null);
-      if (querySnap && !querySnap.empty) {
-        const doc = querySnap.docs[0];
-        return { type: entry.name, id: doc.id, data: doc.data() || {}, field };
-      }
-    }
-  }
-
-  const directDealership = await firebaseDb.collection('dealerships').doc(normalized).get().catch(() => null);
-  if (directDealership?.exists) {
-    return { type: 'dealerships', id: directDealership.id, data: directDealership.data() || {}, field: 'docId' };
-  }
-  const directDealerAccount = await firebaseDb.collection('dealer_accounts').doc(normalized).get().catch(() => null);
-  if (directDealerAccount?.exists) {
-    return { type: 'dealer_accounts', id: directDealerAccount.id, data: directDealerAccount.data() || {}, field: 'docId' };
-  }
-
-  const usersSnap = await firebaseDb.collection('users').get().catch(() => null);
-  const userMatch = (usersSnap?.docs || []).find((doc) => {
-    const data = doc.data() || {};
-    return normalizeEmail(data.email) === normalizedEmail
-      || normalizeEmail(data.loginEmail) === normalizedEmail
-      || normalizeLookupValue(data.staffId) === normalized
-      || normalizeLookupValue(data.userId) === normalized;
-  });
-  if (userMatch) {
-    return { type: 'users', id: userMatch.id, data: userMatch.data() || {}, field: 'doc' };
-  }
-  return null;
+  const dealership = await lookupDealershipByEnrollmentCode(code);
+  if (!dealership) return null;
+  return {
+    type: 'dealerships',
+    id: dealership.id,
+    data: dealership.data || {},
+    field: dealership.field || 'enrollmentCode',
+  };
 }
 
 async function handleAuthEnroll(req, res) {
@@ -4524,17 +4948,9 @@ async function handleAuthEnroll(req, res) {
     const staffId = String(body.staffId || body.userId || '').trim();
     const roleLabel = normalizeRoleLabel(body.role || body.roleLabel || 'Sales Consultant');
     const roleProfile = getRoleProfile(roleLabel);
-    const enrollmentType = String(body.enrollmentType || body.mode || 'self').trim().toLowerCase();
-    const code = String(body.code || body.inviteCode || body.dealerCode || '').trim();
-    const link = code ? await lookupEnrollmentLink(code) : null;
-    const linkedDealer = link && ['dealerships', 'dealer_accounts'].includes(link.type) ? link : null;
-    const linkedUser = link && link.type === 'users' ? link : null;
-    const resolvedEnrollmentType = linkedDealer
-      ? 'dealer_code'
-      : linkedUser
-        ? 'invite'
-        : (enrollmentType || 'self');
     const visibilityScope = getVisibilityScopeForRole(roleLabel);
+    const enrollmentCode = normalizeEnrollmentCode(body.enrollmentCode || body.code || body.dealerCode || body.accessCode || '');
+    const dealershipRecord = enrollmentCode ? await lookupDealershipByEnrollmentCode(enrollmentCode) : null;
 
     if (!name) {
       return sendJson(res, 400, { ok: false, message: 'First and last name are required.' });
@@ -4542,19 +4958,31 @@ async function handleAuthEnroll(req, res) {
     if (!email && !staffId) {
       return sendJson(res, 400, { ok: false, message: 'Email or staff ID is required.' });
     }
+    if (!enrollmentCode) {
+      return sendJson(res, 400, { ok: false, message: 'An enrollment code is required.' });
+    }
     if (!firebaseDb) {
       return sendJson(res, 500, { ok: false, message: 'Enrollment requires Firebase.' });
+    }
+    if (!dealershipRecord) {
+      return sendJson(res, 404, { ok: false, message: 'Enrollment code not found.' });
+    }
+
+    const dealershipData = dealershipRecord.data || {};
+    if (dealershipData.active === false) {
+      return sendJson(res, 403, { ok: false, message: 'This dealership enrollment code is inactive.' });
     }
 
     const existingDoc = await findUserDocByIdentifier(email || staffId);
     const userId = existingDoc?.id || body.userId || crypto.randomUUID();
-    const dealershipId = String(body.dealershipId || linkedDealer?.id || linkedUser?.data?.dealershipId || linkedUser?.data?.selfDeclaredDealershipId || '').trim();
+    const dealershipId = String(dealershipRecord.id || '').trim();
+    const dealershipName = String(dealershipData.name || dealershipData.dealer_name || dealershipData.storeName || dealershipId).trim();
     const dealershipIds = Array.from(new Set([
       dealershipId,
       ...(Array.isArray(body.dealershipIds) ? body.dealershipIds : []),
     ].map((value) => String(value || '').trim()).filter(Boolean)));
-    const invitedBy = String(body.invitedBy || linkedUser?.id || '').trim();
-    const managerId = String(body.managerId || linkedUser?.data?.managerId || linkedUser?.data?.parentUserId || '').trim();
+    const invitedBy = String(body.invitedBy || '').trim();
+    const managerId = String(body.managerId || '').trim();
     const enrollments = {
       userId,
       firstName,
@@ -4572,18 +5000,20 @@ async function handleAuthEnroll(req, res) {
       visibilityScope,
       visibilityScopeLabel: getVisibilityScopeLabel(visibilityScope),
       visibilityScopeDescription: getVisibilityScopeDescription(visibilityScope),
-      enrollmentType: resolvedEnrollmentType,
-      enrollmentMode: resolvedEnrollmentType,
-      enrollmentStatus: link ? 'active' : 'active',
+      enrollmentType: 'dealer_code',
+      enrollmentMode: 'dealer_code',
+      enrollmentStatus: 'active',
       invitedBy: invitedBy || undefined,
       managerId: managerId || undefined,
       parentUserId: managerId || invitedBy || undefined,
       dealershipId: dealershipId || undefined,
       selfDeclaredDealershipId: dealershipId || undefined,
       dealershipIds: dealershipIds.length ? dealershipIds : undefined,
-      dealerCode: String(body.dealerCode || code || '').trim() || undefined,
-      inviteCode: String(body.inviteCode || code || '').trim() || undefined,
-      accessCode: String(body.accessCode || body.code || '').trim() || undefined,
+      dealershipName: dealershipName || undefined,
+      dealershipEnrollmentCode: enrollmentCode || undefined,
+      dealerCode: enrollmentCode || undefined,
+      inviteCode: enrollmentCode || undefined,
+      accessCode: enrollmentCode || undefined,
       createdAt: existingDoc ? existingDoc.data()?.createdAt || admin.firestore.FieldValue.serverTimestamp() : admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       enrolledAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -4626,15 +5056,75 @@ async function handleAuthEnroll(req, res) {
         visibilityScope,
         visibilityScopeLabel: getVisibilityScopeLabel(visibilityScope),
         visibilityScopeDescription: getVisibilityScopeDescription(visibilityScope),
-        enrollmentType: resolvedEnrollmentType,
+        enrollmentType: 'dealer_code',
         dealershipId: dealershipId || null,
-        linkedDealerId: linkedDealer?.id || null,
-        linkedInviteId: linkedUser?.id || null,
+        dealershipName: dealershipName || null,
+        enrollmentCode,
       },
     });
   } catch (error) {
     console.error('[auth-enroll] failed', error);
     return sendJson(res, 500, { ok: false, message: 'Unable to enroll account.' });
+  }
+}
+
+async function handleAdminDealershipCreate(req, res) {
+  try {
+    const body = await readBody(req);
+    const token = getRequestToken(req, new URL(req.url, `http://${req.headers.host || 'localhost'}`), body);
+    const authSession = getAuthSession(token);
+    if (!authSession?.userId) {
+      return sendJson(res, 401, { ok: false, authRequired: true, message: 'Sign in required.' });
+    }
+
+    const bundle = await fetchUserBundle(authSession.userId, body.roleOverride, body.mockMode, body.mockRoleOverride);
+    if (!bundle?.user) {
+      return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
+    }
+    const roleLabel = normalizeRoleLabel(bundle.user.roleLabel || bundle.user.role);
+    if (!isPrivilegedDealershipRole(roleLabel)) {
+      return sendJson(res, 403, { ok: false, message: 'Developer or Admin access required.' });
+    }
+    if (!firebaseDb) {
+      return sendJson(res, 500, { ok: false, message: 'Enrollment requires Firebase.' });
+    }
+
+    const name = String(body.name || '').trim();
+    const plan = String(body.plan || 'monthly').trim().toLowerCase() || 'monthly';
+    const enrollmentCode = normalizeEnrollmentCode(body.enrollmentCode);
+    if (!name) {
+      return sendJson(res, 400, { ok: false, message: 'A dealership name is required.' });
+    }
+    if (!enrollmentCode) {
+      return sendJson(res, 400, { ok: false, message: 'An enrollment code is required.' });
+    }
+
+    const existingEnrollment = await lookupDealershipByEnrollmentCode(enrollmentCode);
+    if (existingEnrollment) {
+      return sendJson(res, 409, { ok: false, message: 'That enrollment code is already in use.' });
+    }
+
+    const dealershipId = await generateUniqueDealershipId(name);
+    const dealershipDoc = {
+      dealershipId,
+      name,
+      enrollmentCode,
+      active: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      plan,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await firebaseDb.collection('dealerships').doc(dealershipId).set(dealershipDoc, { merge: false });
+
+    return sendJson(res, 200, {
+      ok: true,
+      dealershipId,
+      dealership: dealershipDoc,
+    });
+  } catch (error) {
+    console.error('[admin-dealership-create] failed', error);
+    return sendJson(res, 500, { ok: false, message: 'Unable to create dealership.' });
   }
 }
 
@@ -4657,6 +5147,7 @@ async function handleDeveloperDashboard(req, res, url) {
     const roleOverride = body.roleOverride || url.searchParams.get('roleOverride') || undefined;
     const mockMode = body.mockMode || url.searchParams.get('mockMode') || undefined;
     const mockRoleOverride = body.mockRoleOverride || url.searchParams.get('mockRoleOverride') || undefined;
+    const dealershipId = String(body.dealershipId || url.searchParams.get('dealershipId') || '').trim();
     const token = getRequestToken(req, url, body);
     const userId = getAuthSession(token)?.userId || url.searchParams.get('userId') || '';
     if (!userId) {
@@ -4667,17 +5158,19 @@ async function handleDeveloperDashboard(req, res, url) {
       return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
     }
     const roleLabel = normalizeRoleLabel(bundle.user?.roleLabel || bundle.user?.role);
-    if (roleLabel !== 'Developer') {
-      return sendJson(res, 403, { ok: false, message: 'Developer access required.' });
+    if (!isPrivilegedDealershipRole(roleLabel)) {
+      return sendJson(res, 403, { ok: false, message: 'Developer or Admin access required.' });
     }
     const dashboard = await buildDeveloperDashboardData({
       currentUserId: bundle.user.userId,
       userData: bundle.user,
       roleProfile: bundle.roleProfile,
+      dealershipId,
     });
     return sendJson(res, 200, {
       ok: true,
       dashboard,
+      dealershipId: dealershipId || null,
     });
   } catch (error) {
     console.error('[developer-dashboard] failed', error);
@@ -4765,10 +5258,28 @@ async function handleAutoForgeExportPdf(req, res) {
 async function handleStartSession(req, res) {
   try {
     const body = await readBody(req);
-    const bundle = await fetchUserBundle(body.userId, body.roleOverride, body.mockMode, body.mockRoleOverride);
+    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    const token = getRequestToken(req, url, body);
+    const authenticatedUserId = getAuthSession(token)?.userId || '';
+    const requestedUserId = String(body.userId || '').trim();
+    const userId = authenticatedUserId || requestedUserId;
+    if (!userId) {
+      return sendJson(res, 401, { ok: false, authRequired: true, message: 'Sign in required.' });
+    }
+
+    const bundle = await fetchUserBundle(userId, body.roleOverride, body.mockMode, body.mockRoleOverride);
     if (!bundle) {
       return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
     }
+    const dealershipId = String(bundle.user?.dealershipId || bundle.user?.selfDeclaredDealershipId || '').trim();
+    if (!dealershipId) {
+      return sendJson(res, 400, { ok: false, message: 'Authenticated user is missing a dealership assignment.' });
+    }
+    const dealershipIds = Array.from(new Set([
+      dealershipId,
+      ...getResolvedDealershipIds(bundle.user),
+    ]));
+    const dealershipName = String(bundle.user?.dealershipName || bundle.user?.storeName || bundle.user?.companyName || '').trim();
 
     const isFreshUp = isTruthyFlag(body.freshUp);
     const allowedCategories = getRoleLessonCategories(bundle.roleProfile?.roleLabel || bundle.user.role, bundle.roleProfile?.roleType || bundle.user.roleType);
@@ -4779,6 +5290,7 @@ async function handleStartSession(req, res) {
         : null;
     const mission = await generateStartSession(bundle, requestedLessonCategory, { freshUp: isFreshUp });
     const sessionId = crypto.randomUUID();
+    clearActiveSessionsForUser(bundle.user);
     const startingRatings = {
       empathy: BASELINE,
       listening: BASELINE,
@@ -4795,11 +5307,15 @@ async function handleStartSession(req, res) {
     activeSessions.set(sessionId, {
       sessionId,
       userId: bundle.user.userId,
+      userLookupKeys: buildSessionUserKeys(bundle.user),
       role: bundle.user.role,
       roleLabel: bundle.user.roleLabel || normalizeRoleLabel(bundle.user.role),
       focusTrait: bundle.user.focusTrait,
       roleType: bundle.user.roleType || resolveAisRoleType(bundle.user.role),
       roleProfile: bundle.roleProfile,
+      dealershipId,
+      dealershipIds,
+      dealershipName,
       roleOverride: bundle.user.roleOverride || null,
       mockRoleOverride: body.mockRoleOverride || bundle.user.roleOverride || null,
       mockMode: bundle.mockMode || false,
@@ -4830,35 +5346,44 @@ async function handleStartSession(req, res) {
       turnXpTotal: 0,
       responseModeCounts: { multiple_choice: 0, verbatim: 0 },
     });
-
-    const sessionPayload = {
-      sessionId,
-      title: mission.title,
-      lessonCategory: mission.lessonCategory || null,
-      lessonTitle: mission.lessonTitle || null,
-      freshUpSystemLabel: mission.freshUpSystemLabel || bundle.freshUpSystemLabel || bundle.freshUpExperience?.systemLabel || null,
-      freshUpBossLabel: mission.freshUpBossLabel || bundle.freshUpBossLabel || bundle.freshUpExperience?.bossLabel || null,
-      freshUpAudience: mission.freshUpAudience || bundle.freshUpExperience?.audience || null,
-      freshUpReadyCopy: mission.freshUpReadyCopy || bundle.freshUpExperience?.readyCopy || null,
-      freshUpLockedCopy: mission.freshUpLockedCopy || bundle.freshUpExperience?.lockedCopy || null,
-      description: mission.description,
-      coachLine: mission.coachLine,
-      customerName: mission.customerName,
-      customerOpening: mission.customerOpening,
-      focus: mission.focus,
-      trustLabel: mission.trustLabel,
-      targetUserTurns: mission.targetUserTurns,
-      currentUserTurns: 0,
-      progress: 0,
-      scenarioSummary: mission.scenarioSummary,
-      customerConcern: mission.customerConcern,
-      lessonCategory: mission.lessonCategory || bundle.lessonCategory || null,
-      lessonTitle: mission.lessonTitle || null,
-      activitySource: mission.activitySource || (isFreshUp ? 'fresh-up' : 'core'),
-      lessonId: mission.lessonId || (isFreshUp ? 'fresh-up' : null),
-      choices: mission.choices,
-      messages,
-    };
+    const sessionPayload = serializeActiveSession(activeSessions.get(sessionId));
+    if (!bundle.mockMode) {
+      try {
+        await persistSessionDocument(sessionId, {
+          userId: bundle.user.userId,
+          dealershipId,
+          dealershipIds,
+          dealershipName: dealershipName || null,
+          role: bundle.user.role,
+          roleLabel: bundle.user.roleLabel || normalizeRoleLabel(bundle.user.role),
+          roleType: bundle.user.roleType || resolveAisRoleType(bundle.user.role),
+          activitySource: mission.activitySource || (isFreshUp ? 'fresh-up' : 'core'),
+          lessonId: mission.lessonId || (isFreshUp ? 'fresh-up' : null),
+          lessonCategory: mission.lessonCategory || bundle.lessonCategory || null,
+          lessonTitle: mission.lessonTitle || null,
+          title: mission.title,
+          description: mission.description,
+          coachLine: mission.coachLine,
+          customerName: mission.customerName,
+          customerOpening: mission.customerOpening,
+          focus: mission.focus,
+          trustLabel: mission.trustLabel,
+          targetUserTurns: mission.targetUserTurns,
+          currentUserTurns: 0,
+          scenarioSummary: mission.scenarioSummary,
+          customerConcern: mission.customerConcern,
+          choices: mission.choices,
+          startedAt: admin.firestore.Timestamp.fromDate(new Date()),
+          status: 'active',
+          runningRatings: startingRatings,
+          responseModeCounts: { multiple_choice: 0, verbatim: 0 },
+          messages,
+          session: sessionPayload,
+        }, { includeCreatedAt: true });
+      } catch (sessionError) {
+        console.warn('[start-session] unable to persist session doc', sessionError.message);
+      }
+    }
 
     return sendJson(res, 200, {
       ok: true,
@@ -4895,8 +5420,8 @@ async function handleUpdateUserProfile(req, res) {
 
     const nextFirstName = String(body.firstName || '').trim();
     const nextLastName = String(body.lastName || '').trim();
-    const nextName = String(body.name || '').trim() || [nextFirstName, nextLastName].filter(Boolean).join(' ').trim();
-    const nextAvatarUrl = String(body.avatarUrl || '').trim();
+    const nextName = String(body.name || '').trim() || [nextFirstName, nextLastName].filter(Boolean).join(' ').trim() || String(bundle.user.name || '').trim();
+    const nextAvatarUrl = String(body.avatarUrl || bundle.user.avatarUrl || '').trim();
     const nextPreferences = {
       ...((bundle.user.preferences && typeof bundle.user.preferences === 'object') ? bundle.user.preferences : {}),
       ...(body.preferences && typeof body.preferences === 'object' ? body.preferences : {}),
@@ -4957,6 +5482,7 @@ async function updateUserAfterSession(bundle, result, session, answer) {
   const normalizedRatings = getNumericRatings(result.ratings);
   const activitySource = session.activitySource || 'core';
   const lessonId = session.lessonId || session.lessonCategory || session.sessionId;
+  const resolvedDealershipId = String(bundle.user?.dealershipId || bundle.user?.selfDeclaredDealershipId || '').trim();
   const averageRating = Math.round((
     normalizedRatings.empathy +
     normalizedRatings.listening +
@@ -5096,6 +5622,7 @@ async function updateUserAfterSession(bundle, result, session, answer) {
       logId: logRef.id,
       timestamp: admin.firestore.Timestamp.fromDate(now),
       userId: bundle.user.userId,
+      dealershipId: resolvedDealershipId || null,
       lessonId,
       activitySource,
       lessonCategory: session.lessonCategory || null,
@@ -5135,6 +5662,8 @@ async function updateUserAfterSession(bundle, result, session, answer) {
     updatedUser = {
       userId: bundle.user.userId,
       ...userData,
+      dealershipId: resolvedDealershipId || userData.dealershipId || '',
+      dealershipName: userData.dealershipName || bundle.user?.dealershipName || '',
       roleLabel: bundle.roleProfile?.roleLabel || normalizeRoleLabel(userData.role),
       roleType: bundle.roleProfile?.roleType || resolveAisRoleType(userData.role),
       roleScope: bundle.roleProfile?.maxEnrollmentScope || getMaxEnrollmentScopeForInviter(userData.role),
@@ -5224,32 +5753,7 @@ async function handleCompleteSession(req, res) {
         ok: true,
         stage: 'continue',
         sessionId: session.sessionId,
-        session: {
-          sessionId: session.sessionId,
-          title: session.title,
-          lessonCategory: session.lessonCategory || null,
-          lessonTitle: session.lessonTitle || null,
-          freshUpSystemLabel: session.freshUpSystemLabel || null,
-          freshUpBossLabel: session.freshUpBossLabel || null,
-          freshUpAudience: session.freshUpAudience || null,
-          freshUpReadyCopy: session.freshUpReadyCopy || null,
-          freshUpLockedCopy: session.freshUpLockedCopy || null,
-          activitySource,
-          lessonId,
-          description: session.description,
-          coachLine: session.coachLine,
-          customerName: session.customerName,
-          customerOpening: session.customerOpening,
-          focus: session.focus,
-          trustLabel: session.trustLabel,
-          targetUserTurns: session.targetUserTurns,
-          currentUserTurns: session.currentUserTurns,
-          progress: Math.round((session.currentUserTurns / session.targetUserTurns) * 100),
-          scenarioSummary: session.scenarioSummary,
-          customerConcern: session.customerConcern,
-          choices: session.choices,
-          messages: session.messages,
-        },
+        session: serializeActiveSession(session),
         response: {
           customerReply: turn.customerReply,
           coachNote: turn.coachNote,
@@ -5291,6 +5795,37 @@ async function handleCompleteSession(req, res) {
       answer: effectiveAnswer,
     });
     activeSessions.delete(body.sessionId);
+    if (!bundle.mockMode) {
+      try {
+        await persistSessionDocument(session.sessionId, {
+          userId: session.userId,
+          dealershipId: String(session.dealershipId || bundle.user?.dealershipId || bundle.user?.selfDeclaredDealershipId || '').trim() || null,
+          dealershipIds: Array.isArray(session.dealershipIds) ? session.dealershipIds : getResolvedDealershipIds(bundle.user),
+          dealershipName: String(session.dealershipName || bundle.user?.dealershipName || '').trim() || null,
+          role: session.role,
+          roleLabel: session.roleLabel,
+          roleType: session.roleType,
+          activitySource,
+          lessonId,
+          lessonCategory: session.lessonCategory || null,
+          lessonTitle: session.lessonTitle || null,
+          title: session.title,
+          description: session.description,
+          status: 'completed',
+          completedAt: admin.firestore.Timestamp.fromDate(new Date()),
+          currentUserTurns: session.currentUserTurns,
+          targetUserTurns: session.targetUserTurns,
+          trustLabel: finalResult.trustLabel || session.trustLabel || null,
+          result: {
+            severity: finalResult.severity || 'normal',
+            xpAwarded: finalResult.xpAwarded || 0,
+            flags: Array.isArray(finalResult.flags) ? finalResult.flags : [],
+          },
+        });
+      } catch (sessionError) {
+        console.warn('[complete-session] unable to update session doc', sessionError.message);
+      }
+    }
 
     const refreshed = bundle.mockMode
       ? {
@@ -5312,30 +5847,8 @@ async function handleCompleteSession(req, res) {
       badges: refreshed?.badges || [],
       insight: refreshed?.insight || bundle.insight,
       session: {
-        sessionId: session.sessionId,
-        title: session.title,
-        lessonCategory: session.lessonCategory || null,
-        lessonTitle: session.lessonTitle || null,
-        freshUpSystemLabel: session.freshUpSystemLabel || null,
-        freshUpBossLabel: session.freshUpBossLabel || null,
-        freshUpAudience: session.freshUpAudience || null,
-        freshUpReadyCopy: session.freshUpReadyCopy || null,
-        freshUpLockedCopy: session.freshUpLockedCopy || null,
-        activitySource,
-        lessonId,
-        description: session.description,
-        coachLine: session.coachLine,
-        customerName: session.customerName,
-        customerOpening: session.customerOpening,
-        focus: session.focus,
-        trustLabel: session.trustLabel,
-        targetUserTurns: session.targetUserTurns,
-        currentUserTurns: session.currentUserTurns,
+        ...serializeActiveSession(session),
         progress: 100,
-        scenarioSummary: session.scenarioSummary,
-        customerConcern: session.customerConcern,
-        choices: session.choices,
-        messages: session.messages,
       },
     });
   } catch (error) {
@@ -5363,6 +5876,10 @@ async function routeRequest(req, res) {
     return handleAuthEnroll(req, res);
   }
 
+  if (req.method === 'POST' && url.pathname === '/api/admin/dealership/create') {
+    return handleAdminDealershipCreate(req, res);
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/auth/sign-out') {
     return handleAuthSignOut(req, res);
   }
@@ -5373,6 +5890,10 @@ async function routeRequest(req, res) {
 
   if (req.method === 'POST' && url.pathname === '/api/autoforge/export-pdf') {
     return handleAutoForgeExportPdf(req, res);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/tools/insight') {
+    return handleToolInsight(req, res);
   }
 
   if (req.method === 'POST' && url.pathname === '/api/user/update') {
@@ -5392,8 +5913,18 @@ async function routeRequest(req, res) {
   }
 
   if (req.method === 'GET') {
-    const candidate = path.join(__dirname, decodeURIComponent(url.pathname));
-    if (candidate.startsWith(__dirname) && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+    const requestPath = decodeURIComponent(url.pathname);
+    const normalizedPath = requestPath.replace(/^\/+/, '');
+    const staticCandidates = [
+      path.join(__dirname, normalizedPath),
+      path.join(__dirname, 'public', normalizedPath),
+    ];
+    const candidate = staticCandidates.find((entry) => (
+      entry.startsWith(__dirname)
+      && fs.existsSync(entry)
+      && fs.statSync(entry).isFile()
+    ));
+    if (candidate) {
       const ext = path.extname(candidate).toLowerCase();
       const type = ext === '.js'
         ? 'text/javascript; charset=utf-8'
