@@ -3963,6 +3963,10 @@ async function buildDeveloperDashboardData({ currentUserId = '', userData = {}, 
       'dealershipId',
       'selfDeclaredDealershipId',
       'dealershipIds',
+      'dealershipName',
+      'dealershipEnrollmentCode',
+      'accountStatus',
+      'active',
     ],
     limit: 100,
   });
@@ -3986,6 +3990,13 @@ async function buildDeveloperDashboardData({ currentUserId = '', userData = {}, 
       role: normalizeRoleLabel(data.role),
       roleType: resolveAisRoleType(data.role),
       roleScope: getEnrollmentScopeLabel(getMaxEnrollmentScopeForInviter(data.role)),
+      dealershipId: String(data.dealershipId || data.selfDeclaredDealershipId || '').trim(),
+      selfDeclaredDealershipId: String(data.selfDeclaredDealershipId || '').trim(),
+      dealershipIds: Array.isArray(data.dealershipIds) ? data.dealershipIds.map((value) => String(value || '').trim()).filter(Boolean) : [],
+      dealershipName: String(data.dealershipName || data.storeName || data.companyName || '').trim(),
+      dealershipEnrollmentCode: String(data.dealershipEnrollmentCode || data.dealerCode || data.inviteCode || data.accessCode || '').trim(),
+      accountStatus: String(data.accountStatus || '').trim(),
+      active: data.active !== false,
       xp: Number(data.xp || 0),
       level: calculateLevel(Number(data.xp || 0)),
       streak: calculateStreak(recentLog ? [recentLog.timestamp] : []),
@@ -4023,8 +4034,40 @@ async function buildDeveloperDashboardData({ currentUserId = '', userData = {}, 
     return acc;
   }, {});
   const dealershipOverview = await buildDealershipAdminOverview();
+  const dealershipNameMap = new Map(
+    Array.isArray(dealershipOverview?.dealerships)
+      ? dealershipOverview.dealerships
+          .map((dealership) => [
+            String(dealership.dealershipId || '').trim(),
+            String(dealership.name || dealership.dealershipName || dealership.dealer_name || dealership.storeName || '').trim(),
+          ])
+          .filter(([dealershipId]) => Boolean(dealershipId))
+      : []
+  );
+  const usersWithDealershipNames = users.map((user) => {
+    const resolvedDealershipId = String(
+      user.dealershipId
+      || user.selfDeclaredDealershipId
+      || (Array.isArray(user.dealershipIds) ? user.dealershipIds[0] : '')
+      || ''
+    ).trim();
+    const dealershipName = String(
+      user.dealershipName
+      || dealershipNameMap.get(resolvedDealershipId)
+      || dealershipNameMap.get(String(user.selfDeclaredDealershipId || '').trim())
+      || resolvedDealershipId
+      || 'Current dealership'
+    ).trim();
+    return {
+      ...user,
+      dealershipId: resolvedDealershipId || user.dealershipId || '',
+      dealershipName,
+      active: user.active !== false,
+      accountStatus: String(user.accountStatus || (user.active === false ? 'inactive' : 'active')).trim() || (user.active === false ? 'inactive' : 'active'),
+    };
+  });
 
-  const sortedUsers = users
+  const sortedUsers = usersWithDealershipNames
     .slice()
     .sort((left, right) => Number(right.xp || 0) - Number(left.xp || 0));
 
@@ -4032,11 +4075,22 @@ async function buildDeveloperDashboardData({ currentUserId = '', userData = {}, 
     generatedAt: new Date().toISOString(),
     dealershipId: requestedDealershipId || null,
     summary: {
-      totalUsers,
-      avgXp,
-      avgMomentum,
-      activeToday,
-      roleCounts,
+      totalUsers: usersWithDealershipNames.length,
+      avgXp: usersWithDealershipNames.length
+        ? Math.round(usersWithDealershipNames.reduce((sum, item) => sum + Number(item.xp || 0), 0) / usersWithDealershipNames.length)
+        : 0,
+      avgMomentum: usersWithDealershipNames.length
+        ? Math.round(usersWithDealershipNames.reduce((sum, item) => sum + Number(item.momentumScore || 0), 0) / usersWithDealershipNames.length)
+        : 0,
+      activeToday: usersWithDealershipNames.filter((item) => {
+        const label = String(item.lastActive || '').toLowerCase();
+        return label === 'just now' || label.endsWith('m ago') || label.endsWith('h ago');
+      }).length,
+      roleCounts: usersWithDealershipNames.reduce((acc, item) => {
+        const role = item.role || 'Unknown';
+        acc[role] = (acc[role] || 0) + 1;
+        return acc;
+      }, {}),
     },
     dealerships: Array.isArray(dealershipOverview?.dealerships) ? dealershipOverview.dealerships : [],
     dealershipSummary: dealershipOverview?.summary || {
