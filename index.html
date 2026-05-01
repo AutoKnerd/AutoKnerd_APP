@@ -1869,13 +1869,19 @@ tailwind.config = {
 
 <div id="developerScreen" class="screen hidden-screen">
   <header class="fixed top-0 w-full z-50 bg-[#0e0e0e] dark:bg-[#000000] no-border-tonal-shift-only flat-no-shadows grid grid-cols-[auto,1fr,auto] items-center px-6 h-16 w-full">
-    <button id="developerMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-2 text-gray-500 transition-opacity duration-200 hover:opacity-80 active:bg-surface-container" aria-label="Open developer tools">
+    <button id="developerMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-1.5 text-gray-500 transition-opacity duration-200 hover:opacity-80 active:bg-surface-container" aria-label="Open developer tools">
       <img src="/gear-head.png" alt="" aria-hidden="true" class="h-7 w-7 object-contain" />
     </button>
     <h1 id="developerTitle" class="justify-self-center text-[#f3ffca] dark:text-[#cafd00] font-['Manrope'] font-bold tracking-tighter uppercase text-base">
       DEVELOPER
     </h1>
-    <button id="developerSignOutBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-on-surface-variant transition hover:text-on-surface">Sign out</button>
+    <div class="justify-self-end flex items-center gap-2">
+      <button id="developerProfileBtn" type="button" class="h-10 w-10 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest transition-opacity hover:opacity-80 active:scale-95 duration-200" aria-label="Open profile">
+        <img id="developerProfileAvatar" alt="Profile avatar" class="hidden h-full w-full object-cover" src="" />
+        <span id="developerProfileAvatarIcon" class="material-symbols-outlined text-on-surface-variant text-sm">person</span>
+      </button>
+      <button id="developerSignOutBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-on-surface-variant transition hover:text-on-surface">Sign out</button>
+    </div>
   </header>
 
   <main class="flex-grow pt-24 pb-32 px-4 md:px-8 max-w-5xl mx-auto space-y-8">
@@ -1909,6 +1915,90 @@ tailwind.config = {
           <span id="developerActiveToday" class="mt-1 block font-headline text-2xl font-bold text-on-surface">--</span>
         </div>
       </div>
+      <div class="rounded-3xl border border-white/10 bg-black/25 p-4 space-y-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">System status</p>
+            <h3 class="mt-1 font-headline text-xl font-bold text-on-surface">Firebase, Gemini, and server health</h3>
+          </div>
+          <button id="developerSystemStatusRefreshBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Refresh status</button>
+        </div>
+        <div class="grid gap-3 md:grid-cols-3">
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="flex items-center gap-2">
+              <span id="developerFirebaseStatusDot" class="h-3 w-3 rounded-full bg-error"></span>
+              <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Firebase</p>
+            </div>
+            <p id="developerFirebaseStatusLabel" class="mt-2 font-headline text-lg font-bold text-error">Unknown</p>
+            <p id="developerFirebaseStatusMeta" class="mt-1 text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Waiting for status check</p>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="flex items-center gap-2">
+              <span id="developerGeminiStatusDot" class="h-3 w-3 rounded-full bg-error"></span>
+              <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Gemini</p>
+            </div>
+            <p id="developerGeminiStatusLabel" class="mt-2 font-headline text-lg font-bold text-error">Unknown</p>
+            <p id="developerGeminiStatusMeta" class="mt-1 text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Waiting for status check</p>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div class="flex items-center gap-2">
+              <span id="developerServerStatusDot" class="h-3 w-3 rounded-full bg-error"></span>
+              <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Server</p>
+            </div>
+            <p id="developerServerStatusLabel" class="mt-2 font-headline text-lg font-bold text-error">Unknown</p>
+            <p id="developerServerStatusMeta" class="mt-1 text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Waiting for status check</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="space-y-4">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="font-label text-xs tracking-[0.24em] uppercase text-on-surface-variant">Dealerships</p>
+          <h3 class="font-headline text-2xl font-bold text-on-surface">Create and review stores</h3>
+        </div>
+        <button id="developerDealershipRefreshBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Refresh list</button>
+      </div>
+      <div class="grid gap-4 lg:grid-cols-[minmax(0,360px),minmax(0,1fr)]">
+        <form id="developerDealershipCreateForm" class="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
+          <div>
+            <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]">New dealership</p>
+            <h4 class="mt-1 font-headline text-xl font-bold text-on-surface">Create a store record</h4>
+            <p class="mt-2 text-sm text-on-surface-variant">Creates the dealership record and gives you a join code for enrollment.</p>
+          </div>
+          <label class="block space-y-2">
+            <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Dealership name</span>
+            <input id="developerDealershipNameInput" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-white/10" placeholder="Sunrise Honda" />
+          </label>
+          <label class="block space-y-2">
+            <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Enrollment code</span>
+            <input id="developerDealershipCodeInput" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-white/10" placeholder="sunrise-honda-2026" />
+          </label>
+          <label class="block space-y-2">
+            <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Plan</span>
+            <select id="developerDealershipPlanInput" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none focus:border-[#CCFF00]/40 focus:bg-white/10">
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="annual">Annual</option>
+            </select>
+          </label>
+          <button id="developerDealershipCreateBtn" type="submit" class="w-full rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-3 text-sm font-bold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15 active:scale-[0.99]">Create dealership</button>
+          <p id="developerDealershipCreateState" class="text-xs uppercase tracking-[0.22em] text-on-surface-variant">Ready to create a dealership.</p>
+          <div id="developerDealershipCreateResult" class="hidden-screen space-y-3"></div>
+        </form>
+
+        <div class="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Read only</p>
+              <h4 class="mt-1 font-headline text-xl font-bold text-on-surface">Existing dealerships</h4>
+            </div>
+            <p id="developerDealershipSummary" class="text-right text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">-- dealerships</p>
+          </div>
+          <div id="developerDealershipsList" class="space-y-3"></div>
+        </div>
+      </div>
     </section>
 
     <section class="space-y-4">
@@ -1920,6 +2010,26 @@ tailwind.config = {
         <input id="developerSearchInput" type="search" class="w-full max-w-xs rounded-full border border-white/10 bg-black/30 px-4 py-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Search users" />
       </div>
       <div id="developerUsersList" class="space-y-3"></div>
+    </section>
+
+    <section id="developerSessionInspectorSection" class="space-y-4">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="font-label text-xs tracking-[0.24em] uppercase text-on-surface-variant">Session inspector</p>
+          <h3 class="font-headline text-2xl font-bold text-on-surface">User transcripts and raw scores</h3>
+        </div>
+        <button id="developerSessionInspectorRefreshBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Refresh sessions</button>
+      </div>
+      <div class="space-y-4 rounded-3xl border border-white/10 bg-black/30 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Selected user</p>
+            <h4 id="developerSessionInspectorState" class="mt-1 font-headline text-xl font-bold text-on-surface">Select a user to inspect their sessions.</h4>
+          </div>
+          <p id="developerSessionInspectorSummary" class="text-right text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">No user selected</p>
+        </div>
+        <div id="developerSessionInspectorList" class="space-y-3"></div>
+      </div>
     </section>
   </main>
 </div>
@@ -1933,11 +2043,32 @@ tailwind.config = {
     authMode: localStorage.getItem("autoknerd:authMode") || 'signin',
     authToken: localStorage.getItem("autoknerd:authToken") || '',
     developerDashboard: null,
+    developerSystemStatus: null,
+    developerDealershipCreateResult: null,
+    developerDealershipCreateLoading: false,
+    developerDealershipCreateMessage: '',
+    developerDealershipsLocalEntries: (() => {
+      try {
+        const raw = localStorage.getItem("autoknerd:developerDealershipsLocalEntries") || '[]';
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    })(),
     developerSessionActive: localStorage.getItem("autoknerd:developerSession") === "1",
     developerSessionUserId: localStorage.getItem("autoknerd:developerUserId") || '',
     developerSessionBundle: null,
     developerImpersonationUserId: localStorage.getItem("autoknerd:developerImpersonationUserId") || '',
     developerLiveRefreshTimer: null,
+    developerSessionInspector: {
+      userId: '',
+      userName: '',
+      loading: false,
+      message: 'Select a user to inspect their sessions.',
+      summary: null,
+      sessions: [],
+    },
     isCompleting: false,
     selectedChoice: null,
     selectedChoiceText: '',
@@ -1997,6 +2128,9 @@ tailwind.config = {
   const toolWorkspaceScreen = document.getElementById("toolWorkspaceScreen");
   const developerScreen = document.getElementById("developerScreen");
   const developerMenuBtn = document.getElementById("developerMenuBtn");
+  const developerProfileBtn = document.getElementById("developerProfileBtn");
+  const developerProfileAvatar = document.getElementById("developerProfileAvatar");
+  const developerProfileAvatarIcon = document.getElementById("developerProfileAvatarIcon");
   const privacyScreen = document.getElementById("privacyScreen");
   const termsScreen = document.getElementById("termsScreen");
   const storeRequestScreen = document.getElementById("storeRequestScreen");
@@ -2115,6 +2249,26 @@ tailwind.config = {
   const mockPersonaRoleList = document.getElementById("mockPersonaRoleList");
   const developerCurrentRole = document.getElementById("developerCurrentRole");
   const mockUserStateLabel = document.getElementById("mockUserStateLabel");
+  const developerSystemStatusRefreshBtn = document.getElementById("developerSystemStatusRefreshBtn");
+  const developerFirebaseStatusDot = document.getElementById("developerFirebaseStatusDot");
+  const developerFirebaseStatusLabel = document.getElementById("developerFirebaseStatusLabel");
+  const developerFirebaseStatusMeta = document.getElementById("developerFirebaseStatusMeta");
+  const developerGeminiStatusDot = document.getElementById("developerGeminiStatusDot");
+  const developerGeminiStatusLabel = document.getElementById("developerGeminiStatusLabel");
+  const developerGeminiStatusMeta = document.getElementById("developerGeminiStatusMeta");
+  const developerServerStatusDot = document.getElementById("developerServerStatusDot");
+  const developerServerStatusLabel = document.getElementById("developerServerStatusLabel");
+  const developerServerStatusMeta = document.getElementById("developerServerStatusMeta");
+  const developerDealershipRefreshBtn = document.getElementById("developerDealershipRefreshBtn");
+  const developerDealershipCreateForm = document.getElementById("developerDealershipCreateForm");
+  const developerDealershipNameInput = document.getElementById("developerDealershipNameInput");
+  const developerDealershipCodeInput = document.getElementById("developerDealershipCodeInput");
+  const developerDealershipPlanInput = document.getElementById("developerDealershipPlanInput");
+  const developerDealershipCreateBtn = document.getElementById("developerDealershipCreateBtn");
+  const developerDealershipCreateState = document.getElementById("developerDealershipCreateState");
+  const developerDealershipCreateResult = document.getElementById("developerDealershipCreateResult");
+  const developerDealershipSummary = document.getElementById("developerDealershipSummary");
+  const developerDealershipsList = document.getElementById("developerDealershipsList");
   const settingsAccountName = document.getElementById("settingsAccountName");
   const settingsAccountRole = document.getElementById("settingsAccountRole");
   const settingsFirstNameInput = document.getElementById("settingsFirstNameInput");
@@ -2145,6 +2299,11 @@ tailwind.config = {
   const developerActiveToday = document.getElementById("developerActiveToday");
   const developerSearchInput = document.getElementById("developerSearchInput");
   const developerUsersList = document.getElementById("developerUsersList");
+  const developerSessionInspectorSection = document.getElementById("developerSessionInspectorSection");
+  const developerSessionInspectorRefreshBtn = document.getElementById("developerSessionInspectorRefreshBtn");
+  const developerSessionInspectorState = document.getElementById("developerSessionInspectorState");
+  const developerSessionInspectorSummary = document.getElementById("developerSessionInspectorSummary");
+  const developerSessionInspectorList = document.getElementById("developerSessionInspectorList");
   const managerStoreSelectorSelect = document.getElementById("managerStoreSelectorSelect");
   const storeRequestRole = document.getElementById("storeRequestRole");
   const storeRequestCurrentStore = document.getElementById("storeRequestCurrentStore");
@@ -2828,11 +2987,22 @@ tailwind.config = {
     state.developerSessionUserId = '';
     state.developerSessionBundle = null;
     state.developerImpersonationUserId = '';
+    state.developerSystemStatus = null;
+    state.developerSessionInspector = {
+      userId: '',
+      userName: '',
+      loading: false,
+      message: 'Select a user to inspect their sessions.',
+      summary: null,
+      sessions: [],
+    };
+    state.developerDealershipsLocalEntries = [];
     localStorage.removeItem("autoknerd:authToken");
     localStorage.removeItem("autoknerd:userId");
     localStorage.removeItem("autoknerd:developerSession");
     localStorage.removeItem("autoknerd:developerUserId");
     localStorage.removeItem("autoknerd:developerImpersonationUserId");
+    localStorage.removeItem("autoknerd:developerDealershipsLocalEntries");
   }
 
   function saveAuthSession(token, userId) {
@@ -2889,12 +3059,23 @@ tailwind.config = {
         const mockRoleOverride = getMockRoleOverride() || roleOverride;
         if (mockRoleOverride) query.set('mockRoleOverride', mockRoleOverride);
       }
-      const response = await fetch(`/api/developer/dashboard${query.toString() ? `?${query.toString()}` : ''}`, {
-        method: 'GET',
-        cache: 'no-store',
-        headers: buildApiHeaders(),
-      });
-      const payload = await response.json().catch(() => ({}));
+      const dashboardUrl = `/api/developer/dashboard${query.toString() ? `?${query.toString()}` : ''}`;
+      const [response, systemStatusResponse] = await Promise.all([
+        fetch(dashboardUrl, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: buildApiHeaders(),
+        }),
+        fetch('/api/admin/system-status', {
+          method: 'GET',
+          cache: 'no-store',
+          headers: buildApiHeaders(),
+        }),
+      ]);
+      const [payload, statusPayload] = await Promise.all([
+        response.json().catch(() => ({})),
+        systemStatusResponse.json().catch(() => ({})),
+      ]);
       if (response.status === 401 || response.status === 403) {
         await signOutAndShowAuth('Session expired. Please sign in again.');
         return null;
@@ -2903,6 +3084,7 @@ tailwind.config = {
         throw new Error(payload.message || 'Unable to load developer data.');
       }
       state.developerDashboard = payload.dashboard || null;
+      state.developerSystemStatus = systemStatusResponse.ok && statusPayload.ok ? (statusPayload.status || null) : null;
       renderDeveloperConsole(developerBundle, state.developerDashboard);
       return state.developerDashboard;
     } catch (error) {
@@ -3270,6 +3452,21 @@ tailwind.config = {
     exitImpersonationBtn.disabled = !active;
   }
 
+  function syncDeveloperProfileAvatar(avatarUrl = '') {
+    const nextAvatar = String(avatarUrl || '').trim();
+    if (developerProfileAvatar) {
+      if (nextAvatar) {
+        developerProfileAvatar.src = nextAvatar;
+        developerProfileAvatar.classList.remove('hidden');
+      } else {
+        developerProfileAvatar.classList.add('hidden');
+      }
+    }
+    if (developerProfileAvatarIcon) {
+      developerProfileAvatarIcon.classList.toggle('hidden', Boolean(nextAvatar));
+    }
+  }
+
   function updateMockUserToggle() {
     if (!toggleMockUserBtn) return;
     const active = Boolean(state.mockUserMode);
@@ -3376,6 +3573,7 @@ tailwind.config = {
     const showDeveloperMenuBtn = showDeveloperTrigger || isDeveloperConsoleVisible();
     if (homeMenuBtn) homeMenuBtn.classList.toggle('hidden-screen', !showDeveloperTrigger);
     if (developerMenuBtn) developerMenuBtn.classList.toggle('hidden-screen', !showDeveloperMenuBtn);
+    syncDeveloperProfileAvatar(state.developerSessionBundle?.user?.avatarUrl || state.bundle?.user?.avatarUrl || '');
     if (openDeveloperPanelBtn) openDeveloperPanelBtn.classList.toggle('hidden-screen', !enabled);
     if (clearDeveloperRoleBtn) clearDeveloperRoleBtn.classList.toggle('hidden-screen', !enabled);
     if (toggleMockUserBtn) toggleMockUserBtn.classList.toggle('hidden-screen', !enabled);
@@ -3958,6 +4156,600 @@ tailwind.config = {
     if (refs.profileHeaderAvatar) refs.profileHeaderAvatar.src = nextAvatar;
     if (refs.managerAvatarImage) refs.managerAvatarImage.src = nextAvatar;
     if (refs.aiOutputAvatarImage) refs.aiOutputAvatarImage.src = nextAvatar;
+    syncDeveloperProfileAvatar(nextAvatar);
+  }
+
+  function slugifyText(value) {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function buildClientEnrollmentUrl(enrollmentCode) {
+    const code = String(enrollmentCode || '').trim();
+    if (!code) return '';
+    return `${window.location.origin}/?enroll=${encodeURIComponent(code)}`;
+  }
+
+  function coerceDateLike(value) {
+    if (!value) return null;
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+    if (typeof value === 'string') {
+      const parsed = new Date(value);
+      if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+    if (typeof value === 'object') {
+      if (typeof value.toDate === 'function') {
+        const converted = value.toDate();
+        if (converted instanceof Date && !Number.isNaN(converted.getTime())) {
+          return converted;
+        }
+      }
+      const seconds = Number(value.seconds ?? value._seconds);
+      const nanos = Number(value.nanoseconds ?? value._nanoseconds ?? 0);
+      if (Number.isFinite(seconds)) {
+        return new Date((seconds * 1000) + Math.floor(nanos / 1e6));
+      }
+    }
+    return null;
+  }
+
+  function formatDisplayDate(value, { fallback = '--', includeTime = true } = {}) {
+    const date = coerceDateLike(value);
+    if (!date) return fallback;
+    return date.toLocaleString([], includeTime
+      ? { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }
+      : { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function getDealershipRecordKey(record) {
+    return String(record?.dealershipId || record?.id || '').trim();
+  }
+
+  function mergeDealershipRecords(...lists) {
+    const merged = new Map();
+    lists.flat().forEach((record) => {
+      const key = getDealershipRecordKey(record);
+      if (!key) return;
+      merged.set(key, {
+        ...(merged.get(key) || {}),
+        ...record,
+      });
+    });
+    return Array.from(merged.values()).sort((left, right) => {
+      const leftTime = coerceDateLike(left.createdAt)?.getTime() || 0;
+      const rightTime = coerceDateLike(right.createdAt)?.getTime() || 0;
+      return rightTime - leftTime;
+    });
+  }
+
+  function persistDeveloperDealershipEntries() {
+    try {
+      localStorage.setItem("autoknerd:developerDealershipsLocalEntries", JSON.stringify(state.developerDealershipsLocalEntries || []));
+    } catch (error) {
+      console.warn('Unable to persist developer dealership entries', error);
+    }
+  }
+
+  function buildDealershipSelectOptions(dealerships = [], selectedId = '') {
+    const selected = String(selectedId || '').trim();
+    const rows = Array.isArray(dealerships) ? dealerships : [];
+    const options = [
+      `<option value="">Keep current dealership</option>`,
+      ...rows.map((dealership) => {
+        const dealershipId = String(dealership.dealershipId || dealership.id || '').trim();
+        const name = String(dealership.name || dealership.dealershipId || 'Dealership').trim();
+        const activeLabel = dealership.active ? 'Active' : 'Inactive';
+        return `<option value="${escapeHtml(dealershipId)}" ${dealershipId === selected ? 'selected' : ''}>${escapeHtml(name)} (${escapeHtml(activeLabel)})</option>`;
+      }),
+    ];
+    return options.join('');
+  }
+
+  function setStatusIndicator(dotEl, labelEl, metaEl, stateValue = {}) {
+    if (!dotEl || !labelEl || !metaEl) return;
+    const isHealthy = Boolean(stateValue.healthy);
+    const label = String(stateValue.label || (isHealthy ? 'Live' : 'Offline')).trim();
+    const meta = String(stateValue.meta || '').trim();
+    dotEl.className = isHealthy
+      ? 'h-3 w-3 rounded-full bg-[#CCFF00] shadow-[0_0_0_1px_rgba(204,255,0,0.18),0_0_16px_rgba(204,255,0,0.22)]'
+      : 'h-3 w-3 rounded-full bg-error shadow-[0_0_0_1px_rgba(255,255,255,0.12)]';
+    labelEl.textContent = label;
+    metaEl.textContent = meta || '--';
+    labelEl.className = isHealthy
+      ? 'mt-2 block font-headline text-lg font-bold text-[#CCFF00]'
+      : 'mt-2 block font-headline text-lg font-bold text-error';
+    metaEl.className = isHealthy
+      ? 'mt-1 text-[10px] uppercase tracking-[0.22em] text-on-surface-variant'
+      : 'mt-1 text-[10px] uppercase tracking-[0.22em] text-error';
+  }
+
+  function renderDeveloperSystemStatus() {
+    const status = state.developerSystemStatus || null;
+    if (!status) {
+      setStatusIndicator(developerFirebaseStatusDot, developerFirebaseStatusLabel, developerFirebaseStatusMeta, {
+        healthy: false,
+        label: 'Unknown',
+        meta: 'Waiting for status check',
+      });
+      setStatusIndicator(developerGeminiStatusDot, developerGeminiStatusLabel, developerGeminiStatusMeta, {
+        healthy: false,
+        label: 'Unknown',
+        meta: 'Waiting for status check',
+      });
+      setStatusIndicator(developerServerStatusDot, developerServerStatusLabel, developerServerStatusMeta, {
+        healthy: false,
+        label: 'Unknown',
+        meta: 'Waiting for status check',
+      });
+      return;
+    }
+
+    setStatusIndicator(developerFirebaseStatusDot, developerFirebaseStatusLabel, developerFirebaseStatusMeta, {
+      healthy: Boolean(status.firestore?.reachable),
+      label: status.firestore?.reachable ? 'Live' : 'Offline',
+      meta: status.firestore?.message || (status.firestore?.reachable ? 'Firestore reachable' : 'Firestore unavailable'),
+    });
+    setStatusIndicator(developerGeminiStatusDot, developerGeminiStatusLabel, developerGeminiStatusMeta, {
+      healthy: Boolean(status.gemini?.configured),
+      label: status.gemini?.configured ? 'Ready' : 'Missing',
+      meta: status.gemini?.message || (status.gemini?.configured ? 'Gemini key configured' : 'Gemini key missing'),
+    });
+    const bootedAt = formatDisplayDate(status.serverBootTime, { fallback: '--', includeTime: true });
+    setStatusIndicator(developerServerStatusDot, developerServerStatusLabel, developerServerStatusMeta, {
+      healthy: true,
+      label: 'Running',
+      meta: `Booted ${bootedAt} · ${Math.max(0, Number(status.uptimeSeconds || 0)).toLocaleString()}s uptime`,
+    });
+  }
+
+  async function loadDeveloperSessionsForUser(userId, userName = '') {
+    const nextUserId = String(userId || '').trim();
+    if (!nextUserId) {
+      state.developerSessionInspector = {
+        userId: '',
+        userName: '',
+        loading: false,
+        message: 'Select a user to inspect their sessions.',
+        summary: null,
+        sessions: [],
+      };
+      renderDeveloperSessionInspector();
+      return null;
+    }
+
+    state.developerSessionInspector = {
+      ...(state.developerSessionInspector || {}),
+      userId: nextUserId,
+      userName: String(userName || '').trim(),
+      loading: true,
+      message: 'Loading sessions...',
+      summary: null,
+      sessions: [],
+    };
+    renderDeveloperSessionInspector();
+
+    try {
+      const query = new URLSearchParams({ userId: nextUserId, limit: '10' });
+      const response = await fetch(`/api/admin/sessions?${query.toString()}`, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: buildApiHeaders(),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (response.status === 401 || response.status === 403) {
+        await signOutAndShowAuth('Session expired. Please sign in again.');
+        return null;
+      }
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message || 'Unable to load sessions.');
+      }
+
+      state.developerSessionInspector = {
+        userId: nextUserId,
+        userName: String(payload.user?.name || userName || '').trim(),
+        loading: false,
+        message: payload.sessions?.length ? '' : 'No sessions found for this user.',
+        summary: payload.summary || null,
+        sessions: Array.isArray(payload.sessions) ? payload.sessions : [],
+      };
+      renderDeveloperSessionInspector();
+      return state.developerSessionInspector;
+    } catch (error) {
+      state.developerSessionInspector = {
+        userId: nextUserId,
+        userName: String(userName || '').trim(),
+        loading: false,
+        message: error instanceof Error ? error.message : 'Unable to load sessions.',
+        summary: null,
+        sessions: [],
+      };
+      renderDeveloperSessionInspector();
+      return null;
+    }
+  }
+
+  function renderDeveloperSessionInspector() {
+    if (!developerSessionInspectorSection || !developerSessionInspectorState || !developerSessionInspectorList) return;
+    const inspector = state.developerSessionInspector || {};
+    const hasUser = Boolean(inspector.userId);
+    const title = inspector.userName || inspector.userId || 'Selected user';
+    if (developerSessionInspectorSummary) {
+      const summary = inspector.summary || {};
+      developerSessionInspectorSummary.textContent = hasUser
+        ? `${Number(summary.returnedSessions || inspector.sessions?.length || 0)} sessions loaded`
+        : 'No user selected';
+    }
+
+    if (!hasUser) {
+      developerSessionInspectorState.textContent = 'Select a user to inspect their sessions.';
+      developerSessionInspectorList.innerHTML = '';
+      developerSessionInspectorSection.classList.remove('hidden-screen');
+      return;
+    }
+
+    if (inspector.loading) {
+      developerSessionInspectorState.textContent = `Loading sessions for ${title}...`;
+      developerSessionInspectorList.innerHTML = '';
+      developerSessionInspectorSection.classList.remove('hidden-screen');
+      return;
+    }
+
+    if ((inspector.message && !Array.isArray(inspector.sessions)) || !inspector.sessions.length) {
+      developerSessionInspectorState.textContent = inspector.message || `No sessions found for ${title}.`;
+      developerSessionInspectorList.innerHTML = '';
+      developerSessionInspectorSection.classList.remove('hidden-screen');
+      return;
+    }
+
+    developerSessionInspectorState.textContent = `${title} · ${inspector.sessions.length} session${inspector.sessions.length === 1 ? '' : 's'}`;
+    developerSessionInspectorList.innerHTML = inspector.sessions.map((session) => {
+      const messages = Array.isArray(session.messages) ? session.messages : [];
+      const transcript = messages.length
+        ? messages.map((message) => {
+            const speaker = String(message.speaker || message.sender || 'System').trim() || 'System';
+            const text = String(message.text || '').trim();
+            return `
+              <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                <p class="text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">${escapeHtml(speaker)}</p>
+                <p class="mt-1 text-sm text-on-surface">${escapeHtml(text || '--')}</p>
+              </div>
+            `;
+          }).join('')
+        : '<div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-on-surface-variant">No transcript available.</div>';
+
+      const result = session.result || null;
+      const runningRatings = session.runningRatings || {};
+      const ratingLabel = result?.ratings || runningRatings;
+      const completedAt = formatDisplayDate(session.completedAt || session.updatedAt || session.startedAt || session.createdAt, { fallback: '--', includeTime: true });
+      return `
+        <details class="rounded-3xl border border-white/10 bg-black/30 p-4">
+          <summary class="flex cursor-pointer list-none items-start justify-between gap-4">
+            <div class="min-w-0">
+              <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]">${escapeHtml(session.status || 'active')}</p>
+              <h4 class="mt-1 font-headline text-lg font-bold text-on-surface">${escapeHtml(session.title || session.lessonTitle || 'Session')}</h4>
+              <p class="mt-1 text-sm text-on-surface-variant">${escapeHtml(session.lessonCategory || session.activitySource || 'Core')} · ${escapeHtml(completedAt)}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">XP</p>
+              <p class="mt-1 font-headline text-xl font-bold text-on-surface">${escapeHtml(String(result?.xpAwarded ?? 0))}</p>
+            </div>
+          </summary>
+          <div class="mt-4 space-y-4">
+            <div class="grid gap-3 md:grid-cols-2">
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-on-surface-variant">
+                <p class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Customer</p>
+                <p class="mt-1 text-on-surface">${escapeHtml(session.customerName || 'Customer')}</p>
+                <p class="mt-2 text-xs">${escapeHtml(session.customerConcern || session.description || 'No customer note recorded.')}</p>
+              </div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-on-surface-variant">
+                <p class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Raw ratings</p>
+                <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+                  ${Object.entries(ratingLabel || {}).map(([key, value]) => `<div class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-on-surface-variant"><span class="uppercase tracking-[0.18em]">${escapeHtml(key)}</span> <span class="text-on-surface">${escapeHtml(String(Math.round(Number(value?.score ?? value ?? 0))))}</span></div>`).join('')}
+                </div>
+              </div>
+            </div>
+            <div>
+              <p class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Transcript</p>
+              <div class="mt-3 space-y-3">${transcript}</div>
+            </div>
+          </div>
+        </details>
+      `;
+    }).join('');
+
+    developerSessionInspectorSection.classList.remove('hidden-screen');
+  }
+
+  async function handleDeveloperUserUpdateDealership(event) {
+    event?.preventDefault?.();
+    const form = event?.currentTarget;
+    if (!form) return;
+    const userId = String(form.getAttribute('data-user-id') || '').trim();
+    const dealershipSelect = form.querySelector('[data-field="dealershipId"]');
+    const resetProgressInput = form.querySelector('[data-field="resetProgress"]');
+    const deactivateInput = form.querySelector('[data-field="deactivate"]');
+    const reassignDealershipId = String(dealershipSelect?.value || '').trim();
+    const resetProgress = Boolean(resetProgressInput?.checked);
+    const deactivate = Boolean(deactivateInput?.checked);
+
+    const submitBtn = form.querySelector('[data-dev-user-update-submit]');
+    const stateLabel = form.querySelector('[data-dev-user-update-state]');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+    }
+    if (stateLabel) {
+      stateLabel.textContent = 'Saving changes...';
+    }
+
+    try {
+      const response = await fetch('/api/admin/user/update-dealership', {
+        method: 'POST',
+        headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({
+          userId,
+          dealershipId: reassignDealershipId || undefined,
+          resetProgress,
+          deactivate,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (response.status === 401 || response.status === 403) {
+        await signOutAndShowAuth('Session expired. Please sign in again.');
+        return;
+      }
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message || 'Unable to update user.');
+      }
+      if (stateLabel) {
+        stateLabel.textContent = 'Updated successfully.';
+      }
+      await refreshDeveloperDashboard({ silent: true });
+      if (state.developerSessionInspector?.userId === userId) {
+        await loadDeveloperSessionsForUser(userId, payload.user?.name || state.developerSessionInspector.userName || '');
+      }
+    } catch (error) {
+      if (stateLabel) {
+        stateLabel.textContent = error instanceof Error ? error.message : 'Unable to update user.';
+      }
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save changes';
+      }
+    }
+  }
+
+  async function copyTextToClipboard(text) {
+    const nextText = String(text || '').trim();
+    if (!nextText) return false;
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(nextText);
+      return true;
+    }
+
+    const fallback = document.createElement('textarea');
+    fallback.value = nextText;
+    fallback.setAttribute('readonly', 'readonly');
+    fallback.style.position = 'fixed';
+    fallback.style.top = '-9999px';
+    document.body.appendChild(fallback);
+    fallback.select();
+    const copied = document.execCommand('copy');
+    document.body.removeChild(fallback);
+    return copied;
+  }
+
+  function renderDeveloperDealershipCreateResult() {
+    if (!developerDealershipCreateResult) return;
+    const result = state.developerDealershipCreateResult;
+    if (!result) {
+      developerDealershipCreateResult.innerHTML = '';
+      developerDealershipCreateResult.classList.add('hidden-screen');
+      return;
+    }
+
+    const dealershipName = String(result.name || result.dealership?.name || 'Dealership').trim();
+    const dealershipId = String(result.dealershipId || result.dealership?.dealershipId || '').trim();
+    const enrollmentCode = String(result.enrollmentCode || result.dealership?.enrollmentCode || '').trim();
+    const enrollmentUrl = String(result.enrollmentUrl || buildClientEnrollmentUrl(enrollmentCode) || '').trim();
+    const createdAt = formatDisplayDate(result.createdAt, { fallback: '', includeTime: true });
+
+    developerDealershipCreateResult.classList.remove('hidden-screen');
+    developerDealershipCreateResult.innerHTML = `
+      <div class="rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/5 p-4 space-y-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="font-label text-[10px] uppercase tracking-[0.22em] text-[#CCFF00]">Created dealership</p>
+            <h5 class="mt-1 font-headline text-lg font-bold text-on-surface">${escapeHtml(dealershipName)}</h5>
+            <p class="mt-1 text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">${escapeHtml(dealershipId)}</p>
+          </div>
+          <span class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#CCFF00]">Active</span>
+        </div>
+        <div class="space-y-2 text-sm text-on-surface-variant">
+          <p><span class="font-semibold text-on-surface">Enrollment code:</span> ${escapeHtml(enrollmentCode || '--')}</p>
+          <p class="break-words"><span class="font-semibold text-on-surface">Join link:</span> <span class="text-[#CCFF00]">${escapeHtml(enrollmentUrl || '--')}</span></p>
+          ${createdAt ? `<p><span class="font-semibold text-on-surface">Created:</span> ${escapeHtml(createdAt)}</p>` : ''}
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" data-copy-enrollment-link class="rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">Copy link</button>
+          <a href="${escapeHtml(enrollmentUrl)}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Open link</a>
+        </div>
+      </div>
+    `;
+
+    const copyBtn = developerDealershipCreateResult.querySelector('[data-copy-enrollment-link]');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await copyTextToClipboard(enrollmentUrl);
+          if (developerDealershipCreateState) {
+            developerDealershipCreateState.textContent = 'Enrollment link copied to clipboard.';
+          }
+        } catch (error) {
+          if (developerDealershipCreateState) {
+            developerDealershipCreateState.textContent = error instanceof Error ? error.message : 'Could not copy link.';
+          }
+        }
+      });
+    }
+  }
+
+  function renderDeveloperDealershipList(dealerships = [], summary = {}) {
+    if (!developerDealershipsList) return;
+    const rows = mergeDealershipRecords(state.developerDealershipsLocalEntries || [], Array.isArray(dealerships) ? dealerships : []);
+    if (developerDealershipSummary) {
+      const total = Number.isFinite(Number(summary.totalDealerships)) && Number(summary.totalDealerships) > 0
+        ? Number(summary.totalDealerships)
+        : rows.length;
+      const active = Number.isFinite(Number(summary.activeDealerships)) && Number(summary.activeDealerships) > 0
+        ? Number(summary.activeDealerships)
+        : rows.filter((dealership) => dealership.active).length;
+      const users = Number(summary.totalUsers ?? 0);
+      developerDealershipSummary.textContent = `${total} dealerships · ${active} active · ${users} users`;
+    }
+
+    if (!rows.length) {
+      developerDealershipsList.innerHTML = `
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-on-surface-variant">
+          No dealerships exist yet.
+        </div>
+      `;
+      return;
+    }
+
+    developerDealershipsList.innerHTML = rows.map((dealership) => {
+      const enrollmentCode = String(dealership.enrollmentCode || '').trim();
+      const enrollmentUrl = String(dealership.enrollmentUrl || buildClientEnrollmentUrl(enrollmentCode) || '').trim();
+      const createdAt = formatDisplayDate(dealership.createdAt, { fallback: '--', includeTime: false });
+      return `
+        <div class="rounded-2xl border ${dealership.active ? 'border-[#CCFF00]/20 bg-[#CCFF00]/5' : 'border-white/10 bg-white/5'} p-4">
+          <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <h5 class="font-headline text-lg font-bold text-on-surface">${escapeHtml(dealership.name || 'Dealership')}</h5>
+                <span class="rounded-full border ${dealership.active ? 'border-[#CCFF00]/20 bg-[#CCFF00]/10 text-[#CCFF00]' : 'border-white/10 bg-white/5 text-on-surface-variant'} px-2 py-1 text-[10px] font-bold uppercase tracking-[0.22em]">${dealership.active ? 'Active' : 'Inactive'}</span>
+              </div>
+              <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">${escapeHtml(dealership.dealershipId || dealership.id || '--')}</p>
+              <p class="mt-3 text-sm text-on-surface-variant">Plan: <span class="text-on-surface">${escapeHtml(String(dealership.plan || 'monthly').toUpperCase())}</span> · Users: <span class="text-on-surface">${escapeHtml(String(dealership.userCount ?? 0))}</span> · Created: <span class="text-on-surface">${escapeHtml(createdAt)}</span></p>
+              <p class="mt-2 text-xs text-on-surface-variant">Enrollment code: <span class="text-[#CCFF00]">${escapeHtml(enrollmentCode || '--')}</span></p>
+            </div>
+            <div class="flex flex-col items-start gap-2 md:items-end">
+              <button type="button" data-copy-dealership-link="${escapeHtml(enrollmentUrl)}" class="rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">Copy link</button>
+              <a href="${escapeHtml(enrollmentUrl)}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Open</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    developerDealershipsList.querySelectorAll('[data-copy-dealership-link]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const url = String(button.getAttribute('data-copy-dealership-link') || '').trim();
+        if (!url) return;
+        try {
+          await copyTextToClipboard(url);
+          if (developerDealershipCreateState) {
+            developerDealershipCreateState.textContent = 'Enrollment link copied to clipboard.';
+          }
+        } catch (error) {
+          if (developerDealershipCreateState) {
+            developerDealershipCreateState.textContent = error instanceof Error ? error.message : 'Could not copy link.';
+          }
+        }
+      });
+    });
+  }
+
+  async function handleDeveloperDealershipCreate(event) {
+    event?.preventDefault?.();
+    const name = String(developerDealershipNameInput?.value || '').trim();
+    const enrollmentCode = String(developerDealershipCodeInput?.value || '').trim();
+    const plan = String(developerDealershipPlanInput?.value || 'monthly').trim().toLowerCase() || 'monthly';
+
+    if (!name) {
+      if (developerDealershipCreateState) {
+        developerDealershipCreateState.textContent = 'Enter a dealership name.';
+      }
+      developerDealershipNameInput?.focus();
+      return;
+    }
+
+    if (!enrollmentCode) {
+      if (developerDealershipCreateState) {
+        developerDealershipCreateState.textContent = 'Enter an enrollment code.';
+      }
+      developerDealershipCodeInput?.focus();
+      return;
+    }
+
+    if (developerDealershipCreateBtn) {
+      developerDealershipCreateBtn.disabled = true;
+      developerDealershipCreateBtn.textContent = 'Creating...';
+    }
+    if (developerDealershipCreateState) {
+      developerDealershipCreateState.textContent = 'Creating dealership...';
+    }
+    state.developerDealershipCreateLoading = true;
+
+    try {
+      const response = await fetch('/api/admin/dealership/create', {
+        method: 'POST',
+        headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ name, enrollmentCode, plan }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message || 'Unable to create dealership.');
+      }
+
+      const dealership = payload.dealership || {};
+      const code = String(dealership.enrollmentCode || enrollmentCode).trim();
+      const enrollmentUrl = String(dealership.enrollmentUrl || buildClientEnrollmentUrl(code) || '').trim();
+      state.developerDealershipCreateResult = {
+        ...dealership,
+        name: dealership.name || name,
+        enrollmentCode: code,
+        enrollmentUrl,
+      };
+      state.developerDealershipsLocalEntries = mergeDealershipRecords(
+        [{ ...state.developerDealershipCreateResult }],
+        state.developerDealershipsLocalEntries || []
+      );
+      persistDeveloperDealershipEntries();
+      state.developerDealershipCreateMessage = `Created ${dealership.name || name}.`;
+      if (developerDealershipCreateState) {
+        developerDealershipCreateState.textContent = state.developerDealershipCreateMessage;
+      }
+
+      if (developerDealershipCreateForm) {
+        developerDealershipCreateForm.reset();
+      }
+      if (developerDealershipCodeInput) {
+        developerDealershipCodeInput.dataset.autosuggest = '0';
+      }
+
+      await refreshDeveloperDashboard({ silent: true });
+      renderDeveloperDealershipCreateResult();
+      renderDeveloperDealershipList(state.developerDashboard?.dealerships || [], state.developerDashboard?.dealershipSummary || {});
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to create dealership.';
+      state.developerDealershipCreateMessage = message;
+      state.developerDealershipCreateResult = null;
+      if (developerDealershipCreateState) {
+        developerDealershipCreateState.textContent = message;
+      }
+      renderDeveloperDealershipCreateResult();
+    } finally {
+      state.developerDealershipCreateLoading = false;
+      if (developerDealershipCreateBtn) {
+        developerDealershipCreateBtn.disabled = false;
+        developerDealershipCreateBtn.textContent = 'Create dealership';
+      }
+    }
   }
 
   function syncAvatarPickerSelection(selectedUrl) {
@@ -5519,6 +6311,7 @@ tailwind.config = {
     if (developerLiveState) {
       developerLiveState.textContent = liveLabel;
     }
+    syncDeveloperProfileAvatar(developerBundle.user.avatarUrl || state.bundle?.user?.avatarUrl || '');
     if (developerTotalUsers) {
       developerTotalUsers.textContent = String(summary.totalUsers ?? filteredUsers.length ?? 0);
     }
@@ -5533,6 +6326,18 @@ tailwind.config = {
     if (developerActiveToday) {
       developerActiveToday.textContent = String(summary.activeToday ?? 0);
     }
+
+    if (developerDealershipCreateState) {
+      developerDealershipCreateState.textContent = state.developerDealershipCreateLoading
+        ? 'Creating dealership...'
+        : (state.developerDealershipCreateMessage || 'Ready to create a dealership.');
+    }
+    if (developerDealershipCreateBtn) {
+      developerDealershipCreateBtn.disabled = Boolean(state.developerDealershipCreateLoading);
+      developerDealershipCreateBtn.textContent = state.developerDealershipCreateLoading ? 'Creating...' : 'Create dealership';
+    }
+    renderDeveloperDealershipCreateResult();
+    renderDeveloperDealershipList(liveDashboard?.dealerships || [], liveDashboard?.dealershipSummary || {});
 
     if (developerUsersList) {
       if (!filteredUsers.length) {
@@ -5549,6 +6354,8 @@ tailwind.config = {
           const freshUp = Math.max(0, Math.round(Number(member.freshUpMeter || 0)));
           const role = formatRoleTitle(member.role || member.roleLabel || 'Team Member');
           const statusTone = momentum >= 75 ? 'text-[#CCFF00]' : momentum >= 34 ? 'text-[#06EBF7]' : 'text-error';
+          const isInactive = String(member.accountStatus || '').toLowerCase() === 'inactive' || member.active === false;
+          const dealershipOptions = buildDealershipSelectOptions(Array.isArray(liveDashboard?.dealerships) ? liveDashboard.dealerships : [], member.dealershipId || member.selfDeclaredDealershipId || '');
           const avatar = member.avatarUrl
             ? `<img src="${escapeHtml(member.avatarUrl)}" alt="${escapeHtml(member.name || 'User')} avatar" class="h-12 w-12 rounded-full object-cover border border-white/10" />`
             : `<div class="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5"><span class="material-symbols-outlined text-[#CCFF00]">person</span></div>`;
@@ -5564,10 +6371,11 @@ tailwind.config = {
                     <div class="flex flex-wrap items-center gap-2">
                       <h4 class="font-headline text-lg font-bold text-on-surface">${escapeHtml(member.name || 'Unknown user')}</h4>
                       <span class="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">${escapeHtml(role)}</span>
+                      <span class="rounded-full border ${isInactive ? 'border-error/20 bg-error/10 text-error' : 'border-[#CCFF00]/20 bg-[#CCFF00]/10 text-[#CCFF00]'} px-2 py-1 text-[10px] font-bold uppercase tracking-[0.22em]">${isInactive ? 'Inactive' : 'Active'}</span>
                       ${String(member.id || member.userId || '') === String(liveDashboard?.self?.currentUserId || '') ? '<span class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#CCFF00]">You</span>' : ''}
                     </div>
                     <p class="mt-1 text-sm text-on-surface-variant">${escapeHtml(member.email || 'No email')}</p>
-                    <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">${escapeHtml(roleScope)} • ${escapeHtml(visibilityScope)}</p>
+                    <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">${escapeHtml(roleScope)} • ${escapeHtml(visibilityScope)}${member.dealershipName ? ` • ${escapeHtml(member.dealershipName)}` : ''}</p>
                     <p class="mt-2 text-sm text-on-surface-variant">Last lesson: ${escapeHtml(lastSession)}</p>
                     <p class="mt-3 text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]">Tap to open profile</p>
                   </div>
@@ -5594,7 +6402,33 @@ tailwind.config = {
               <div class="mt-4 flex flex-wrap gap-2">
                 <button type="button" data-dev-profile-id="${escapeHtml(member.id || member.userId || '')}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">View profile</button>
                 <button type="button" data-dev-impersonate-id="${escapeHtml(member.id || member.userId || '')}" class="rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">Step in as user</button>
+                <button type="button" data-dev-session-id="${escapeHtml(member.id || member.userId || '')}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Inspect sessions</button>
               </div>
+              <details class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                <summary class="cursor-pointer list-none font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Manage user</summary>
+                <form data-dev-user-update-form data-user-id="${escapeHtml(member.id || member.userId || '')}" class="mt-4 space-y-4">
+                  <label class="block space-y-2">
+                    <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Dealership</span>
+                    <select data-field="dealershipId" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none focus:border-[#CCFF00]/40 focus:bg-white/10">
+                      ${dealershipOptions}
+                    </select>
+                  </label>
+                  <div class="grid gap-3 md:grid-cols-2">
+                    <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface-variant">
+                      <input data-field="resetProgress" type="checkbox" class="h-4 w-4 rounded border-white/20 bg-black/30 text-[#CCFF00] focus:ring-[#CCFF00]/30" />
+                      Reset progress
+                    </label>
+                    <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface-variant">
+                      <input data-field="deactivate" type="checkbox" class="h-4 w-4 rounded border-white/20 bg-black/30 text-[#CCFF00] focus:ring-[#CCFF00]/30" />
+                      Deactivate account
+                    </label>
+                  </div>
+                  <div class="flex items-center justify-between gap-3">
+                    <p data-dev-user-update-state class="text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Ready to update this user.</p>
+                    <button type="submit" data-dev-user-update-submit class="rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">Save changes</button>
+                  </div>
+                </form>
+              </details>
             </div>
           `;
         }).join('');
@@ -5629,8 +6463,23 @@ tailwind.config = {
             await loadBootstrap();
           });
         });
+        developerUsersList.querySelectorAll('[data-dev-session-id]').forEach((button) => {
+          button.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const memberId = String(button.getAttribute('data-dev-session-id') || '').trim();
+            const member = users.find((item) => String(item.id || item.userId || '') === memberId);
+            await loadDeveloperSessionsForUser(memberId, member?.name || member?.email || '');
+            developerSessionInspectorSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        });
+        developerUsersList.querySelectorAll('[data-dev-user-update-form]').forEach((form) => {
+          form.addEventListener('submit', handleDeveloperUserUpdateDealership);
+        });
       }
     }
+
+    renderDeveloperSystemStatus();
+    renderDeveloperSessionInspector();
 
     document.title = `${roleLabel} - Developer Console`;
   }
@@ -6378,8 +7227,27 @@ tailwind.config = {
   });
   openProfileBtn.addEventListener("click", openProfileMenu);
   if (refs.profileHeaderMenuBtn) refs.profileHeaderMenuBtn.addEventListener("click", openProfileMenu);
+  if (developerProfileBtn) developerProfileBtn.addEventListener("click", openProfileMenu);
   if (aiOutputMenuBtn) aiOutputMenuBtn.addEventListener("click", openMenu);
   if (aiOutputProfileBtn) aiOutputProfileBtn.addEventListener("click", () => showProfile('self'));
+  if (developerDealershipRefreshBtn) developerDealershipRefreshBtn.addEventListener("click", () => {
+    void refreshDeveloperDashboard();
+  });
+  if (developerDealershipCreateForm) developerDealershipCreateForm.addEventListener("submit", handleDeveloperDealershipCreate);
+  if (developerDealershipNameInput && developerDealershipCodeInput) {
+    developerDealershipNameInput.addEventListener("input", () => {
+      const suggested = slugifyText(developerDealershipNameInput.value || '');
+      const currentCode = String(developerDealershipCodeInput.value || '').trim();
+      const wasAutosuggested = developerDealershipCodeInput.dataset.autosuggest === '1';
+      if (!currentCode || wasAutosuggested) {
+        developerDealershipCodeInput.value = suggested;
+        developerDealershipCodeInput.dataset.autosuggest = suggested ? '1' : '0';
+      }
+    });
+    developerDealershipCodeInput.addEventListener("input", () => {
+      developerDealershipCodeInput.dataset.autosuggest = '0';
+    });
+  }
   if (refs.managerViewToggleBtn) refs.managerViewToggleBtn.addEventListener("click", () => setManagerViewMode('personal'));
   if (refs.managerFooterToolsBtn) refs.managerFooterToolsBtn.addEventListener("click", showToolsHub);
   if (refs.managerFooterStoreBtn) refs.managerFooterStoreBtn.addEventListener("click", openManagerFooterPrimaryView);
@@ -6597,6 +7465,17 @@ tailwind.config = {
   if (lessonLibraryHistoryBtn) lessonLibraryHistoryBtn.addEventListener("click", () => showHistory());
   if (developerSearchInput) developerSearchInput.addEventListener("input", () => {
     renderDeveloperConsole(state.bundle, state.developerDashboard);
+  });
+  if (developerSystemStatusRefreshBtn) developerSystemStatusRefreshBtn.addEventListener("click", () => {
+    void refreshDeveloperDashboard({ silent: true });
+  });
+  if (developerSessionInspectorRefreshBtn) developerSessionInspectorRefreshBtn.addEventListener("click", () => {
+    const inspector = state.developerSessionInspector || {};
+    if (!inspector.userId) {
+      renderDeveloperSessionInspector();
+      return;
+    }
+    void loadDeveloperSessionsForUser(inspector.userId, inspector.userName || '');
   });
   if (authSubmitBtn) authSubmitBtn.addEventListener("click", () => {
     void (state.authMode === 'enroll' ? submitEnrollment() : submitAuth());
