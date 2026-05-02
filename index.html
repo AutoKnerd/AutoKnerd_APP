@@ -2010,6 +2010,16 @@ tailwind.config = {
           </div>
           <div id="developerDealershipsList" class="space-y-3"></div>
         </div>
+
+        <div class="space-y-4 rounded-3xl border border-orange-500/20 bg-orange-500/5 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
+          <div>
+            <p class="font-label text-[10px] uppercase tracking-[0.24em] text-orange-400">Data maintenance</p>
+            <h4 class="mt-1 font-headline text-xl font-bold text-on-surface">Backfill dealership IDs</h4>
+            <p class="mt-2 text-sm text-on-surface-variant">Promotes <code class="text-orange-300">selfDeclaredDealershipId</code> → <code class="text-orange-300">dealershipId</code> for any user missing a canonical store assignment. Run once after migrating existing accounts.</p>
+          </div>
+          <button id="developerBackfillDealershipBtn" type="button" class="rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm font-bold uppercase tracking-[0.22em] text-orange-400 transition hover:border-orange-500/50 hover:bg-orange-500/15 active:scale-[0.99]">Run backfill</button>
+          <p id="developerBackfillDealershipState" class="text-xs uppercase tracking-[0.22em] text-on-surface-variant">Ready.</p>
+        </div>
       </div>
     </section>
 
@@ -2307,6 +2317,8 @@ tailwind.config = {
   const developerDealershipCreateResult = document.getElementById("developerDealershipCreateResult");
   const developerDealershipSummary = document.getElementById("developerDealershipSummary");
   const developerDealershipsList = document.getElementById("developerDealershipsList");
+  const developerBackfillDealershipBtn = document.getElementById("developerBackfillDealershipBtn");
+  const developerBackfillDealershipState = document.getElementById("developerBackfillDealershipState");
   const developerDealershipsSection = document.getElementById("developerDealershipsSection");
   const developerDealershipRosterSection = document.getElementById("developerDealershipRosterSection");
   const developerDealershipRosterTitle = document.getElementById("developerDealershipRosterTitle");
@@ -2883,7 +2895,8 @@ tailwind.config = {
       authCodeLabel.textContent = isEnroll ? 'Invite / dealer code' : 'Password';
     }
     if (authCodeInput) {
-      authCodeInput.placeholder = isEnroll ? 'Optional if you have a code' : 'Optional if your password is set';
+      authCodeInput.placeholder = isEnroll ? 'Optional if you have a code' : 'Enter your password';
+      authCodeInput.required = !isEnroll;
     }
     if (authSubmitBtn) {
       authSubmitBtn.textContent = isEnroll ? 'Create account' : 'Continue';
@@ -2893,6 +2906,18 @@ tailwind.config = {
         ? 'Self-enrollment creates a personal account first. Owners and GMs see dealer-level data, managers see their team, and frontline roles see only themselves.'
         : 'Sign in with your portable AutoKnerd account to bring your coaching history, progress, and role-based dashboard with you from one dealership to the next.';
     }
+    setAuthCodeFieldError(false);
+  }
+
+  function setAuthCodeFieldError(active = false) {
+    if (!authCodeInput) return;
+    const shouldHighlight = Boolean(active);
+    authCodeInput.setAttribute('aria-invalid', shouldHighlight ? 'true' : 'false');
+    authCodeInput.style.borderColor = shouldHighlight ? '#ff4d4d' : '';
+    authCodeInput.style.backgroundColor = shouldHighlight ? 'rgba(42, 16, 16, 0.96)' : '';
+    authCodeInput.style.boxShadow = shouldHighlight
+      ? '0 0 0 1px rgba(255, 77, 77, 0.28), 0 0 22px rgba(255, 77, 77, 0.32)'
+      : '';
   }
 
   function stopDeveloperLiveRefresh() {
@@ -4303,12 +4328,43 @@ tailwind.config = {
       `<option value="">Keep current dealership</option>`,
       ...rows.map((dealership) => {
         const dealershipId = String(dealership.dealershipId || dealership.id || '').trim();
-        const name = String(dealership.name || dealership.dealershipId || 'Dealership').trim();
+        const name = String(dealership.name || dealership.dealershipName || dealership.storeName || dealership.dealer_name || dealership.dealershipId || 'Dealership').trim();
         const activeLabel = dealership.active ? 'Active' : 'Inactive';
         return `<option value="${escapeHtml(dealershipId)}" ${dealershipId === selected ? 'selected' : ''}>${escapeHtml(name)} (${escapeHtml(activeLabel)})</option>`;
       }),
     ];
     return options.join('');
+  }
+
+  function getMemberDealershipId(member = {}, preferredDealershipId = '') {
+    const preferred = String(preferredDealershipId || '').trim();
+    const ids = [
+      member.dealershipId,
+      member.selfDeclaredDealershipId,
+      ...(Array.isArray(member.dealershipIds) ? member.dealershipIds : []),
+    ].map((value) => String(value || '').trim()).filter(Boolean);
+    if (preferred && ids.includes(preferred)) return preferred;
+    return ids[0] || '';
+  }
+
+  function getDealershipNameById(dealershipId, dashboard = state.developerDashboard) {
+    const targetId = String(dealershipId || '').trim();
+    if (!targetId) return '';
+    const dealerships = mergeDealershipRecords(state.developerDealershipsLocalEntries || [], Array.isArray(dashboard?.dealerships) ? dashboard.dealerships : []);
+    const dealership = dealerships.find((item) => String(item.dealershipId || item.id || '').trim() === targetId);
+    return String(dealership?.name || dealership?.dealershipName || dealership?.storeName || dealership?.dealer_name || '').trim();
+  }
+
+  function getMemberDealershipLabel(member = {}, dashboard = state.developerDashboard, preferredDealershipId = '') {
+    const displayId = getMemberDealershipId(member, preferredDealershipId);
+    return String(
+      member.dealershipName
+      || member.storeName
+      || member.companyName
+      || getDealershipNameById(displayId, dashboard)
+      || displayId
+      || 'Unassigned dealership'
+    ).trim();
   }
 
   function getDeveloperRosterUsers(dealershipId, dashboard = state.developerDashboard) {
@@ -4437,13 +4493,14 @@ tailwind.config = {
     const role = formatRoleTitle(member.role || member.roleLabel || 'Team Member');
     const statusTone = momentum >= 75 ? 'text-[#CCFF00]' : momentum >= 34 ? 'text-[#06EBF7]' : 'text-error';
     const isInactive = String(member.accountStatus || '').toLowerCase() === 'inactive' || member.active === false;
-    const dealershipOptions = buildDealershipSelectOptions(Array.isArray(dashboard?.dealerships) ? dashboard.dealerships : [], member.dealershipId || member.selfDeclaredDealershipId || '');
+    const memberDealershipId = getMemberDealershipId(member);
+    const dealershipOptions = buildDealershipSelectOptions(Array.isArray(dashboard?.dealerships) ? dashboard.dealerships : [], memberDealershipId);
     const avatar = member.avatarUrl
       ? `<img src="${escapeHtml(member.avatarUrl)}" alt="${escapeHtml(member.name || 'User')} avatar" class="h-12 w-12 rounded-full object-cover border border-white/10" />`
       : `<div class="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5"><span class="material-symbols-outlined text-[#CCFF00]">person</span></div>`;
     const lastSession = member.lastLesson || member.recentSession?.title || 'No recent lesson';
     const roleScope = member.roleScope || 'Live Firebase';
-    const dealershipLabel = member.dealershipName || member.storeName || member.dealershipId || 'Current dealership';
+    const dealershipLabel = getMemberDealershipLabel(member, dashboard, memberDealershipId);
     return `
       <div class="w-full rounded-3xl border border-white/10 bg-black/30 p-5 text-left transition hover:border-[#CCFF00]/30 hover:bg-[#CCFF00]/5 active:scale-[0.995]">
         <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -4457,7 +4514,7 @@ tailwind.config = {
                 ${String(member.id || member.userId || '') === String(dashboard?.self?.currentUserId || '') ? '<span class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#CCFF00]">You</span>' : ''}
               </div>
               <p class="mt-1 text-sm text-on-surface-variant">${escapeHtml(member.email || 'No email')}</p>
-              <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">${escapeHtml(roleScope)} • Dealership • ${escapeHtml(dealershipLabel)}</p>
+              <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">${escapeHtml(dealershipLabel)}</p>
               <p class="mt-2 text-sm text-on-surface-variant">Last lesson: ${escapeHtml(lastSession)}</p>
               <p class="mt-3 text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]">Tap to open profile</p>
             </div>
@@ -4507,7 +4564,10 @@ tailwind.config = {
             </div>
             <div class="flex items-center justify-between gap-3">
               <p data-dev-user-update-state class="text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Ready to update this user.</p>
-              <button type="submit" data-dev-user-update-submit class="rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">Save changes</button>
+              <div class="flex items-center gap-2">
+                <button type="button" data-dev-user-remove-store class="rounded-full border border-error/30 bg-error/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-error transition hover:border-error/50 hover:bg-error/15">Remove from store</button>
+                <button type="submit" data-dev-user-update-submit class="rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">Save changes</button>
+              </div>
             </div>
           </form>
         </details>
@@ -4558,6 +4618,34 @@ tailwind.config = {
     });
     container.querySelectorAll('[data-dev-user-update-form]').forEach((form) => {
       form.addEventListener('submit', handleDeveloperUserUpdateDealership);
+      const removeBtn = form.querySelector('[data-dev-user-remove-store]');
+      const stateLabel = form.querySelector('[data-dev-user-update-state]');
+      if (removeBtn) {
+        removeBtn.addEventListener('click', async () => {
+          const userId = String(form.getAttribute('data-user-id') || '').trim();
+          if (!userId) return;
+          if (!confirm('Remove this user from their store? This will clear dealershipId, selfDeclaredDealershipId, and dealershipIds. They will no longer appear in any manager\'s team view.')) return;
+          removeBtn.disabled = true;
+          removeBtn.textContent = 'Removing...';
+          if (stateLabel) stateLabel.textContent = 'Clearing store assignment...';
+          try {
+            const response = await fetch('/api/admin/user/remove-from-store', {
+              method: 'POST',
+              headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
+              body: JSON.stringify({ userId }),
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!payload.ok) throw new Error(payload.message || 'Failed to remove user from store.');
+            if (stateLabel) stateLabel.textContent = 'Removed from store.';
+            void refreshDeveloperDashboard({ silent: true });
+          } catch (err) {
+            if (stateLabel) stateLabel.textContent = `Error: ${err instanceof Error ? err.message : 'Unknown error'}`;
+          } finally {
+            removeBtn.disabled = false;
+            removeBtn.textContent = 'Remove from store';
+          }
+        });
+      }
     });
   }
 
@@ -6044,6 +6132,7 @@ tailwind.config = {
                 </div>
               </div>
               <div class="md:w-1/4 flex flex-col justify-end text-right">
+                ${member.dealershipName ? `<span class="font-label text-[10px] text-primary uppercase tracking-widest mb-1">${escapeHtml(member.dealershipName)}</span>` : ""}
                 <span class="font-body text-xs text-on-surface-variant">Last active: <span class="text-on-surface">${escapeHtml(member.lastActive || "Recently")}</span></span>
               </div>
             </button>
@@ -7023,7 +7112,8 @@ tailwind.config = {
       connection: 'Pulling live data',
       status: 'Loading your dashboard',
     });
-    const roleOverride = getDeveloperRoleOverride();
+    const impersonationUserId = String(state.developerImpersonationUserId || localStorage.getItem("autoknerd:developerImpersonationUserId") || '').trim();
+    const roleOverride = impersonationUserId ? '' : getDeveloperRoleOverride();
     const mockRoleOverride = getMockRoleOverride() || roleOverride;
     const controller = new AbortController();
     const bootstrapTimeout = window.setTimeout(() => controller.abort(new Error('BOOTSTRAP_TIMEOUT')), 12000);
@@ -7135,7 +7225,8 @@ tailwind.config = {
     }
   }
 
-  async function submitAuth() {
+  async function submitAuth(options = {}) {
+    const { allowEmptyCode = false, temporaryDeveloperLogin = false } = options;
     const identifier = String(authIdentifierInput?.value || '').trim();
     const code = String(authCodeInput?.value || '').trim();
     if (!identifier) {
@@ -7143,6 +7234,14 @@ tailwind.config = {
         authStatusText.textContent = 'Enter your email or staff ID.';
       }
       authIdentifierInput?.focus();
+      return;
+    }
+    if (!code && !allowEmptyCode) {
+      if (authStatusText) {
+        authStatusText.textContent = 'Enter your password.';
+      }
+      setAuthCodeFieldError(true);
+      authCodeInput?.focus();
       return;
     }
     [authSubmitBtn, authDeveloperBtn, authSignInModeBtn, authEnrollModeBtn].forEach((button) => {
@@ -7156,6 +7255,7 @@ tailwind.config = {
     if (authStatusText) {
       authStatusText.textContent = 'Checking your account...';
     }
+    setAuthCodeFieldError(false);
     try {
       const response = await fetch('/api/auth/sign-in', {
         method: 'POST',
@@ -7163,6 +7263,9 @@ tailwind.config = {
         body: JSON.stringify({
           identifier,
           code,
+          password: code,
+          accessCode: code,
+          temporaryDeveloperLogin,
           mockMode: state.mockUserMode || undefined,
           roleOverride: getDeveloperRoleOverride() || undefined,
           mockRoleOverride: getMockRoleOverride() || undefined,
@@ -7170,14 +7273,19 @@ tailwind.config = {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.ok) {
+        setAuthCodeFieldError(true);
         throw new Error(payload.message || 'Unable to sign in.');
       }
       saveAuthSession(payload.token, payload.bundle?.user?.userId || '');
+      setAuthCodeFieldError(false);
       if (payload.bundle?.user?.roleLabel === 'Developer') {
         setInternalToolsEnabled(true);
       }
       await loadBootstrap();
     } catch (error) {
+      if (!allowEmptyCode) {
+        setAuthCodeFieldError(true);
+      }
       const message = error instanceof Error ? error.message : 'Unable to sign in.';
       if (authStatusText) {
         authStatusText.textContent = message;
@@ -7278,7 +7386,7 @@ tailwind.config = {
     if (authStatusText) {
       authStatusText.textContent = 'Signing in as developer...';
     }
-    await submitAuth();
+    await submitAuth({ allowEmptyCode: true, temporaryDeveloperLogin: true });
   }
 
   async function startSession(lessonCategory = '', options = {}) {
@@ -7683,6 +7791,30 @@ tailwind.config = {
   if (developerSystemStatusRefreshBtn) developerSystemStatusRefreshBtn.addEventListener("click", () => {
     void refreshDeveloperDashboard({ silent: true });
   });
+  if (developerBackfillDealershipBtn) developerBackfillDealershipBtn.addEventListener("click", async () => {
+    if (developerBackfillDealershipBtn.disabled) return;
+    developerBackfillDealershipBtn.disabled = true;
+    developerBackfillDealershipBtn.textContent = "Running...";
+    if (developerBackfillDealershipState) developerBackfillDealershipState.textContent = "Scanning users...";
+    try {
+      const response = await fetch("/api/admin/backfill-dealership-ids", {
+        method: "POST",
+        headers: buildApiHeaders({ "Content-Type": "application/json" }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!payload.ok) throw new Error(payload.message || "Backfill failed.");
+      if (developerBackfillDealershipState) {
+        developerBackfillDealershipState.textContent = `Done — ${payload.updated} user(s) updated, ${payload.skipped} already had dealershipId set.`;
+      }
+    } catch (err) {
+      if (developerBackfillDealershipState) {
+        developerBackfillDealershipState.textContent = `Error: ${err instanceof Error ? err.message : "Unknown error"}`;
+      }
+    } finally {
+      developerBackfillDealershipBtn.disabled = false;
+      developerBackfillDealershipBtn.textContent = "Run backfill";
+    }
+  });
   if (developerDealershipRosterBackBtn) developerDealershipRosterBackBtn.addEventListener("click", () => {
     showDeveloperDealershipOverview();
   });
@@ -7726,6 +7858,16 @@ tailwind.config = {
       if (event.key === 'Enter') {
         event.preventDefault();
         void (state.authMode === 'enroll' ? submitEnrollment() : submitAuth());
+      }
+    });
+    authCodeInput.addEventListener("input", () => {
+      if (authCodeInput.value.trim()) {
+        setAuthCodeFieldError(false);
+      }
+    });
+    authCodeInput.addEventListener("focus", () => {
+      if (authStatusText && String(authStatusText.textContent || '').includes('password')) {
+        setAuthCodeFieldError(false);
       }
     });
   }
