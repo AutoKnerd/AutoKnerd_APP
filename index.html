@@ -2083,6 +2083,7 @@ tailwind.config = {
     authMode: localStorage.getItem("autoknerd:authMode") || 'signin',
     authToken: localStorage.getItem("autoknerd:authToken") || '',
     developerDashboard: null,
+    developerDashboardStatus: 'idle',
     developerSystemStatus: null,
     developerView: 'overview',
     developerDealershipRoster: {
@@ -3059,6 +3060,7 @@ tailwind.config = {
     state.developerSessionUserId = '';
     state.developerSessionBundle = null;
     state.developerImpersonationUserId = '';
+    state.developerDashboardStatus = 'idle';
     state.developerSystemStatus = null;
     state.developerSessionInspector = {
       userId: '',
@@ -3130,6 +3132,7 @@ tailwind.config = {
     if (!silent && developerLiveState) {
       developerLiveState.textContent = 'Refreshing';
     }
+    state.developerDashboardStatus = 'loading';
     try {
       const roleOverride = developerBundle?.user?.roleOverride || getDeveloperRoleOverride() || 'Developer';
       const query = new URLSearchParams();
@@ -3140,18 +3143,28 @@ tailwind.config = {
         if (mockRoleOverride) query.set('mockRoleOverride', mockRoleOverride);
       }
       const dashboardUrl = `/api/developer/dashboard${query.toString() ? `?${query.toString()}` : ''}`;
-      const [response, systemStatusResponse] = await Promise.all([
-        fetch(dashboardUrl, {
-          method: 'GET',
-          cache: 'no-store',
-          headers: buildApiHeaders(),
-        }),
-        fetch('/api/admin/system-status', {
-          method: 'GET',
-          cache: 'no-store',
-          headers: buildApiHeaders(),
-        }),
-      ]);
+      const controller = new AbortController();
+      const refreshTimeout = window.setTimeout(() => controller.abort(new Error('DEVELOPER_DASHBOARD_TIMEOUT')), 10000);
+      let response;
+      let systemStatusResponse;
+      try {
+        [response, systemStatusResponse] = await Promise.all([
+          fetch(dashboardUrl, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: buildApiHeaders(),
+            signal: controller.signal,
+          }),
+          fetch('/api/admin/system-status', {
+            method: 'GET',
+            cache: 'no-store',
+            headers: buildApiHeaders(),
+            signal: controller.signal,
+          }),
+        ]);
+      } finally {
+        clearTimeout(refreshTimeout);
+      }
       const [payload, statusPayload] = await Promise.all([
         response.json().catch(() => ({})),
         systemStatusResponse.json().catch(() => ({})),
@@ -3163,11 +3176,15 @@ tailwind.config = {
       if (!response.ok || !payload.ok) {
         throw new Error(payload.message || 'Unable to load developer data.');
       }
-      state.developerDashboard = payload.dashboard || null;
+      state.developerDashboard = payload.dashboard || state.developerDashboard || null;
+      state.developerDashboardStatus = String(payload.dashboardStatus || (payload.dashboard ? 'live' : 'offline')).trim() || 'offline';
       state.developerSystemStatus = systemStatusResponse.ok && statusPayload.ok ? (statusPayload.status || null) : null;
       renderDeveloperConsole(developerBundle, state.developerDashboard);
       return state.developerDashboard;
     } catch (error) {
+      state.developerDashboardStatus = String(error?.message || '').includes('TIMEOUT') || String(error?.name || '') === 'AbortError'
+        ? 'offline'
+        : 'error';
       if (!silent && developerLiveState) {
         developerLiveState.textContent = error instanceof Error ? error.message : 'Unable to load live data';
       }
@@ -6715,9 +6732,16 @@ tailwind.config = {
         })
       : users;
     const generatedAt = liveDashboard?.generatedAt ? new Date(liveDashboard.generatedAt) : null;
-    const liveLabel = generatedAt
-      ? `Live · ${generatedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
-      : 'Connecting';
+    const dashboardStatus = String(state.developerDashboardStatus || '').trim();
+    const liveLabel = dashboardStatus === 'loading'
+      ? 'Connecting'
+      : dashboardStatus === 'offline'
+        ? 'Live data unavailable'
+        : dashboardStatus === 'error'
+          ? 'Unable to load live data'
+          : generatedAt
+            ? `Live · ${generatedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
+            : 'Connecting';
     const isRosterView = state.developerView === 'roster' && Boolean(state.developerDealershipRoster?.dealershipId);
 
     if (developerTitle) {

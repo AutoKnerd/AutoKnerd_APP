@@ -5505,7 +5505,7 @@ async function handleAdminDealershipList(req, res) {
 async function handleAdminUserRemoveFromStore(req, res) {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-    const body = await parseBody(req);
+    const body = await readBody(req);
     const token = getRequestToken(req, url, body);
     const authSession = getAuthSession(token);
     if (!authSession?.userId) {
@@ -5947,15 +5947,21 @@ async function handleDeveloperDashboard(req, res, url) {
     if (!isPrivilegedDealershipRole(roleLabel)) {
       return sendJson(res, 403, { ok: false, message: 'Developer or Admin access required.' });
     }
-    const dashboard = await buildDeveloperDashboardData({
-      currentUserId: bundle.user.userId,
-      userData: bundle.user,
-      roleProfile: bundle.roleProfile,
-      dealershipId,
-    });
+    const dashboard = await withTimeout(
+      buildDeveloperDashboardData({
+        currentUserId: bundle.user.userId,
+        userData: bundle.user,
+        roleProfile: bundle.roleProfile,
+        dealershipId,
+      }),
+      8000,
+      null,
+    );
     return sendJson(res, 200, {
       ok: true,
       dashboard,
+      dashboardStatus: dashboard ? 'live' : 'offline',
+      message: dashboard ? null : 'Developer dashboard is unavailable right now.',
       dealershipId: dealershipId || null,
     });
   } catch (error) {
