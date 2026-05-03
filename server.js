@@ -4630,6 +4630,13 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
   }
 
   const streak = calculateStreak(recentLogsToUse.map((log) => log.timestamp));
+  const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const sessionsThisWeek = recentLogsToUse.filter((log) => {
+    const ts = log.timestamp;
+    if (!ts) return false;
+    const ms = typeof ts === 'number' ? ts : new Date(ts).getTime();
+    return !isNaN(ms) && ms >= oneWeekAgo;
+  }).length;
   const focusTrait = weakestTrait(stats);
   const strongTrait = strongestTrait(stats);
   const averageSkill = scoreFromStats(stats);
@@ -4696,6 +4703,7 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
       xp,
       level,
       streak,
+      sessionsThisWeek,
       momentumScore,
       dealershipId: nextDealershipId || userData.dealershipId || '',
       dealershipIds: Array.from(new Set([...(nextDealershipIds || []), String(userData.dealershipId || '').trim()].filter(Boolean))),
