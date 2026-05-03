@@ -147,7 +147,7 @@ tailwind.config = {
     }
 
     to {
-      transform: rotate(360deg);
+      transform: rotate(-360deg);
     }
   }
 
@@ -173,6 +173,75 @@ tailwind.config = {
 
   .loading-spin {
     animation: loading-spin 3.8s linear infinite;
+  }
+
+  .ai-output-report {
+    color: rgba(226, 228, 207, 0.95);
+    font-size: 1rem;
+    line-height: 1.75;
+    letter-spacing: -0.01em;
+  }
+
+  .ai-output-report h1,
+  .ai-output-report h2,
+  .ai-output-report h3 {
+    color: #ffffff;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin: 0 0 0.75rem;
+  }
+
+  .ai-output-report h1 {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+  }
+
+  .ai-output-report h2 {
+    font-size: clamp(1.2rem, 2vw, 1.5rem);
+    margin-top: 1.5rem;
+  }
+
+  .ai-output-report h3 {
+    font-size: 1.05rem;
+    margin-top: 1.2rem;
+  }
+
+  .ai-output-report p {
+    margin: 0 0 0.95rem;
+  }
+
+  .ai-output-report ul,
+  .ai-output-report ol {
+    margin: 0.2rem 0 0.95rem 0.85rem;
+    padding: 0;
+  }
+
+  .ai-output-report li {
+    margin: 0.35rem 0;
+  }
+
+  .ai-output-report strong {
+    color: #ffffff;
+    font-weight: 800;
+  }
+
+  .ai-output-report em {
+    color: #f5f7d0;
+    font-style: italic;
+  }
+
+  .ai-output-report .ai-output-intro {
+    border-left: 4px solid #ccff00;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 1rem;
+    padding: 1rem 1rem 1rem 1.1rem;
+    margin: 0 0 1.25rem;
+  }
+
+  .ai-output-report .ai-output-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   #toolsHubScreen {
@@ -311,64 +380,9 @@ tailwind.config = {
 </div>
 
 <div id="bootScreen" class="fixed inset-0 z-40 flex items-center justify-center bg-background/95 px-4 backdrop-blur-xl">
-  <div class="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#111111]/92 p-6 shadow-[0_40px_120px_rgba(0,0,0,0.7)] md:p-8">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(204,255,0,0.16),_transparent_55%)]"></div>
-    <div class="relative flex flex-col gap-6">
-      <div class="flex items-start gap-4 md:items-center">
-        <div class="loading-ring relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
-          <div class="absolute inset-2 rounded-full border border-primary/20"></div>
-          <img src="/gear-head.png" alt="AutoKnerd gear logo" class="loading-spin h-10 w-10 object-contain" />
-        </div>
-        <div class="min-w-0 flex-1">
-          <p class="font-label text-[10px] uppercase tracking-[0.32em] text-primary/80">Loading profile</p>
-          <h1 class="mt-2 font-headline text-3xl font-bold text-on-surface md:text-4xl">Waking up AutoKnerd</h1>
-          <p class="mt-2 max-w-2xl text-sm leading-relaxed text-on-surface-variant md:text-base">Syncing your account, lesson history, and coaching momentum so the dashboard opens ready to work.</p>
-        </div>
-      </div>
-
-      <div class="grid gap-3 md:grid-cols-3">
-        <div class="rounded-2xl border border-white/10 bg-black/25 p-4">
-          <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">1. Verify</p>
-          <p class="mt-2 font-headline text-lg font-bold text-on-surface">Checking access</p>
-          <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">Confirming your session and role before we show any live data.</p>
-        </div>
-        <div class="rounded-2xl border border-white/10 bg-black/25 p-4">
-          <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">2. Sync</p>
-          <p class="mt-2 font-headline text-lg font-bold text-on-surface">Loading lessons</p>
-          <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">Pulling your freshest coaching progress and recommended next steps.</p>
-        </div>
-        <div class="rounded-2xl border border-white/10 bg-black/25 p-4">
-          <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">3. Ready</p>
-          <p class="mt-2 font-headline text-lg font-bold text-on-surface">Preparing dashboard</p>
-          <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">Assembling your home screen, insights, and launch controls.</p>
-        </div>
-      </div>
-
-      <div class="rounded-[1.5rem] border border-white/10 bg-black/30 p-4">
-        <div class="flex items-center justify-between gap-4">
-          <div>
-            <p class="font-label text-[10px] uppercase tracking-[0.24em] text-primary/80">Connection</p>
-            <p id="bootConnectionText" class="mt-1 text-sm font-medium text-on-surface">Pulling live data</p>
-          </div>
-          <div class="loading-dots flex items-center gap-2 text-primary">
-            <span class="loading-dot h-2 w-2 rounded-full bg-current"></span>
-            <span class="loading-dot h-2 w-2 rounded-full bg-current" style="animation-delay: 0.15s;"></span>
-            <span class="loading-dot h-2 w-2 rounded-full bg-current" style="animation-delay: 0.3s;"></span>
-          </div>
-        </div>
-        <div class="mt-4 space-y-3">
-          <div class="h-3 rounded-full bg-white/6 loading-shimmer"></div>
-          <div class="h-3 w-5/6 rounded-full bg-white/6 loading-shimmer"></div>
-          <div class="h-3 w-2/3 rounded-full bg-white/6 loading-shimmer"></div>
-        </div>
-        <div class="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-          <p id="bootStatusText" class="text-xs uppercase tracking-[0.24em] text-on-surface-variant">Loading your dashboard</p>
-          <button id="bootRetryBtn" type="button" class="hidden-screen rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">
-            Try again
-          </button>
-        </div>
-      </div>
-    </div>
+  <div class="relative flex items-center justify-center">
+    <div class="absolute inset-[-2rem] rounded-full bg-primary/15 blur-3xl"></div>
+    <img src="/gear-head.png" alt="AutoKnerd loading" class="loading-spin relative h-48 w-48 object-contain md:h-56 md:w-56" />
   </div>
 </div>
 
@@ -447,13 +461,14 @@ tailwind.config = {
     <button id="homeMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-2 text-zinc-500 transition-colors duration-300 hover:border-[#CCFF00]/30 hover:bg-white/10 hover:text-[#CCFF00]" aria-label="Open developer tools">
       <img src="/gear-head.png" alt="" aria-hidden="true" class="h-7 w-7 object-contain" />
     </button>
-    <h1 class="justify-self-center font-['Space_Grotesk'] uppercase tracking-widest font-bold text-lg text-[#ccff00]">HOME</h1>
+    <h1 class="justify-self-center font-['Manrope'] uppercase tracking-widest font-black text-lg leading-none text-[#CCFF00]">HOME</h1>
     <div class="justify-self-end flex items-center gap-2">
       <button id="homeManagerToggleBtn" type="button" class="hidden rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.24em] text-[#CCFF00] transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15 active:scale-95">
         Store
       </button>
-      <button id="openProfileBtn" class="w-8 h-8 rounded-full bg-surface-container-highest border border-outline-variant/30 overflow-hidden flex items-center justify-center hover:opacity-80 transition-opacity active:scale-95">
-        <span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="person">person</span>
+      <button id="openProfileBtn" type="button" class="h-8 w-8 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest transition-opacity hover:opacity-80 active:scale-95" aria-label="Open profile">
+        <img id="homeProfileAvatar" alt="Profile avatar" class="hidden h-full w-full object-cover" src="" />
+        <span id="homeProfileAvatarIcon" class="material-symbols-outlined text-on-surface-variant text-sm">person</span>
       </button>
     </div>
   </header>
@@ -732,16 +747,21 @@ tailwind.config = {
         </div>
       </section>
 
-      <section class="bg-surface-variant/40 backdrop-blur-[20px] rounded-3xl p-8 border border-outline-variant/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_15px_35px_rgba(0,0,0,0.5)] relative overflow-hidden">
+      <section id="managerMomentumSection" class="bg-surface-variant/40 backdrop-blur-[20px] rounded-3xl p-5 md:p-8 border border-outline-variant/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_15px_35px_rgba(0,0,0,0.5)] relative overflow-hidden">
         <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==')] opacity-20 mix-blend-overlay"></div>
-        <div class="flex justify-between items-start mb-2 relative z-10">
-          <div>
+        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-2 relative z-10">
+          <div class="min-w-0">
             <h2 class="font-headline text-2xl font-bold tracking-tight text-on-surface">Momentum</h2>
-            <p id="managerMomentumSubtitle" class="font-body text-sm text-on-surface-variant">Department average over time</p>
+            <p id="managerMomentumSubtitle" class="font-body text-sm text-on-surface-variant">Session effectiveness over time</p>
+            <p id="managerMomentumSummary" class="mt-2 text-xs uppercase tracking-[0.22em] text-on-surface-variant">Loading momentum data.</p>
           </div>
-          <span class="material-symbols-outlined text-on-surface-variant">monitoring</span>
+          <a href="#managerStaffSection" class="inline-flex w-fit items-center gap-2 rounded-full border border-outline-variant/20 bg-surface-container/40 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-on-surface-variant transition-colors hover:border-primary/30 hover:text-primary">
+            <span>View team</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_downward</span>
+          </a>
         </div>
-        <div id="managerMomentumChart" class="h-40 mt-8 flex items-end justify-between gap-2 relative z-10"></div>
+        <div id="managerMomentumChart" class="mt-6 md:mt-8 relative z-10"></div>
+        <div id="managerMomentumLabels" class="flex justify-between mt-2 text-[10px] text-on-surface-variant font-label uppercase tracking-wider relative z-10"></div>
       </section>
 
       <section id="managerStoreSelectorSection" class="hidden-screen bg-surface-variant/35 backdrop-blur-[18px] rounded-2xl p-4 border border-outline-variant/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_14px_30px_rgba(0,0,0,0.35)]">
@@ -791,39 +811,42 @@ tailwind.config = {
   </div>
 </footer>
 
-<div id="aiOutputScreen" class="screen hidden-screen bg-black text-on-surface font-body antialiased h-screen flex flex-col overflow-hidden">
+<div id="aiOutputScreen" class="screen hidden-screen bg-black text-on-surface font-body antialiased min-h-screen flex flex-col overflow-hidden">
   <header class="fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-black/60 backdrop-blur-xl shadow-[0_40px_40px_-10px_rgba(0,0,0,0.5)]">
     <button id="aiOutputMenuBtn" type="button" class="flex items-center justify-center p-2 rounded-full hover:opacity-80 transition-opacity active:scale-95 duration-200 text-on-surface" aria-label="Open menu">
       <span class="material-symbols-outlined">menu</span>
     </button>
-    <h1 class="font-headline font-bold tracking-tighter uppercase text-xl text-primary">AI INSIGHTS</h1>
+    <h1 class="font-headline font-bold tracking-tighter uppercase text-xl text-primary">COACHING PLAN</h1>
     <button id="aiOutputProfileBtn" type="button" class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden flex items-center justify-center hover:opacity-80 transition-opacity active:scale-95 duration-200" aria-label="Open profile">
       <img id="aiOutputAvatarImage" alt="User profile" class="hidden w-full h-full object-cover" src="" />
       <span id="aiOutputAvatarIcon" class="material-symbols-outlined text-on-surface-variant text-sm">person</span>
     </button>
   </header>
-  <main class="flex-1 flex flex-col items-center pt-24 pb-6 px-4 h-full relative overflow-hidden">
-    <div class="absolute inset-0 z-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at 50% 50%, var(--tw-colors-primary) 0%, transparent 60%);"></div>
-    <div class="relative w-full max-w-[90%] flex-1 min-h-0 mb-6 rounded-xl bg-surface-variant/40 backdrop-blur-[30px] shadow-[0_40px_40px_-10px_rgba(0,0,0,0.5)] flex flex-col z-10 overflow-hidden outline outline-white/10">
-      <div class="p-6 pb-4 shrink-0 border-b border-white/5">
-        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+  <main class="flex-1 overflow-y-auto px-2 pb-8 pt-24 md:px-4 lg:px-6">
+    <div class="relative mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-6xl flex-col gap-4">
+      <section class="relative shrink-0 overflow-hidden rounded-[2rem] border border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-4 shadow-[0_30px_60px_rgba(0,0,0,0.45)] md:p-5">
+        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(204,255,0,0.14),transparent_36%)]"></div>
+        <div class="relative space-y-5">
           <div class="space-y-2">
-            <h2 id="aiOutputTitle" class="font-headline font-bold text-3xl tracking-tighter text-on-surface">AutoForge Weekly CX Forge</h2>
-            <div class="flex flex-wrap items-center gap-2">
-              <span id="aiOutputStatus" class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-primary/20 text-primary font-label text-xs uppercase tracking-widest font-bold">New</span>
-              <span id="aiOutputGenerated" class="text-on-surface-variant font-label text-sm">Generated: Just now</span>
+            <p class="font-label text-[10px] uppercase tracking-[0.35em] text-on-surface-variant">AI Insights</p>
+            <div class="space-y-3">
+              <h2 id="aiOutputTitle" class="max-w-3xl font-headline text-4xl font-bold tracking-tighter text-on-surface md:text-[3.5rem]">AutoKnerd Coaching Plan</h2>
+              <div class="flex flex-wrap items-center gap-2">
+                <span id="aiOutputStatus" class="inline-flex items-center justify-center rounded-full bg-primary/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">New</span>
+                <span id="aiOutputGenerated" class="text-sm font-medium text-on-surface-variant">Generated: Just now</span>
+              </div>
             </div>
           </div>
-          <div class="flex flex-wrap gap-2 md:justify-end">
-            <span id="aiOutputDepartment" class="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Department</span>
-            <span id="aiOutputTheme" class="inline-flex items-center justify-center rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#CCFF00]">Theme</span>
-            <span id="aiOutputScope" class="inline-flex items-center justify-center rounded-full border border-white/10 bg-black/30 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Scope</span>
-          </div>
         </div>
-      </div>
-      <div class="flex-1 min-h-0 overflow-hidden p-6">
-        <div class="relative h-full min-h-0 overflow-y-auto scrollbar-hide rounded-[1.5rem] border border-white/10 bg-black/45 p-5 md:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-          <pre id="aiOutputReport" class="whitespace-pre-wrap break-words font-body text-base leading-[1.7] text-on-surface/90"></pre>
+      </section>
+
+      <article class="relative flex min-h-[34rem] flex-1 flex-col overflow-hidden rounded-[2rem] border border-white/5 bg-[#1A1A1A]/95 shadow-[0_30px_60px_rgba(0,0,0,0.45)] md:min-h-[calc(100dvh-16rem)]">
+        <div class="flex items-center justify-between border-b border-white/5 px-4 py-4 md:px-5">
+          <span class="font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Weekly Report Overview</span>
+          <span class="material-symbols-outlined text-neutral-600">more_horiz</span>
+        </div>
+        <div class="relative flex min-h-0 flex-1 overflow-hidden bg-black/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div id="aiOutputReport" class="ai-output-report h-full w-full overflow-y-auto px-0 py-5 md:py-6"></div>
           <div id="aiOutputLoading" class="hidden-screen absolute inset-0 flex items-center justify-center rounded-[1.5rem] bg-black/55 px-4 text-center backdrop-blur-[2px]">
             <div class="w-full max-w-md rounded-[1.75rem] border border-white/10 bg-[#111111]/90 p-6 text-left shadow-[0_25px_80px_rgba(0,0,0,0.55)]">
               <div class="flex items-start gap-4">
@@ -852,17 +875,18 @@ tailwind.config = {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="flex flex-row justify-center gap-4 w-full max-w-[90%] z-10 relative shrink-0">
-      <button id="aiOutputRegenerateBtn" type="button" class="flex-1 bg-gradient-to-br from-primary to-primary/80 text-black font-headline font-bold tracking-tight text-base py-4 px-2 rounded-full hover:opacity-80 transition-opacity active:scale-95 duration-200 flex items-center justify-center gap-2 shadow-[0_20px_20px_-5px_rgba(178,255,5,0.2)]">
+      </article>
+
+      <div class="flex flex-col gap-3 sm:flex-row">
+      <button id="aiOutputRegenerateBtn" type="button" class="flex-1 rounded-full bg-gradient-to-br from-primary to-primary/80 px-4 py-4 text-base font-bold tracking-tight text-black shadow-[0_20px_20px_-5px_rgba(178,255,5,0.2)] transition-opacity duration-200 hover:opacity-80 active:scale-95 flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-xl">refresh</span>
         <span id="aiOutputRegenerateLabel">Generate</span>
       </button>
-      <button id="aiOutputExportBtn" type="button" class="flex-1 bg-surface-container-highest text-primary font-headline font-bold tracking-tight text-base py-4 px-2 rounded-full hover:opacity-80 transition-opacity active:scale-95 duration-200 flex items-center justify-center gap-2 shadow-[0_20px_20px_-5px_rgba(0,0,0,0.5)] border border-white/10">
+      <button id="aiOutputExportBtn" type="button" class="flex-1 rounded-full border border-white/10 bg-surface-container-highest px-4 py-4 text-base font-bold tracking-tight text-primary shadow-[0_20px_20px_-5px_rgba(0,0,0,0.5)] transition-opacity duration-200 hover:opacity-80 active:scale-95 flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-xl">picture_as_pdf</span>
         Export PDF
       </button>
+      </div>
     </div>
   </main>
 </div>
@@ -1034,12 +1058,9 @@ tailwind.config = {
 
   <div id="profileScreen" class="screen hidden-screen">
   <header class="fixed top-0 left-0 w-full flex justify-between items-center px-6 py-4 bg-[#0e0e0e]/60 backdrop-blur-2xl border-t border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] z-50">
-    <button id="backToHomeBtn" class="flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer active:scale-95 duration-200">
+    <button id="backToHomeBtn" class="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer active:scale-95 duration-200">
       <span class="material-symbols-outlined text-zinc-500 text-2xl hover:text-primary transition-colors">arrow_back</span>
-      <div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant/30 relative">
-        <img alt="Consultant avatar" class="w-full h-full object-cover" data-alt="Close-up portrait of a professional male consultant in a modern, slightly dramatic lighting, sharp focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbWBR7BBOwXpD-2jNtQAvAbGwGAXJRb1_NnYsydmg_1xZX2IVhXJ_UBtTVPf4mLpjQIWGp1khRFoiX7XXHiqNWpJtVsnd8yEqJDGObTgUqtH13ioBybrQEfcEhuYcncixned4DRJ3UvDukUk5VJoU2gtkUYmMg7r5e8Kdzwp3xDrvtOaSGvBEmluUJ3yyG8WT4ZE4KtTxYvZ0u4GMUw03GbZZtaLOexmLGw20LsEgIvA38uqyr1ha839P0Arf7zq9NJYsIzxFK8fcQ"/>
-      </div>
-      <span id="profileRole" class="font-headline tracking-widest font-bold uppercase text-primary text-lg">ELITE COACH</span>
+      <span id="profileRole" class="font-['Manrope'] text-lg font-black uppercase tracking-widest leading-none text-[#CCFF00]">STATS</span>
     </button>
     <button id="profileHeaderMenuBtn" type="button" class="h-10 w-10 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest transition-opacity hover:opacity-80 active:scale-95 duration-200" aria-label="Open account menu">
       <img id="profileHeaderAvatar" alt="Profile avatar" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLobh7LCzxnFHg_XB00lQn0AaoJy0WZgZgXrG6Jy0pQo-j-5SFLta1g8yumiS9rdTIWa1Xum_u-MqKzF3Ny6RB8vLaCYtkSj6EEGM32_9MnhwwVxh7-wDD1JPMMZjIeCPvIIf3jXhbktT18pujzRmffL3CCEg76PXvATWGbDFC8OnqywutSSPqzzsIgsPqtwNCOqQEHTChvzZ1pn-b_IL83fkZicbRVLnDN0zs3u9BCiBEc1XuvwNEstnugkGO5OtlSKGJ8AIGioQJUZ"/>
@@ -1335,10 +1356,13 @@ tailwind.config = {
     <button id="toolsHubBackBtn" class="rounded-full p-2 text-neutral-400 transition-opacity duration-200 hover:opacity-80 active:bg-white/5">
       <span class="material-symbols-outlined text-[28px]">arrow_back</span>
     </button>
-    <h1 class="font-['Space_Grotesk'] text-base font-bold uppercase tracking-widest text-white">
-      TOOLS HUB
+    <h1 class="font-['Manrope'] text-lg font-black uppercase tracking-widest leading-none text-[#CCFF00]">
+      TOOLS
     </h1>
-    <div class="w-10"></div>
+    <button id="toolsHubProfileBtn" type="button" class="h-10 w-10 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest transition-opacity hover:opacity-80 active:scale-95 duration-200" aria-label="Open profile">
+      <img id="toolsHubProfileAvatar" alt="Profile avatar" class="hidden h-full w-full object-cover" src="" />
+      <span id="toolsHubProfileAvatarIcon" class="material-symbols-outlined text-on-surface-variant text-sm">person</span>
+    </button>
   </header>
 
   <main class="flex-grow pt-24 pb-32 px-4 md:px-6 max-w-7xl mx-auto space-y-6">
@@ -1746,21 +1770,25 @@ tailwind.config = {
           <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Last name</span>
           <input id="settingsLastNameInput" type="text" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Last name" />
         </label>
-        <label class="space-y-2">
+        <label class="space-y-2 md:col-span-3">
           <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Custom avatar URL</span>
-          <input id="settingsAvatarInput" type="url" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="https://... or choose a gear below" />
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <input id="settingsAvatarInput" type="url" class="min-w-0 flex-1 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="https://... or upload an image below" />
+            <button id="settingsAvatarUploadBtn" type="button" class="rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-3 font-headline text-sm font-bold text-[#CCFF00] transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15 active:scale-95">Upload image</button>
+            <input id="settingsAvatarFileInput" type="file" accept="image/*" class="hidden" />
+          </div>
         </label>
       </div>
       <div class="space-y-3">
         <div class="flex items-end justify-between gap-4">
           <div>
             <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Built-in avatars</p>
-            <h3 class="mt-1 font-headline text-lg font-bold text-on-surface">Choose a gear avatar</h3>
+            <h3 class="mt-1 font-headline text-lg font-bold text-on-surface">Choose an avatar</h3>
           </div>
           <span class="text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Tap to apply</span>
         </div>
         <div id="settingsAvatarPicker" class="grid grid-cols-2 gap-3 md:grid-cols-3"></div>
-        <p class="text-xs text-on-surface-variant leading-relaxed">These built-in avatars stay consistent with the gear logo and can move with the user from store to store.</p>
+        <p class="text-xs text-on-surface-variant leading-relaxed">These built-in avatars can move with the user from store to store. Uploaded avatars are resized and saved with the profile.</p>
       </div>
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <p id="settingsSaveState" class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Changes not saved</p>
@@ -1911,7 +1939,7 @@ tailwind.config = {
     <button id="developerMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-1.5 text-gray-500 transition-opacity duration-200 hover:opacity-80 active:bg-surface-container" aria-label="Open developer tools">
       <img src="/gear-head.png" alt="" aria-hidden="true" class="h-7 w-7 object-contain" />
     </button>
-    <h1 id="developerTitle" class="justify-self-center text-[#f3ffca] dark:text-[#cafd00] font-['Manrope'] font-bold tracking-tighter uppercase text-base">
+    <h1 id="developerTitle" class="justify-self-center font-['Manrope'] text-lg font-black uppercase tracking-widest leading-none text-[#CCFF00]">
       DEVELOPER
     </h1>
     <div class="justify-self-end flex items-center gap-2">
@@ -1919,7 +1947,6 @@ tailwind.config = {
         <img id="developerProfileAvatar" alt="Profile avatar" class="hidden h-full w-full object-cover" src="" />
         <span id="developerProfileAvatarIcon" class="material-symbols-outlined text-on-surface-variant text-sm">person</span>
       </button>
-      <button id="developerSignOutBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-on-surface-variant transition hover:text-on-surface">Sign out</button>
     </div>
   </header>
 
@@ -2296,7 +2323,6 @@ tailwind.config = {
   const historyBackBtn = document.getElementById("historyBackBtn");
   const lessonLibraryBackBtn = document.getElementById("lessonLibraryBackBtn");
   const developerBackBtn = document.getElementById("developerBackBtn");
-  const developerSignOutBtn = document.getElementById("developerSignOutBtn");
   const privacyBackBtn = document.getElementById("privacyBackBtn");
   const termsBackBtn = document.getElementById("termsBackBtn");
   const storeRequestBackBtn = document.getElementById("storeRequestBackBtn");
@@ -2360,6 +2386,8 @@ tailwind.config = {
   const settingsFirstNameInput = document.getElementById("settingsFirstNameInput");
   const settingsLastNameInput = document.getElementById("settingsLastNameInput");
   const settingsAvatarInput = document.getElementById("settingsAvatarInput");
+  const settingsAvatarUploadBtn = document.getElementById("settingsAvatarUploadBtn");
+  const settingsAvatarFileInput = document.getElementById("settingsAvatarFileInput");
   const settingsSaveBtn = document.getElementById("settingsSaveBtn");
   const settingsSaveState = document.getElementById("settingsSaveState");
   const settingsNotificationsToggle = document.getElementById("settingsNotificationsToggle");
@@ -2454,6 +2482,8 @@ tailwind.config = {
     profileAvatar: document.getElementById("profileAvatar"),
     profileHeaderMenuBtn: document.getElementById("profileHeaderMenuBtn"),
     profileHeaderAvatar: document.getElementById("profileHeaderAvatar"),
+    homeProfileAvatar: document.getElementById("homeProfileAvatar"),
+    homeProfileAvatarIcon: document.getElementById("homeProfileAvatarIcon"),
     profileRole: document.getElementById("profileRole"),
     profileAvatarLevel: document.getElementById("profileAvatarLevel"),
     profileName: document.getElementById("profileName"),
@@ -2489,12 +2519,17 @@ tailwind.config = {
     managerOpenProfileBtn: document.getElementById("managerOpenProfileBtn"),
     managerAvatarImage: document.getElementById("managerAvatarImage"),
     managerAvatarIcon: document.getElementById("managerAvatarIcon"),
+    toolsHubProfileBtn: document.getElementById("toolsHubProfileBtn"),
+    toolsHubProfileAvatar: document.getElementById("toolsHubProfileAvatar"),
+    toolsHubProfileAvatarIcon: document.getElementById("toolsHubProfileAvatarIcon"),
     managerStorePerformanceTitle: document.getElementById("managerStorePerformanceTitle"),
     managerStoreSelectorSection: document.getElementById("managerStoreSelectorSection"),
     managerStoreSelectorTitle: document.getElementById("managerStoreSelectorTitle"),
     managerStoreSelectorCount: document.getElementById("managerStoreSelectorCount"),
     managerStoreSelectorSelect,
     managerMomentumSubtitle: document.getElementById("managerMomentumSubtitle"),
+    managerMomentumSummary: document.getElementById("managerMomentumSummary"),
+    managerMomentumLabels: document.getElementById("managerMomentumLabels"),
     authIdentifierInput,
     authNameInput,
     authCodeInput,
@@ -2510,7 +2545,6 @@ tailwind.config = {
     authEnrollmentNote,
     authStatusText,
     developerBackBtn,
-    developerSignOutBtn,
     developerTitle,
     developerLiveState,
     developerTotalUsers,
@@ -2699,9 +2733,9 @@ tailwind.config = {
         : `Generated: ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
     }
     if (refs.aiOutputReport) {
-      refs.aiOutputReport.textContent = isLoading
+      refs.aiOutputReport.innerHTML = isLoading
         ? ''
-        : (state.autoForgeReport || 'Tap Regenerate to generate the first AutoForge lesson plan.');
+        : renderAutoForgeReportHtml(state.autoForgeReport || '');
     }
     if (refs.aiOutputLoading) {
       refs.aiOutputLoading.classList.toggle('hidden-screen', !isLoading);
@@ -2766,7 +2800,7 @@ tailwind.config = {
       state.autoForgeMeta = null;
       if (refs.aiOutputStatus) refs.aiOutputStatus.textContent = 'Error';
       if (refs.aiOutputGenerated) refs.aiOutputGenerated.textContent = message;
-      if (refs.aiOutputReport) refs.aiOutputReport.textContent = message;
+      if (refs.aiOutputReport) refs.aiOutputReport.innerHTML = `<div class="rounded-[1.25rem] border border-error/30 bg-error/10 p-5 text-sm text-error">${escapeHtml(message)}</div>`;
       updateAutoForgeLoadingState(false);
     } finally {
       if (refs.aiOutputRegenerateBtn) {
@@ -3600,6 +3634,21 @@ tailwind.config = {
     }
   }
 
+  function syncHeaderAvatar(imageEl, iconEl, avatarUrl = '') {
+    const nextAvatar = String(avatarUrl || '').trim();
+    if (imageEl) {
+      if (nextAvatar) {
+        imageEl.src = nextAvatar;
+        imageEl.classList.remove('hidden');
+      } else {
+        imageEl.classList.add('hidden');
+      }
+    }
+    if (iconEl) {
+      iconEl.classList.toggle('hidden', Boolean(nextAvatar));
+    }
+  }
+
   function updateMockUserToggle() {
     if (!toggleMockUserBtn) return;
     const active = Boolean(state.mockUserMode);
@@ -3731,15 +3780,17 @@ tailwind.config = {
     updateInternalToolsVisibility();
   }
 
-  const avatarAsset = (path) => `${window.location.origin}${path}`;
+  const avatarAsset = (path) => `${window.location.origin}${encodeURI(path)}`;
 
-  const gearAvatarOptions = [
-    { id: 'lime', label: 'Lime gear', src: avatarAsset('/avatar-gear-lime.svg') },
-    { id: 'cyan', label: 'Cyan gear', src: avatarAsset('/avatar-gear-cyan.svg') },
-    { id: 'amber', label: 'Amber gear', src: avatarAsset('/avatar-gear-amber.svg') },
-    { id: 'coral', label: 'Coral gear', src: avatarAsset('/avatar-gear-coral.svg') },
-    { id: 'violet', label: 'Violet gear', src: avatarAsset('/avatar-gear-violet.svg') },
-    { id: 'blue', label: 'Blue gear', src: avatarAsset('/avatar-gear-blue.svg') },
+  const avatarOptions = [
+    { id: 'blue', label: 'Blue', src: avatarAsset('/Avatars/Blue.png') },
+    { id: 'dark-red', label: 'Dark Red', src: avatarAsset('/Avatars/Dark Red.png') },
+    { id: 'neon-blue', label: 'Neon Blue', src: avatarAsset('/Avatars/NeonBlue.png') },
+    { id: 'pink', label: 'Pink', src: avatarAsset('/Avatars/Pink.png') },
+    { id: 'purple', label: 'Purple', src: avatarAsset('/Avatars/Purple.png') },
+    { id: 'red', label: 'Red', src: avatarAsset('/Avatars/Red.png') },
+    { id: 'teal', label: 'Teal', src: avatarAsset('/Avatars/Teal.png') },
+    { id: 'yellow', label: 'Yellow', src: avatarAsset('/Avatars/Yellow.png') },
   ];
 
   const TOOL_CATALOG = [
@@ -4284,11 +4335,12 @@ tailwind.config = {
 
   function syncAvatarPreview(avatarUrl) {
     const nextAvatar = String(avatarUrl || '').trim();
-    if (!nextAvatar) return;
-    if (refs.profileAvatar) refs.profileAvatar.src = nextAvatar;
-    if (refs.profileHeaderAvatar) refs.profileHeaderAvatar.src = nextAvatar;
-    if (refs.managerAvatarImage) refs.managerAvatarImage.src = nextAvatar;
-    if (refs.aiOutputAvatarImage) refs.aiOutputAvatarImage.src = nextAvatar;
+    if (refs.profileAvatar && nextAvatar) refs.profileAvatar.src = nextAvatar;
+    if (refs.profileHeaderAvatar && nextAvatar) refs.profileHeaderAvatar.src = nextAvatar;
+    syncHeaderAvatar(refs.homeProfileAvatar, refs.homeProfileAvatarIcon, nextAvatar);
+    syncHeaderAvatar(refs.toolsHubProfileAvatar, refs.toolsHubProfileAvatarIcon, nextAvatar);
+    if (refs.managerAvatarImage && nextAvatar) refs.managerAvatarImage.src = nextAvatar;
+    if (refs.aiOutputAvatarImage && nextAvatar) refs.aiOutputAvatarImage.src = nextAvatar;
     syncDeveloperProfileAvatar(nextAvatar);
   }
 
@@ -5225,6 +5277,67 @@ tailwind.config = {
     });
   }
 
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('Could not read the selected image.'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function resizeAvatarImage(file, maxDimension = 512) {
+    const dataUrl = await readFileAsDataUrl(file);
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = dataUrl;
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = () => reject(new Error('Could not load the selected image.'));
+    });
+
+    const width = Number(image.naturalWidth || image.width || 0);
+    const height = Number(image.naturalHeight || image.height || 0);
+    if (!width || !height) {
+      throw new Error('The selected image is not valid.');
+    }
+
+    const scale = Math.min(1, maxDimension / Math.max(width, height));
+    const outputWidth = Math.max(1, Math.round(width * scale));
+    const outputHeight = Math.max(1, Math.round(height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Could not process the selected image.');
+    }
+    ctx.drawImage(image, 0, 0, outputWidth, outputHeight);
+
+    const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+    const quality = outputType === 'image/jpeg' ? 0.9 : undefined;
+    const nextAvatarUrl = canvas.toDataURL(outputType, quality);
+    if (nextAvatarUrl.length > 900000) {
+      throw new Error('That image is too large after processing. Try a smaller file.');
+    }
+    return nextAvatarUrl;
+  }
+
+  async function applyCustomAvatarFile(file) {
+    if (!file) return;
+    if (!String(file.type || '').startsWith('image/')) {
+      throw new Error('Please choose an image file.');
+    }
+    const nextAvatarUrl = await resizeAvatarImage(file);
+    if (settingsAvatarInput) {
+      settingsAvatarInput.value = nextAvatarUrl;
+    }
+    syncAvatarPreview(nextAvatarUrl);
+    syncAvatarPickerSelection(nextAvatarUrl);
+    await saveProfileSettings();
+  }
+
   function renderToolWorkspace(bundle) {
     if (!bundle?.user) return;
     const availableIds = new Set(TOOL_CATALOG.map((tool) => tool.id));
@@ -5329,7 +5442,7 @@ tailwind.config = {
   function renderAvatarPicker() {
     if (!refs.settingsAvatarPicker) return;
     if (!refs.settingsAvatarPicker.dataset.rendered) {
-      refs.settingsAvatarPicker.innerHTML = gearAvatarOptions.map((option) => `
+      refs.settingsAvatarPicker.innerHTML = avatarOptions.map((option) => `
         <button
           type="button"
           class="group rounded-[1.25rem] border border-white/10 bg-black/30 p-3 text-left transition hover:border-[#CCFF00]/35 hover:bg-white/5 active:scale-[0.99]"
@@ -5705,6 +5818,242 @@ tailwind.config = {
     };
   }
 
+  function buildMomentumDaysFromSeries(series = [], fallbackScore = 0) {
+    const source = Array.isArray(series) ? series.slice() : [];
+    const timestampedItems = source.filter((item) => item?.timestamp);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekdayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
+    const days = [];
+
+    if (timestampedItems.length) {
+      const byDate = new Map();
+      timestampedItems.forEach((item) => {
+        const key = toLocalDateKey(item.timestamp);
+        if (!key) return;
+        const score = clamp(Number(item?.value ?? item?.score ?? fallbackScore ?? 0));
+        const existing = byDate.get(key);
+        const itemTime = new Date(item.timestamp || 0).getTime();
+        const existingTime = existing ? new Date(existing.timestamp || 0).getTime() : -1;
+        if (!existing || score >= existing.score || itemTime > existingTime) {
+          byDate.set(key, {
+            ...item,
+            score,
+          });
+        }
+      });
+
+      for (let offset = 6; offset >= 0; offset -= 1) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - offset);
+        const key = toLocalDateKey(date);
+        const item = byDate.get(key);
+        days.push({
+          key,
+          date,
+          label: String(weekdayFormatter.format(date) || '').toUpperCase(),
+          dayNumber: String(date.getDate()).padStart(2, '0'),
+          completed: Boolean(item),
+          score: item ? clamp(Number(item.score || 0)) : 0,
+          title: item?.title || '',
+          isToday: offset === 0,
+        });
+      }
+      return days;
+    }
+
+    const ordered = source.slice(-7);
+    const startOffset = Math.max(0, 7 - ordered.length);
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - offset);
+      const orderedIndex = offset - startOffset;
+      const item = orderedIndex >= 0 ? ordered[orderedIndex] : null;
+      const score = clamp(Number(item?.value ?? item?.score ?? fallbackScore ?? 0));
+      const hasValue = Boolean(item);
+      days.push({
+        key: toLocalDateKey(date),
+        date,
+        label: String(weekdayFormatter.format(date) || '').toUpperCase(),
+        dayNumber: String(date.getDate()).padStart(2, '0'),
+        completed: hasValue,
+        score: hasValue ? score : 0,
+        title: item?.label || '',
+        isToday: offset === 0,
+      });
+    }
+
+    return days;
+  }
+
+  function collectMomentumCompletionMembers(selectedDashboard, managerDashboard, storeSummaries = [], isAggregateView = false) {
+    const candidateSets = [];
+    if (isAggregateView && Array.isArray(storeSummaries) && storeSummaries.length) {
+      storeSummaries.forEach((store) => {
+        if (Array.isArray(store?.teamMembers) && store.teamMembers.length) {
+          candidateSets.push(store.teamMembers);
+        }
+      });
+    }
+    if (Array.isArray(selectedDashboard?.teamMembers) && selectedDashboard.teamMembers.length) {
+      candidateSets.push(selectedDashboard.teamMembers);
+    }
+    if (Array.isArray(managerDashboard?.teamMembers) && managerDashboard.teamMembers.length) {
+      candidateSets.push(managerDashboard.teamMembers);
+    }
+
+    const members = [];
+    const seen = new Set();
+    candidateSets.flat().forEach((member) => {
+      const id = String(member?.id || member?.userId || member?.name || '').trim();
+      if (!id || seen.has(id)) return;
+      seen.add(id);
+      members.push(member);
+    });
+    return members;
+  }
+
+  function buildMomentumCompletionSummary(selectedDashboard, managerDashboard, storeSummaries = [], isAggregateView = false) {
+    const members = collectMomentumCompletionMembers(selectedDashboard, managerDashboard, storeSummaries, isAggregateView);
+    const todayKey = toLocalDateKey(new Date());
+    const completedMembers = members.filter((member) => {
+      const recentSessions = Array.isArray(member?.recentSessions) ? member.recentSessions : [];
+      return recentSessions.some((session) => toLocalDateKey(session?.timestamp) === todayKey);
+    });
+    const totalCount = members.length;
+    const completedCount = completedMembers.length;
+    const remainingCount = Math.max(0, totalCount - completedCount);
+    const completionRate = totalCount ? Math.round((completedCount / totalCount) * 100) : 0;
+    return {
+      totalCount,
+      completedCount,
+      remainingCount,
+      completionRate,
+      label: totalCount
+        ? `${completedCount} of ${totalCount} completed today`
+        : 'No team members available',
+      subtitle: totalCount
+        ? `${remainingCount} remaining for today`
+        : 'Waiting for team data',
+    };
+  }
+
+  function getSessionRecencyStatus(member = {}, rosterMember = null) {
+    const recentSessions = Array.isArray(rosterMember?.recentSessions) && rosterMember.recentSessions.length
+      ? rosterMember.recentSessions
+      : Array.isArray(member?.recentSessions) && member.recentSessions.length
+        ? member.recentSessions
+        : [];
+    const latestSession = recentSessions
+      .map((session) => ({
+        ...session,
+        timestamp: session?.timestamp ? new Date(session.timestamp).getTime() : NaN,
+      }))
+      .filter((session) => Number.isFinite(session.timestamp))
+      .sort((left, right) => right.timestamp - left.timestamp)[0] || null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let daysSince = null;
+    if (latestSession) {
+      const latestDate = new Date(latestSession.timestamp);
+      latestDate.setHours(0, 0, 0, 0);
+      daysSince = Math.max(0, Math.round((today - latestDate) / 86400000));
+    } else {
+      const lastActive = String(rosterMember?.lastActive || member?.lastActive || '').toLowerCase();
+      if (/just now|m ago|h ago/.test(lastActive)) {
+        daysSince = 0;
+      } else if (/yesterday/.test(lastActive)) {
+        daysSince = 1;
+      } else {
+        const match = lastActive.match(/(\d+)\s*d(?:ays?)?\s*ago/);
+        daysSince = match ? Number(match[1]) : null;
+      }
+    }
+    if (daysSince === null || !Number.isFinite(daysSince)) {
+      return {
+        daysSince: null,
+        tone: 'red',
+        dotClass: 'bg-[#ff7351] shadow-[0_0_12px_rgba(255,115,81,0.4)]',
+        accentClass: 'bg-[#ff7351] shadow-[0_0_12px_rgba(255,115,81,0.16)]',
+        label: 'No session',
+        title: 'No recent session found',
+      };
+    }
+    if (daysSince <= 0) {
+      return {
+        daysSince,
+        tone: 'green',
+        dotClass: 'bg-[#CCFF00] shadow-[0_0_12px_rgba(204,255,0,0.4)]',
+        accentClass: 'bg-[#CCFF00] shadow-[0_0_12px_rgba(204,255,0,0.18)]',
+        label: 'Today',
+        title: 'Completed today',
+      };
+    }
+    if (daysSince <= 3) {
+      return {
+        daysSince,
+        tone: 'yellow',
+        dotClass: 'bg-[#f4c84b] shadow-[0_0_12px_rgba(244,200,75,0.35)]',
+        accentClass: 'bg-[#f4c84b] shadow-[0_0_12px_rgba(244,200,75,0.16)]',
+        label: `${daysSince}d`,
+        title: `Last session ${daysSince} day${daysSince === 1 ? '' : 's'} ago`,
+      };
+    }
+    return {
+      daysSince,
+      tone: 'red',
+      dotClass: 'bg-[#ff7351] shadow-[0_0_12px_rgba(255,115,81,0.4)]',
+      accentClass: 'bg-[#ff7351] shadow-[0_0_12px_rgba(255,115,81,0.16)]',
+      label: `${daysSince}d`,
+      title: `Last session ${daysSince} day${daysSince === 1 ? '' : 's'} ago`,
+    };
+  }
+
+  function renderMomentumCompletionDonut(chartEl, labelsEl, summary) {
+    if (!chartEl) return;
+    const completedCount = Math.max(0, Number(summary?.completedCount || 0));
+    const totalCount = Math.max(0, Number(summary?.totalCount || 0));
+    const remainingCount = Math.max(0, Number(summary?.remainingCount || 0));
+    const completionRate = Math.max(0, Math.min(100, Number(summary?.completionRate || 0)));
+    const color = totalCount && completionRate >= 75
+      ? '#CCFF00'
+      : totalCount && completionRate >= 40
+        ? '#06EBF7'
+        : '#ff7351';
+    const remainingColor = 'rgba(255,255,255,0.08)';
+    const progress = totalCount ? completionRate : 0;
+    chartEl.innerHTML = `
+      <div class="mx-auto flex max-w-sm flex-col items-center gap-4">
+        <div
+          class="relative flex h-44 w-44 items-center justify-center rounded-full border border-white/10 bg-black/20"
+          style="background: conic-gradient(${color} 0deg ${progress * 3.6}deg, ${remainingColor} ${progress * 3.6}deg 360deg);"
+        >
+          <div class="flex h-[9.5rem] w-[9.5rem] flex-col items-center justify-center rounded-full border border-white/10 bg-[#111111] text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+            <div class="text-4xl font-black leading-none ${totalCount ? 'text-white' : 'text-white/50'}">${totalCount ? `${completedCount}` : '--'}</div>
+            <div class="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/55">${totalCount ? `of ${totalCount}` : 'No team'}</div>
+            <div class="mt-2 text-[10px] font-semibold uppercase tracking-[0.24em]" style="color:${color};">${totalCount ? `${progress}% complete` : 'Waiting'}</div>
+          </div>
+        </div>
+        <div class="flex w-full items-center justify-between gap-3">
+          <div class="flex-1 rounded-2xl border border-white/10 bg-black/20 px-3 py-3 text-center">
+            <div class="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/50">Completed</div>
+            <div class="mt-1 text-xl font-black" style="color:${color};">${completedCount}</div>
+          </div>
+          <div class="flex-1 rounded-2xl border border-white/10 bg-black/20 px-3 py-3 text-center">
+            <div class="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/50">Remaining</div>
+            <div class="mt-1 text-xl font-black text-white">${remainingCount}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    if (labelsEl) {
+      labelsEl.innerHTML = `
+        <span>${completedCount}/${totalCount || 0} checked</span>
+        <span>${totalCount ? `${progress}% today` : 'No team loaded'}</span>
+      `;
+    }
+  }
+
   function buildMockMomentumSeries(roleLabel, roleType, focusTrait) {
     const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const normalizedRole = String(roleLabel || '').trim();
@@ -6062,11 +6411,7 @@ tailwind.config = {
         ? '<span>RESUME SESSION</span><span class="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">resume</span>'
         : '<span>START SESSION</span><span class="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">play_arrow</span>';
     }
-    if (user.avatarUrl) {
-      const img = document.querySelector("#openProfileBtn span");
-      refs.profileAvatar.src = user.avatarUrl;
-      if (img) img.textContent = "person";
-    }
+    syncAvatarPreview(user.avatarUrl || '');
     document.title = `${firstName} - Home`;
     updateSettingsControls();
   }
@@ -6097,14 +6442,9 @@ tailwind.config = {
       refs.managerDashboardTitle.textContent = roleLabel.toUpperCase();
     }
     if (refs.managerAvatarImage && refs.managerAvatarIcon) {
+      syncHeaderAvatar(refs.managerAvatarImage, refs.managerAvatarIcon, avatarUrl);
       if (avatarUrl) {
-        refs.managerAvatarImage.src = avatarUrl;
         refs.managerAvatarImage.alt = `${user.name || 'Consultant'} avatar`;
-        refs.managerAvatarImage.classList.remove("hidden");
-        refs.managerAvatarIcon.classList.add("hidden");
-      } else {
-        refs.managerAvatarImage.classList.add("hidden");
-        refs.managerAvatarIcon.classList.remove("hidden");
       }
     }
     if (refs.managerStoreSelectorSection) {
@@ -6255,40 +6595,38 @@ tailwind.config = {
       refs.managerCxAverageLabel.innerHTML = averageLabel;
     }
 
+    const momentumCompletionSummary = buildMomentumCompletionSummary(
+      selectedDashboard,
+      managerDashboard,
+      storeSummaries,
+      isAggregateView
+    );
     if (refs.managerMomentumValue) {
-      refs.managerMomentumValue.textContent = `${Math.max(0, Math.round(selectedDashboard.departmentMomentum || managerDashboard.departmentMomentum || storePerformance || 0))}%`;
+      refs.managerMomentumValue.textContent = `${momentumCompletionSummary.completionRate}%`;
     }
     if (refs.managerMomentumChart) {
-      const series = momentumSeries.length ? momentumSeries : [
-        { label: 'W1', value: Math.max(0, Math.round(selectedDashboard.departmentMomentum || managerDashboard.departmentMomentum || storePerformance || 0)) * 0.72 },
-        { label: 'W2', value: Math.max(0, Math.round(selectedDashboard.departmentMomentum || managerDashboard.departmentMomentum || storePerformance || 0)) * 0.68 },
-        { label: 'W3', value: Math.max(0, Math.round(selectedDashboard.departmentMomentum || managerDashboard.departmentMomentum || storePerformance || 0)) * 0.74 },
-        { label: 'W4', value: Math.max(0, Math.round(selectedDashboard.departmentMomentum || managerDashboard.departmentMomentum || storePerformance || 0)) * 0.77 },
-        { label: 'W5', value: Math.max(0, Math.round(selectedDashboard.departmentMomentum || managerDashboard.departmentMomentum || storePerformance || 0)) * 0.84 },
-        { label: 'W6', value: Math.max(0, Math.round(selectedDashboard.departmentMomentum || managerDashboard.departmentMomentum || storePerformance || 0)) },
-      ];
-      const maxValue = Math.max(100, ...series.map((item) => Number(item.value || 0)));
-      refs.managerMomentumChart.innerHTML = series.map((item, index) => {
-        const height = Math.max(18, Math.round((Number(item.value || 0) / maxValue) * 100));
-        const isLatest = index === series.length - 1;
-        return `
-          <div class="w-full flex items-end">
-            <div class="w-full rounded-t-sm ${isLatest ? 'bg-gradient-to-t from-white/10 to-primary/80 shadow-[0_0_15px_rgba(204,255,0,0.3)]' : 'bg-white/10 hover:bg-white/20 transition-colors'}" style="height: ${height}%; min-height: 18px;"></div>
-          </div>
-        `;
-      }).join('');
+      renderMomentumCompletionDonut(refs.managerMomentumChart, refs.managerMomentumLabels, momentumCompletionSummary);
     }
     if (refs.managerMomentumSubtitle) {
-      refs.managerMomentumSubtitle.textContent = showStoreSelector && !isAggregateView
-        ? 'Selected store average over time'
-        : (showStoreSelector ? 'Network average over time' : 'Department average over time');
+      refs.managerMomentumSubtitle.textContent = 'Today completion by team';
+    }
+    if (refs.managerMomentumSummary) {
+      refs.managerMomentumSummary.classList.remove('hidden');
+      refs.managerMomentumSummary.textContent = momentumCompletionSummary.label;
     }
 
     if (refs.managerTeamMonitorList) {
       refs.managerTeamMonitorList.innerHTML = teamMonitor.length
-        ? teamMonitor.map((member) => `
+        ? teamMonitor.map((member) => {
+            const rosterMember = teamMembers.find((item) => String(item.id || item.userId || '') === String(member.id || member.userId || ''));
+            const sessionStatus = getSessionRecencyStatus(member, rosterMember);
+            const accentClass = sessionStatus.accentClass || 'bg-error-dim';
+            return `
             <button type="button" data-team-member-id="${escapeHtml(member.id || '')}" class="w-full text-left bg-surface-container-lowest rounded-xl p-6 flex flex-col md:flex-row gap-6 relative overflow-hidden group cursor-pointer border border-transparent hover:border-outline-variant/20 transition-all">
-              <div class="absolute left-0 top-0 bottom-0 w-1 bg-error-dim"></div>
+              <div class="absolute left-0 top-0 bottom-0 w-1 ${accentClass}"></div>
+              <div class="absolute right-4 top-4 flex items-center gap-2" title="${escapeHtml(sessionStatus.title)}">
+                <span class="h-3.5 w-3.5 rounded-full border border-white/10 ${sessionStatus.dotClass}"></span>
+              </div>
               <div class="flex items-center gap-4 md:w-1/3">
                 <div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-primary border border-outline-variant/20 overflow-hidden">
                   <span class="material-symbols-outlined">person</span>
@@ -6317,7 +6655,7 @@ tailwind.config = {
                 <span class="font-body text-xs text-on-surface-variant">Last active: <span class="text-on-surface">${escapeHtml(member.lastActive || "Recently")}</span></span>
               </div>
             </button>
-          `).join("")
+          `;}).join("")
         : `
           <div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/20 text-on-surface-variant">
             Team monitor data is still loading.
@@ -6564,6 +6902,7 @@ tailwind.config = {
   function renderToolsHub(bundle) {
     if (!bundle?.user) return;
     const currentUserId = bundle.user.userId;
+    syncHeaderAvatar(refs.toolsHubProfileAvatar, refs.toolsHubProfileAvatarIcon, bundle.user.avatarUrl || '');
 
     const roleLabel = formatRoleTitle(bundle.user.roleLabel || bundle.user.role);
     const savedToolSet = new Set(state.toolHub.savedToolIds);
@@ -6810,6 +7149,98 @@ tailwind.config = {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function formatAutoForgeInlineText(text) {
+    return escapeHtml(String(text || ''))
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\[(.+?)\]\((.+?)\)/g, (_match, label, url) => `<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer" class="text-primary underline decoration-primary/30 underline-offset-4">${label}</a>`);
+  }
+
+  function renderAutoForgeReportHtml(report) {
+    const source = String(report || '').replace(/\r/g, '').trim();
+    if (!source) {
+      return `
+        <div class="rounded-[1.25rem] border border-white/8 bg-black/30 p-5 text-sm text-on-surface-variant">
+          Tap Generate to create the first AutoForge lesson plan.
+        </div>
+      `;
+    }
+
+    const lines = source.split('\n');
+    const blocks = [];
+    let listType = null;
+    let listItems = [];
+
+    const flushList = () => {
+      if (!listItems.length) return;
+      const items = listItems.join('');
+      blocks.push(`<${listType} class="space-y-2">${items}</${listType}>`);
+      listItems = [];
+      listType = null;
+    };
+
+    const pushParagraph = (value, className = '') => {
+      blocks.push(`<p class="${className}">${formatAutoForgeInlineText(value)}</p>`);
+    };
+
+    for (const rawLine of lines) {
+      const line = String(rawLine || '').trim();
+      if (!line) {
+        flushList();
+        continue;
+      }
+
+      const h1 = line.match(/^#\s+(.*)$/);
+      if (h1) {
+        flushList();
+        blocks.push(`<h1>${formatAutoForgeInlineText(h1[1])}</h1>`);
+        continue;
+      }
+
+      const h2 = line.match(/^##\s+(.*)$/);
+      if (h2) {
+        flushList();
+        blocks.push(`<h2>${formatAutoForgeInlineText(h2[1])}</h2>`);
+        continue;
+      }
+
+      const h3 = line.match(/^###\s+(.*)$/);
+      if (h3) {
+        flushList();
+        blocks.push(`<h3>${formatAutoForgeInlineText(h3[1])}</h3>`);
+        continue;
+      }
+
+      const unordered = line.match(/^[-•]\s+(.*)$/);
+      if (unordered) {
+        if (listType !== 'ul') {
+          flushList();
+          listType = 'ul';
+        }
+        listItems.push(`<li>${formatAutoForgeInlineText(unordered[1])}</li>`);
+        continue;
+      }
+
+      const ordered = line.match(/^\d+\.\s+(.*)$/);
+      if (ordered) {
+        if (listType !== 'ol') {
+          flushList();
+          listType = 'ol';
+        }
+        listItems.push(`<li>${formatAutoForgeInlineText(ordered[1])}</li>`);
+        continue;
+      }
+
+      flushList();
+      const emphasisCallout = /^\*\*(Department|Primary Theme|Store|Scope|Focus|Theme)\*\*/i.test(line) ? 'ai-output-intro' : '';
+      pushParagraph(line, emphasisCallout);
+    }
+
+    flushList();
+
+    return blocks.join('');
+  }
+
   function renderAIOutput(bundle, lessonPlan = null) {
     if (!bundle?.user) return;
     const { user } = bundle;
@@ -6823,7 +7254,7 @@ tailwind.config = {
     const generatedAt = meta.generatedAt ? new Date(meta.generatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
 
     if (refs.aiOutputTitle) {
-      refs.aiOutputTitle.textContent = `${roleLabel} AutoForge Plan`;
+      refs.aiOutputTitle.textContent = 'AutoKnerd Coaching Plan';
     }
     if (refs.aiOutputStatus) {
       refs.aiOutputStatus.textContent = report ? 'Ready' : 'New';
@@ -6841,7 +7272,7 @@ tailwind.config = {
       refs.aiOutputScope.textContent = scope;
     }
     if (refs.aiOutputReport) {
-      refs.aiOutputReport.textContent = report || 'Pulling your AutoForge lesson plan...';
+      refs.aiOutputReport.innerHTML = renderAutoForgeReportHtml(report);
     }
     if (refs.aiOutputRegenerateLabel) {
       refs.aiOutputRegenerateLabel.textContent = report ? 'Regenerate' : 'Generate';
@@ -6866,7 +7297,7 @@ tailwind.config = {
     if (report) {
       state.autoForgeReport = report;
     }
-    document.title = `${roleLabel} - AutoForge`;
+    document.title = `${roleLabel} - AutoKnerd Coaching Plan`;
   }
 
   function renderDeveloperConsole(bundle, dashboard = null) {
@@ -7042,7 +7473,7 @@ tailwind.config = {
     const score = user.stats || {};
     const [firstName, lastName] = splitName(user.name);
     const roleLabel = formatRoleTitle(user.roleLabel || user.role);
-    refs.profileRole.textContent = state.profileMode === 'team' ? 'TEAM MEMBER' : roleLabel.toUpperCase();
+    refs.profileRole.textContent = 'STATS';
     refs.profileAvatarLevel.textContent = getLevelLabel(level);
     refs.profileName.innerHTML = `${firstName.toUpperCase()}<br/><span class="text-surface-variant">${lastName.toUpperCase()}</span>`;
     refs.profileTitle.textContent = roleLabel;
@@ -7915,6 +8346,7 @@ tailwind.config = {
     closeMenu();
     showLessonLibrary();
   });
+  if (refs.toolsHubProfileBtn) refs.toolsHubProfileBtn.addEventListener("click", openProfileMenu);
   if (openDeveloperPanelBtn) openDeveloperPanelBtn.addEventListener("click", openDeveloperPanel);
   if (openDeveloperConsoleBtn) openDeveloperConsoleBtn.addEventListener("click", () => {
     closeMenu();
@@ -7925,9 +8357,6 @@ tailwind.config = {
     void signOutAndShowAuth('Sign in to continue');
   });
   if (developerMenuBtn) developerMenuBtn.addEventListener("click", openMenu);
-  if (developerSignOutBtn) developerSignOutBtn.addEventListener("click", () => {
-    void signOutAndShowAuth('Signed out');
-  });
   if (returnDashboardBtn) returnDashboardBtn.addEventListener("click", () => {
     closeMenu();
     showHome();
@@ -7977,6 +8406,34 @@ tailwind.config = {
       settingsSaveState.textContent = 'Avatar updated';
     }
   });
+  if (settingsAvatarUploadBtn && settingsAvatarFileInput) {
+    settingsAvatarUploadBtn.addEventListener("click", () => {
+      settingsAvatarFileInput.value = '';
+      settingsAvatarFileInput.click();
+    });
+    settingsAvatarFileInput.addEventListener("change", async () => {
+      const file = settingsAvatarFileInput.files?.[0];
+      if (!file) return;
+      if (settingsSaveState) {
+        settingsSaveState.textContent = 'Processing avatar...';
+      }
+      if (settingsAvatarUploadBtn) {
+        settingsAvatarUploadBtn.disabled = true;
+        settingsAvatarUploadBtn.textContent = 'Uploading...';
+      }
+      try {
+        await applyCustomAvatarFile(file);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Could not upload avatar.';
+        if (settingsSaveState) settingsSaveState.textContent = message;
+      } finally {
+        if (settingsAvatarUploadBtn) {
+          settingsAvatarUploadBtn.disabled = false;
+          settingsAvatarUploadBtn.textContent = 'Upload image';
+        }
+      }
+    });
+  }
   if (settingsSaveBtn) settingsSaveBtn.addEventListener("click", () => {
     void saveProfileSettings();
   });

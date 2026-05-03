@@ -2334,13 +2334,58 @@ function extractAutoForgePrimaryTheme(report) {
   return match?.[1]?.trim() || 'Consistency';
 }
 
+function buildAutoForgePlanTitle(context) {
+  const department = String(context?.department || 'Coaching').trim();
+  const theme = String(inferAutoForgeTheme(context?.focusTrait || 'trust', context?.departmentPerformanceSummary || '') || 'Coaching').trim();
+  const cleanTheme = theme.replace(/\b(coaching plan)\b/i, '').trim() || 'Coaching';
+  if (/^human first$/i.test(cleanTheme)) return `${department} Human First Coaching Plan`;
+  return `${cleanTheme} Coaching Plan`;
+}
+
+function extractAutoForgePlanTitle(report) {
+  const text = String(report || '');
+  const match = text.match(/^#\s+(.+)$/m);
+  return match?.[1]?.trim() || '';
+}
+
+function buildAutoForgeDataSection(context) {
+  const department = context.department || 'Storewide';
+  const theme = inferAutoForgeTheme(context.focusTrait || 'trust', context.departmentStateSummary || context.departmentPerformanceSummary || '');
+  return [
+    '## What the Data Is Saying',
+    `The department is showing a mixed picture, with ${theme.toLowerCase()} needing to feel more consistent across the full customer experience.`,
+    `The clearest next move is to simplify the message, reduce friction, and make the next step easier for every customer in ${department.toLowerCase()}.`,
+  ].join('\n');
+}
+
+function replaceAutoForgeDataSection(report, context) {
+  const source = String(report || '');
+  const sectionMatch = source.match(/(^## What the Data Is Saying\s*\n)([\s\S]*?)(?=\n## |\n# |\s*$)/m);
+  const replacement = `${buildAutoForgeDataSection(context)}\n`;
+  if (!sectionMatch) {
+    return source.replace(/^\s*# AutoForge Weekly CX Forge\s*\n/m, (match) => `${match}\n${replacement}`);
+  }
+
+  return source.replace(sectionMatch[0], `${replacement}`);
+}
+
+function normalizeAutoForgePlanTitle(report, context) {
+  const source = String(report || '');
+  const generatedTitle = buildAutoForgePlanTitle(context);
+  const currentTitle = extractAutoForgePlanTitle(source);
+  if (!currentTitle) {
+    return `# ${generatedTitle}\n\n${source.trim()}`;
+  }
+  if (/auto?forge/i.test(currentTitle)) {
+    return source.replace(/^#\s+.+$/m, `# ${generatedTitle}`);
+  }
+  return source;
+}
+
 function buildAutoForgeFallbackReport(context) {
   const department = context.department || 'Storewide';
   const summary = context.departmentPerformanceSummary || 'The team is moving well, but there is still a clear opportunity to coach the next step.';
   const theme = inferAutoForgeTheme(context.focusTrait || 'trust', summary);
-  const focusLine = context.memberSignals?.length
-    ? context.memberSignals[0]
-    : `${department} needs one consistent coaching message this week.`;
   const strongVsWeak = [
     `Weak: Move too fast and skip the reason behind the ask.`,
     `Weak: Give a long explanation before setting the next step.`,
@@ -2349,15 +2394,12 @@ function buildAutoForgeFallbackReport(context) {
   ];
 
   return [
-    '# AutoForge Weekly CX Forge',
+    `# ${buildAutoForgePlanTitle(context)}`,
     '',
     `**Department:** ${department}`,
     `**Primary Theme:** ${theme}`,
     '',
-    '## What the Data Is Saying',
-    `- ${summary}`,
-    `- The team signal to watch most closely: ${focusLine}.`,
-    '- The main risk is that the team may be inconsistent in how it opens, explains, or closes the interaction.',
+    ...buildAutoForgeDataSection(context).split('\n'),
     '',
     '## Why This Matters',
     '- Customers feel the difference immediately when the opening is clear and calm.',
@@ -2501,13 +2543,15 @@ function buildAutoForgePrompt(context) {
     'OUTPUT FORMAT',
     'Return the response in exactly this structure:',
     '',
-    '# AutoForge Weekly CX Forge',
+    '# [short coaching plan title]',
+    'The title should be specific, short, and human-friendly.',
+    'Do not use AutoForge in the title.',
     '',
     '**Department:** [department]',
     '**Primary Theme:** [theme]',
     '',
     '## What the Data Is Saying',
-    '2 to 4 short bullets explaining:',
+    'Maximum 2 short sentences explaining:',
     '- the most important signal',
     '- the likely behavior gap',
     '- the customer risk',
@@ -3043,7 +3087,8 @@ async function buildAutoForgePdf(report, department, dealershipName) {
 
   const lines = String(report || 'No AutoForge report provided.').split('\n');
 
-  drawParagraph('AutoForge Weekly CX Forge', { size: 20, bold: true, color: titleColor, gapAfter: 2 });
+  const pdfTitle = extractAutoForgePlanTitle(report) || buildAutoForgePlanTitle({ department, focusTrait: 'trust', departmentPerformanceSummary: report });
+  drawParagraph(pdfTitle, { size: 20, bold: true, color: titleColor, gapAfter: 2 });
   drawParagraph(`${department || 'Department'} | ${dealershipName || 'Dealership'}`, { size: 10, color: mutedColor, gapAfter: 10 });
 
   for (const rawLine of lines) {
@@ -5976,9 +6021,11 @@ async function generateAutoForgeLessonPlan(bundle, storeSelection = 'all') {
   const prompt = buildAutoForgePrompt(context);
   const fallback = buildAutoForgeFallbackReport(context);
   const report = await withTimeout(callGeminiText(prompt, fallback), 12000, fallback);
+  const normalizedReport = normalizeAutoForgePlanTitle(replaceAutoForgeDataSection(report, context), context);
   return {
-    report: report.trim(),
-    theme: extractAutoForgePrimaryTheme(report),
+    report: normalizedReport.trim(),
+    planTitle: extractAutoForgePlanTitle(normalizedReport) || buildAutoForgePlanTitle(context),
+    theme: extractAutoForgePrimaryTheme(normalizedReport),
     generatedAt: new Date().toISOString(),
     ...context,
   };
@@ -5997,7 +6044,7 @@ async function handleAutoForgeLessonPlan(req, res) {
     return sendJson(res, 200, {
       ok: true,
       ...lessonPlan,
-      title: `${bundle.user.roleLabel || normalizeRoleLabel(bundle.user.role)} AutoForge AI Lesson Plan`,
+      title: lessonPlan.planTitle || 'AutoKnerd Coaching Plan',
     });
   } catch (error) {
     console.error('[autoforge-lesson-plan] failed', error);
@@ -6009,9 +6056,10 @@ async function handleAutoForgeLessonPlan(req, res) {
         return sendJson(res, 200, {
           ok: true,
           report: fallbackReport,
+          planTitle: extractAutoForgePlanTitle(fallbackReport) || buildAutoForgePlanTitle(context),
           theme: extractAutoForgePrimaryTheme(fallbackReport),
           generatedAt: new Date().toISOString(),
-          title: `${bundle.user.roleLabel || normalizeRoleLabel(bundle.user.role)} AutoForge AI Lesson Plan`,
+          title: extractAutoForgePlanTitle(fallbackReport) || 'AutoKnerd Coaching Plan',
           ...context,
           degraded: true,
         });
