@@ -3207,8 +3207,11 @@ tailwind.config = {
         if (mockRoleOverride) query.set('mockRoleOverride', mockRoleOverride);
       }
       const dashboardUrl = `/api/developer/dashboard${query.toString() ? `?${query.toString()}` : ''}`;
-      const controller = new AbortController();
-      const refreshTimeout = window.setTimeout(() => controller.abort(new Error('DEVELOPER_DASHBOARD_TIMEOUT')), 10000);
+      // Separate controllers so a slow dashboard fetch can't abort the fast status check
+      const dashboardController = new AbortController();
+      const statusController = new AbortController();
+      const dashboardTimeout = window.setTimeout(() => dashboardController.abort(new Error('DEVELOPER_DASHBOARD_TIMEOUT')), 12000);
+      const statusTimeout = window.setTimeout(() => statusController.abort(), 8000);
       let response;
       let systemStatusResponse;
       try {
@@ -3217,22 +3220,21 @@ tailwind.config = {
             method: 'GET',
             cache: 'no-store',
             headers: buildApiHeaders(),
-            signal: controller.signal,
+            signal: dashboardController.signal,
           }),
           fetch('/api/admin/system-status', {
             method: 'GET',
             cache: 'no-store',
             headers: buildApiHeaders(),
-            signal: controller.signal,
-          }),
+            signal: statusController.signal,
+          }).catch(() => null),
         ]);
       } finally {
-        clearTimeout(refreshTimeout);
+        clearTimeout(dashboardTimeout);
+        clearTimeout(statusTimeout);
       }
-      const [payload, statusPayload] = await Promise.all([
-        response.json().catch(() => ({})),
-        systemStatusResponse.json().catch(() => ({})),
-      ]);
+      const payload = await response.json().catch(() => ({}));
+      const statusPayload = systemStatusResponse ? await systemStatusResponse.json().catch(() => ({})) : {};
       if (response.status === 401 || response.status === 403) {
         await signOutAndShowAuth('Session expired. Please sign in again.');
         return null;
@@ -3242,7 +3244,7 @@ tailwind.config = {
       }
       state.developerDashboard = payload.dashboard || state.developerDashboard || null;
       state.developerDashboardStatus = String(payload.dashboardStatus || (payload.dashboard ? 'live' : 'offline')).trim() || 'offline';
-      state.developerSystemStatus = systemStatusResponse.ok && statusPayload.ok ? (statusPayload.status || null) : null;
+      state.developerSystemStatus = systemStatusResponse?.ok && statusPayload.ok ? (statusPayload.status || null) : null;
       renderDeveloperConsole(developerBundle, state.developerDashboard);
       return state.developerDashboard;
     } catch (error) {
@@ -3252,6 +3254,8 @@ tailwind.config = {
       if (!silent && developerLiveState) {
         developerLiveState.textContent = error instanceof Error ? error.message : 'Unable to load live data';
       }
+      // Still re-render so the status indicators update to reflect the error state
+      renderDeveloperConsole(developerBundle, state.developerDashboard);
       return null;
     }
   }

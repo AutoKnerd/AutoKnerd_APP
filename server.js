@@ -416,7 +416,7 @@ const ROLES_BY_SCOPE = {
 const activeSessions = new Map();
 const authSessions = new Map();
 const developerDashboardCache = new Map();
-const DEVELOPER_DASHBOARD_CACHE_TTL_MS = 5000;
+const DEVELOPER_DASHBOARD_CACHE_TTL_MS = 60000;
 let firebaseDb = null;
 
 function clamp(value, min = 0, max = 100) {
@@ -5742,21 +5742,21 @@ async function handleAdminSystemStatus(req, res) {
     if (!authSession?.userId) {
       return sendJson(res, 401, { ok: false, authRequired: true, message: 'Sign in required.' });
     }
-
-    const bundle = await fetchUserBundle(authSession.userId);
-    if (!bundle?.user) {
-      return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
+    // Lightweight role check — only read the role field, skip the full bundle fetch
+    // so this fast health-check endpoint doesn't trigger a full dashboard rebuild.
+    if (firebaseDb) {
+      const userSnap = await firebaseDb.collection('users').doc(authSession.userId).get().catch(() => null);
+      if (!userSnap?.exists) {
+        return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
+      }
+      const userData = userSnap.data() || {};
+      const roleLabel = normalizeRoleLabel(userData.roleLabel || userData.role || '');
+      if (!isPrivilegedDealershipRole(roleLabel)) {
+        return sendJson(res, 403, { ok: false, message: 'Developer or Admin access required.' });
+      }
     }
-    const roleLabel = normalizeRoleLabel(bundle.user.roleLabel || bundle.user.role);
-    if (!isPrivilegedDealershipRole(roleLabel)) {
-      return sendJson(res, 403, { ok: false, message: 'Developer or Admin access required.' });
-    }
-
     const status = await buildDeveloperSystemStatus();
-    return sendJson(res, 200, {
-      ok: true,
-      status,
-    });
+    return sendJson(res, 200, { ok: true, status });
   } catch (error) {
     console.error('[admin-system-status] failed', error);
     return sendJson(res, 500, { ok: false, message: 'Unable to load system status.' });
