@@ -5744,12 +5744,18 @@ async function handleAdminSystemStatus(req, res) {
     }
     // Lightweight role check — only read the role field, skip the full bundle fetch
     // so this fast health-check endpoint doesn't trigger a full dashboard rebuild.
-    if (firebaseDb) {
-      const userSnap = await firebaseDb.collection('users').doc(authSession.userId).get().catch(() => null);
+    // Temporary developer login uses the email as userId (no real Firestore doc).
+    const isTemporaryDev = normalizeEmail(authSession.userId) === normalizeEmail('andrew@autoknerd.com');
+    if (firebaseDb && !isTemporaryDev) {
+      // Try direct doc lookup first, fall back to email/staffId search
+      let userSnap = await firebaseDb.collection('users').doc(authSession.userId).get().catch(() => null);
       if (!userSnap?.exists) {
+        userSnap = await findUserDocByIdentifier(authSession.userId);
+      }
+      if (!userSnap?.exists && !userSnap?.data) {
         return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
       }
-      const userData = userSnap.data() || {};
+      const userData = (typeof userSnap.data === 'function' ? userSnap.data() : userSnap.data) || {};
       const roleLabel = normalizeRoleLabel(userData.roleLabel || userData.role || '');
       if (!isPrivilegedDealershipRole(roleLabel)) {
         return sendJson(res, 403, { ok: false, message: 'Developer or Admin access required.' });
