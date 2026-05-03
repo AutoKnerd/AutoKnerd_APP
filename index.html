@@ -7887,7 +7887,15 @@ tailwind.config = {
         void refreshAutoForgeOutput({ reason: 'open' });
         return payload;
       }
-      if (isDeveloperAccount(state.bundle) && !state.developerImpersonationUserId) {
+      // Show developer console if the user's actual Firestore role is Developer,
+      // even when a roleOverride (e.g. Parts Manager) is active from a test session.
+      const isRealDeveloper = isDeveloperAccount(state.bundle)
+        || normalizeRoleLabel(state.bundle?.user?.sourceRole || '') === 'Developer';
+      if (isRealDeveloper && !state.developerImpersonationUserId) {
+        // Ensure developerUserId is saved so ensureDeveloperSessionBundle can recover
+        setDeveloperSessionActive(true, state.bundle.user.userId);
+        // Clear any stale roleOverride so future bootstraps land on the dev console
+        if (!isDeveloperAccount(state.bundle)) setDeveloperRoleOverride('');
         showDeveloperConsole();
       } else {
         applyAppRouteFromLocation();
