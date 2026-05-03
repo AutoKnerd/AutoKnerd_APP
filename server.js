@@ -4989,6 +4989,7 @@ function serializeActiveSession(session) {
     customerOpening: session.customerOpening,
     focus: session.focus,
     trustLabel: session.trustLabel,
+    trustScore: clampScore(session.runningRatings?.trust ?? session.trustScore ?? 0),
     targetUserTurns: session.targetUserTurns,
     currentUserTurns: session.currentUserTurns,
     progress: Math.round((Math.max(0, Number(session.currentUserTurns || 0)) / Math.max(1, Number(session.targetUserTurns || 1))) * 100),

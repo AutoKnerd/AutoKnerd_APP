@@ -916,16 +916,39 @@ tailwind.config = {
       </div>
     </section>
 
-    <div id="sessionTrust" class="rounded-[2rem] border border-[#606651] bg-[#2b2f23] px-5 py-4 text-lg font-bold text-[#EEF3C0] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-      <span class="material-symbols-outlined mr-2 align-middle text-[#EEF3C0]">check_circle</span>
-      Trust: Good
+    <div id="sessionTrust" class="rounded-[1.5rem] border border-white/8 bg-[#10110d] px-5 py-4 text-[#EEF3C0] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_10px_30px_rgba(0,0,0,0.35)]">
+      <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#EEF3C0]/55">Live trust</p>
+          <div class="mt-2 flex items-center gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#CCFF00]/20 bg-[#1a2310] text-[#CCFF00]">
+              <span class="material-symbols-outlined text-lg">check_circle</span>
+            </span>
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span class="text-lg font-semibold text-white">Good</span>
+                <span class="rounded-full border border-[#06EBF7]/15 bg-[#06EBF7]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#06EBF7]">Live</span>
+              </div>
+              <p class="mt-1 text-[11px] uppercase tracking-[0.22em] text-[#EEF3C0]/55">Scenario aligned</p>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-full border border-[#EEF3C0]/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#EEF3C0]">66%</div>
+      </div>
+      <div class="mt-4">
+        <div class="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.24em] text-[#EEF3C0]/55">
+          <span>Trust meter</span>
+          <span>Built from the current response</span>
+        </div>
+        <div class="mt-2 h-2 overflow-hidden rounded-full bg-black/30">
+          <div class="h-full w-[66%] rounded-full bg-[#06EBF7] shadow-[0_0_12px_rgba(6,235,247,0.35)]"></div>
+        </div>
+      </div>
+      <p class="mt-3 text-[11px] leading-relaxed text-[#EEF3C0]/70">Higher trust usually means a stronger finish. The score rises when the response matches the scenario and directly addresses the customer need.</p>
     </div>
 
-    <div class="relative rounded-[2rem] bg-[#080808] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_10px_30px_rgba(0,0,0,0.45)]">
-      <textarea id="sessionInput" class="min-h-[140px] w-full resize-none bg-transparent text-lg text-white outline-none placeholder:text-white/30" placeholder="Type your response to the customer..."></textarea>
-      <button class="absolute bottom-4 right-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#1b1b1b] text-[#EEF3C0] shadow-[0_10px_30px_rgba(0,0,0,0.4)]">
-        <span class="material-symbols-outlined">mic</span>
-      </button>
+    <div class="relative rounded-[2rem] border border-[#CCFF00]/35 bg-[#080808] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_10px_30px_rgba(0,0,0,0.45)] focus-within:border-[#CCFF00]/70 focus-within:ring-1 focus-within:ring-[#CCFF00]/25">
+      <textarea id="sessionInput" class="min-h-[140px] w-full resize-none appearance-none border-0 bg-transparent pr-1 text-lg text-white outline-none ring-0 shadow-none placeholder:text-white/30 focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none" placeholder="Type your response to the customer..."></textarea>
     </div>
   </main>
 
@@ -1170,20 +1193,24 @@ tailwind.config = {
         </div>
       </section>
 
-      <section class="bg-surface-variant/40 backdrop-blur-[20px] rounded-3xl p-8 border border-outline-variant/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_15px_35px_rgba(0,0,0,0.5)] relative overflow-hidden">
+      <section id="profileMomentumSection" class="bg-surface-variant/40 backdrop-blur-[20px] rounded-3xl p-5 md:p-8 border border-outline-variant/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_15px_35px_rgba(0,0,0,0.5)] relative overflow-hidden">
         <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==')] opacity-20 mix-blend-overlay"></div>
-        <div class="flex justify-between items-start mb-2 relative z-10">
-          <div>
+        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-2 relative z-10">
+          <div class="min-w-0">
             <h2 class="font-headline text-2xl font-bold tracking-tight text-on-surface">Momentum</h2>
             <p class="font-body text-sm text-on-surface-variant">Session effectiveness over time</p>
+            <p id="profileMomentumSummary" class="mt-2 text-xs uppercase tracking-[0.22em] text-on-surface-variant">Loading momentum data.</p>
           </div>
-          <span class="material-symbols-outlined text-on-surface-variant">monitoring</span>
+          <a href="#recentSessionsSection" class="inline-flex w-fit items-center gap-2 rounded-full border border-outline-variant/20 bg-surface-container/40 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-on-surface-variant transition-colors hover:border-primary/30 hover:text-primary">
+            <span>View sessions</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_downward</span>
+          </a>
         </div>
-        <div id="profileMomentumChart" class="h-40 mt-8 flex items-end justify-between gap-2 relative z-10"></div>
+        <div id="profileMomentumChart" class="mt-6 md:mt-8 relative z-10"></div>
         <div id="profileMomentumLabels" class="flex justify-between mt-2 text-[10px] text-on-surface-variant font-label uppercase tracking-wider relative z-10"></div>
       </section>
 
-      <section class="space-y-6 pt-8">
+      <section id="recentSessionsSection" class="space-y-6 pt-8">
         <div class="flex justify-between items-end">
           <h2 class="font-headline text-2xl font-bold tracking-tight text-on-surface">RECENT SESSIONS</h2>
           <a class="font-label text-xs uppercase tracking-widest text-primary hover:text-primary-dim transition-colors" href="#">View All</a>
@@ -2455,6 +2482,7 @@ tailwind.config = {
     settingsAvatarPicker: document.getElementById("settingsAvatarPicker"),
     profileMomentumChart: document.getElementById("profileMomentumChart"),
     profileMomentumLabels: document.getElementById("profileMomentumLabels"),
+    profileMomentumSummary: document.getElementById("profileMomentumSummary"),
     recentSessionsList: document.getElementById("recentSessionsList"),
     managerDashboardTitle: document.getElementById("managerDashboardTitle"),
     managerViewToggleBtn: document.getElementById("managerViewToggleBtn"),
@@ -5523,6 +5551,39 @@ tailwind.config = {
     return String(session?.activitySource || '').trim() === 'fresh-up' ? 'Fresh Up' : 'Core';
   }
 
+  function getTrustDisplay(trustScore = 0, trustLabel = '') {
+    const score = Math.max(0, Math.min(100, Math.round(Number(trustScore || 0))));
+    const normalizedLabel = String(trustLabel || '').trim() || (score >= 80 ? 'Strong' : score >= 60 ? 'Good' : 'Needs Work');
+    if (normalizedLabel === 'Strong') {
+      return {
+        label: normalizedLabel,
+        score,
+        barClass: 'bg-[#CCFF00]',
+        ringClass: 'border-[#CCFF00]/25',
+        bgClass: 'bg-[#1d2a11]',
+        subtext: 'High chance of a strong finish if this pace holds.',
+      };
+    }
+    if (normalizedLabel === 'Good') {
+      return {
+        label: normalizedLabel,
+        score,
+        barClass: 'bg-[#06EBF7]',
+        ringClass: 'border-[#06EBF7]/25',
+        bgClass: 'bg-[#111f22]',
+        subtext: 'On track for a solid score if the next response stays specific.',
+      };
+    }
+    return {
+      label: normalizedLabel,
+      score,
+      barClass: 'bg-[#ff7351]',
+      ringClass: 'border-[#ff7351]/25',
+      bgClass: 'bg-[#231912]',
+      subtext: 'This path is likely to score lower unless the next move adds clarity and reassurance.',
+    };
+  }
+
   function getCompletedLessonCategories(sessions = []) {
     return new Set(
       sessions
@@ -5566,6 +5627,84 @@ tailwind.config = {
     );
   }
 
+  function toLocalDateKey(value) {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function buildMomentumSnapshot(user, recentSessions = []) {
+    const sessions = Array.isArray(recentSessions) ? recentSessions.slice() : [];
+    const sessionByDate = new Map();
+    sessions.forEach((session) => {
+      const key = toLocalDateKey(session?.timestamp);
+      if (!key) return;
+      const score = clamp(Number(session?.score || 0));
+      const existing = sessionByDate.get(key);
+      const sessionTime = new Date(session?.timestamp || 0).getTime();
+      const existingTime = existing ? new Date(existing.timestamp || 0).getTime() : -1;
+      if (!existing || score >= existing.score || sessionTime > existingTime) {
+        sessionByDate.set(key, {
+          ...session,
+          score,
+        });
+      }
+    });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekdayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
+    const days = [];
+    for (let offset = 6; offset >= 0; offset -= 1) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - offset);
+      const key = toLocalDateKey(date);
+      const session = sessionByDate.get(key);
+      days.push({
+        key,
+        date,
+        label: String(weekdayFormatter.format(date) || '').toUpperCase(),
+        dayNumber: String(date.getDate()).padStart(2, '0'),
+        completed: Boolean(session),
+        score: session ? clamp(Number(session.score || 0)) : 0,
+        title: session?.title || '',
+        isToday: offset === 0,
+      });
+    }
+    const completedCount = days.filter((day) => day.completed).length;
+    const latestSession = sessions
+      .filter((session) => Number.isFinite(new Date(session?.timestamp || '').getTime()))
+      .slice()
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0] || null;
+    const bestSession = sessions.reduce((best, session) => {
+      if (!best) return session;
+      return Number(session?.score || 0) > Number(best?.score || 0) ? session : best;
+    }, null);
+    const fallbackScore = clamp(Number(user?.momentumScore || 0) || 50);
+    const latestScore = latestSession ? clamp(Number(latestSession.score || 0)) : fallbackScore;
+    const bestScore = bestSession ? clamp(Number(bestSession.score || 0)) : latestScore;
+    const bestTitle = bestSession?.title || 'Recent session';
+    const todayCompleted = Boolean(days[days.length - 1]?.completed);
+    const headline = completedCount === 0
+      ? '0 of 7 days checked'
+      : `${completedCount} of 7 days checked`;
+    const detail = sessions.length
+      ? `${todayCompleted ? "Today's slot is complete" : "Today's slot is open"} · latest ${latestScore}% · best ${bestScore}% in ${bestTitle}`
+      : 'No recent sessions yet. Start today to check off the first day.';
+    return {
+      days,
+      completedCount,
+      todayCompleted,
+      latestScore,
+      bestScore,
+      bestTitle,
+      headline,
+      detail,
+    };
+  }
+
   function buildMockMomentumSeries(roleLabel, roleType, focusTrait) {
     const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const normalizedRole = String(roleLabel || '').trim();
@@ -5605,21 +5744,46 @@ tailwind.config = {
     });
   }
 
-  function renderMomentumBars(chartEl, labelsEl, series) {
+  function renderMomentumCalendar(chartEl, labelsEl, days = []) {
     if (!chartEl) return;
-    const normalized = normalizeMomentumSeries(series);
-    const maxValue = Math.max(100, ...normalized.map((item) => Number(item.value || 0)));
-    chartEl.innerHTML = normalized.map((item, index) => {
-      const height = Math.max(18, Math.round((Number(item.value || 0) / maxValue) * 100));
-      const isLatest = index === normalized.length - 1;
-      return `
-        <div class="w-full flex items-end">
-          <div class="w-full rounded-t-sm ${isLatest ? 'bg-gradient-to-t from-white/10 to-primary/80 shadow-[0_0_15px_rgba(204,255,0,0.3)]' : 'bg-white/10 hover:bg-white/20 transition-colors'}" style="height: ${height}%; min-height: 18px;"></div>
-        </div>
-      `;
-    }).join('');
+    const normalizedDays = Array.isArray(days) ? days : [];
+    chartEl.innerHTML = `
+      <div class="grid grid-cols-7 gap-1 sm:gap-2 md:gap-3">
+        ${normalizedDays.map((day) => {
+          const boxClasses = day.completed
+            ? 'border-[#CCFF00]/35 bg-[#1a220f] text-[#CCFF00] shadow-[0_0_16px_rgba(204,255,0,0.12)]'
+            : day.isToday
+              ? 'border-[#06EBF7]/25 bg-[#0b1618] text-[#06EBF7]'
+              : 'border-white/10 bg-black/20 text-[#EEF3C0]/35';
+          const labelClasses = day.completed
+            ? 'text-[#CCFF00]'
+            : day.isToday
+              ? 'text-[#06EBF7]'
+              : 'text-[#EEF3C0]/55';
+          return `
+            <button
+              type="button"
+              class="flex min-w-0 flex-col items-center gap-2 text-center"
+              title="${escapeHtml(day.completed ? `${day.label} completed` : day.isToday ? `${day.label} open today` : `${day.label} open`)}"
+            >
+              <span class="flex aspect-square w-full items-center justify-center rounded-2xl border ${boxClasses}">
+                ${day.completed ? '<span class="text-xl font-black leading-none">X</span>' : '<span class="text-xl font-black leading-none opacity-45">·</span>'}
+              </span>
+              <span class="text-[10px] font-semibold uppercase tracking-[0.18em] sm:text-[11px] ${labelClasses}">
+                ${escapeHtml(day.label)}
+              </span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
     if (labelsEl) {
-      labelsEl.innerHTML = normalized.map((item) => `<span>${escapeHtml(item.label)}</span>`).join('');
+      const completedCount = normalizedDays.filter((day) => day.completed).length;
+      const today = normalizedDays[normalizedDays.length - 1];
+      labelsEl.innerHTML = `
+        <span>${completedCount}/7 checked</span>
+        <span>${today?.completed ? 'Today complete' : 'Today open'}</span>
+      `;
     }
   }
 
@@ -6816,6 +6980,11 @@ tailwind.config = {
     const { user } = bundle;
     const level = user.level?.level || 1;
     const transcript = Array.isArray(mission.messages) ? mission.messages : [];
+    const trustScore = Number.isFinite(Number(mission.trustScore))
+      ? Number(mission.trustScore)
+      : (String(mission.trustLabel || '').trim() === 'Strong' ? 86 : String(mission.trustLabel || '').trim() === 'Good' ? 66 : 42);
+    const trustDisplay = getTrustDisplay(trustScore, mission.trustLabel);
+    const trustContext = String(mission.lessonCategory || mission.lessonTitle || mission.focus || 'Current scenario').trim();
     const isFreshUpBoss = mission.activitySource === 'fresh-up' || mission.lessonId === 'fresh-up';
     const freshUpSystemLabel = mission.freshUpSystemLabel || bundle.freshUpSystemLabel || 'Fresh Up';
     const freshUpBossLabel = mission.freshUpBossLabel || bundle.freshUpBossLabel || `${freshUpSystemLabel} Boss`;
@@ -6827,7 +6996,39 @@ tailwind.config = {
     refs.sessionLevelBadge.textContent = getLevelLabel(level);
     refs.sessionXp.textContent = formatXp(user.xp || 0);
     setWidth(refs.sessionProgress, mission.progress ?? 0);
-    refs.sessionTrust.innerHTML = `<span class="material-symbols-outlined mr-2 align-middle text-[#EEF3C0]">check_circle</span>Trust: ${mission.trustLabel || "Good"}`;
+    if (refs.sessionTrust) {
+      refs.sessionTrust.className = `rounded-[1.5rem] border ${trustDisplay.ringClass} ${trustDisplay.bgClass} px-5 py-4 text-[#EEF3C0] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_10px_30px_rgba(0,0,0,0.35)]`;
+      refs.sessionTrust.innerHTML = `
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#EEF3C0]/55">Live trust</p>
+            <div class="mt-2 flex items-center gap-3">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${trustDisplay.ringClass} ${trustDisplay.bgClass === 'bg-[#1d2a11]' ? 'bg-[#1a2310] text-[#CCFF00]' : trustDisplay.bgClass === 'bg-[#111f22]' ? 'bg-[#0c1719] text-[#06EBF7]' : 'bg-[#251711] text-[#ff7351]'}">
+                <span class="material-symbols-outlined text-lg">check_circle</span>
+              </span>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span class="text-lg font-semibold text-white">${trustDisplay.label}</span>
+                  <span class="rounded-full border ${trustDisplay.ringClass} px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] ${trustDisplay.bgClass === 'bg-[#1d2a11]' ? 'bg-[#CCFF00]/10 text-[#CCFF00]' : trustDisplay.bgClass === 'bg-[#111f22]' ? 'bg-[#06EBF7]/10 text-[#06EBF7]' : 'bg-[#ff7351]/10 text-[#ff7351]' }">Live</span>
+                </div>
+                <p class="mt-1 text-[11px] uppercase tracking-[0.22em] text-[#EEF3C0]/55">${trustContext}</p>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-full border border-[#EEF3C0]/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#EEF3C0]">${trustDisplay.score}%</div>
+        </div>
+        <div class="mt-4">
+          <div class="flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.24em] text-[#EEF3C0]/55">
+            <span>Trust meter</span>
+            <span>Built from the current response</span>
+          </div>
+          <div class="mt-2 h-2 overflow-hidden rounded-full bg-black/30">
+            <div class="h-full rounded-full ${trustDisplay.barClass} shadow-[0_0_12px_rgba(255,255,255,0.2)]" style="width:${trustDisplay.score}%"></div>
+          </div>
+        </div>
+        <p class="mt-3 text-[11px] leading-relaxed text-[#EEF3C0]/70">${trustDisplay.subtext}</p>
+      `;
+    }
     refs.sessionTurnCounter.textContent = formatSessionTurnCount(mission.currentUserTurns || 0, mission.targetUserTurns || 5);
     refs.sessionInput.value = "";
     renderChoices(mission.choices || []);
@@ -6889,14 +7090,13 @@ tailwind.config = {
       }
     });
 
-    const momentumSeries = state.mockUserMode || bundle.mockMode || user.mockMode
-      ? buildMockMomentumSeries(user.roleLabel || user.role, user.roleType || '', user.focusTrait)
-      : Array.isArray(bundle.momentumSeries) && bundle.momentumSeries.length
-        ? bundle.momentumSeries
-        : Array.isArray(user.momentumSeries) && user.momentumSeries.length
-          ? user.momentumSeries
-          : buildFallbackMomentumSeries(user, recentSessions);
-    renderMomentumBars(refs.profileMomentumChart, refs.profileMomentumLabels, momentumSeries);
+    const momentumSnapshot = buildMomentumSnapshot(user, recentSessions);
+    if (refs.profileMomentumSummary) {
+      const isMobile = window.matchMedia('(max-width: 639px)').matches;
+      refs.profileMomentumSummary.classList.toggle('hidden', isMobile);
+      refs.profileMomentumSummary.textContent = `${momentumSnapshot.headline} · ${momentumSnapshot.detail}`;
+    }
+    renderMomentumCalendar(refs.profileMomentumChart, refs.profileMomentumLabels, momentumSnapshot.days);
 
     if (refs.recentSessionsList) {
       if (recentSessions.length === 0) {
