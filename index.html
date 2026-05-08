@@ -423,7 +423,7 @@ tailwind.config = {
       </label>
       <label class="block space-y-2">
         <span id="authCodeLabel" class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Password</span>
-        <input id="authCodeInput" type="password" autocomplete="current-password" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Optional if your account requires one" />
+        <input id="authCodeInput" type="password" autocomplete="current-password" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Enter your password" />
       </label>
       <label id="authRoleField" class="hidden block space-y-2">
         <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Select role</span>
@@ -2031,15 +2031,16 @@ tailwind.config = {
           <div>
             <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]">New dealership</p>
             <h4 class="mt-1 font-headline text-xl font-bold text-on-surface">Create a store record</h4>
-            <p class="mt-2 text-sm text-on-surface-variant">Creates the dealership record and gives you a join code for enrollment.</p>
+            <p class="mt-2 text-sm text-on-surface-variant">Creates the dealership record. Add a dealer code if you want one for join-link enrollment.</p>
           </div>
           <label class="block space-y-2">
             <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Dealership name</span>
             <input id="developerDealershipNameInput" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-white/10" placeholder="Sunrise Honda" />
           </label>
           <label class="block space-y-2">
-            <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Enrollment code</span>
-            <input id="developerDealershipCodeInput" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-white/10" placeholder="sunrise-honda-2026" />
+            <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Dealer code</span>
+            <input id="developerDealershipCodeInput" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-white/10" placeholder="Optional, e.g. SUMMIT-001" />
+            <p class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/80">Leave this blank if the dealership should not use a code yet.</p>
           </label>
           <label class="block space-y-2">
             <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Plan</span>
@@ -2960,7 +2961,9 @@ tailwind.config = {
       authCodeLabel.textContent = isEnroll ? 'Invite / dealer code' : 'Password';
     }
     if (authCodeInput) {
-      authCodeInput.placeholder = isEnroll ? 'Optional if you have a code' : 'Enter your password';
+      authCodeInput.type = isEnroll ? 'text' : 'password';
+      authCodeInput.placeholder = isEnroll ? 'Optional if you have a dealer code' : 'Enter your password';
+      authCodeInput.autocomplete = isEnroll ? 'off' : 'current-password';
       authCodeInput.required = !isEnroll;
     }
     if (authSubmitBtn) {
@@ -2968,7 +2971,7 @@ tailwind.config = {
     }
     if (authEnrollmentNote) {
       authEnrollmentNote.textContent = isEnroll
-        ? 'Self-enrollment creates a personal account first. Owners and GMs see dealer-level data, managers see their team, and frontline roles see only themselves.'
+        ? 'If you have a dealer code, we will use it to assign your account to the right dealership. Leave it blank to continue with a normal individual signup.'
         : 'Sign in with your portable AutoKnerd account to bring your coaching history, progress, and role-based dashboard with you from one dealership to the next.';
     }
     setAuthCodeFieldError(false);
@@ -4576,7 +4579,7 @@ tailwind.config = {
         : `
           <div class="rounded-3xl border border-white/10 bg-black/30 p-6 text-sm text-on-surface-variant">
             No users are currently assigned to ${escapeHtml(dealershipName)}.
-            ${enrollmentCode ? `<div class="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#CCFF00]">Enrollment code: ${escapeHtml(enrollmentCode)}</div>` : ''}
+            ${enrollmentCode ? `<div class="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#CCFF00]">Dealer code: ${escapeHtml(enrollmentCode)}</div>` : ''}
           </div>
         `)
       : `
@@ -5058,8 +5061,8 @@ tailwind.config = {
 
     const dealershipName = String(result.name || result.dealership?.name || 'Dealership').trim();
     const dealershipId = String(result.dealershipId || result.dealership?.dealershipId || '').trim();
-    const enrollmentCode = String(result.enrollmentCode || result.dealership?.enrollmentCode || '').trim();
-    const enrollmentUrl = String(result.enrollmentUrl || buildClientEnrollmentUrl(enrollmentCode) || '').trim();
+    const dealerCode = String(result.dealerCode || result.enrollmentCode || result.dealership?.dealerCode || result.dealership?.enrollmentCode || '').trim();
+    const enrollmentUrl = String(result.enrollmentUrl || buildClientEnrollmentUrl(dealerCode) || '').trim();
     const createdAt = formatDisplayDate(result.createdAt, { fallback: '', includeTime: true });
 
     developerDealershipCreateResult.classList.remove('hidden-screen');
@@ -5074,13 +5077,13 @@ tailwind.config = {
           <span class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#CCFF00]">Active</span>
         </div>
         <div class="space-y-2 text-sm text-on-surface-variant">
-          <p><span class="font-semibold text-on-surface">Enrollment code:</span> ${escapeHtml(enrollmentCode || '--')}</p>
+          <p><span class="font-semibold text-on-surface">Dealer code:</span> ${escapeHtml(dealerCode || '--')}</p>
           <p class="break-words"><span class="font-semibold text-on-surface">Join link:</span> <span class="text-[#CCFF00]">${escapeHtml(enrollmentUrl || '--')}</span></p>
           ${createdAt ? `<p><span class="font-semibold text-on-surface">Created:</span> ${escapeHtml(createdAt)}</p>` : ''}
         </div>
         <div class="flex flex-wrap gap-2">
-          <button type="button" data-copy-enrollment-link class="rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">Copy link</button>
-          <a href="${escapeHtml(enrollmentUrl)}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Open link</a>
+          ${enrollmentUrl ? '<button type="button" data-copy-enrollment-link class="rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">Copy link</button>' : ''}
+          ${enrollmentUrl ? `<a href="${escapeHtml(enrollmentUrl)}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Open link</a>` : ''}
         </div>
       </div>
     `;
@@ -5091,7 +5094,7 @@ tailwind.config = {
         try {
           await copyTextToClipboard(enrollmentUrl);
           if (developerDealershipCreateState) {
-            developerDealershipCreateState.textContent = 'Enrollment link copied to clipboard.';
+            developerDealershipCreateState.textContent = 'Join link copied to clipboard.';
           }
         } catch (error) {
           if (developerDealershipCreateState) {
@@ -5126,8 +5129,8 @@ tailwind.config = {
     }
 
     developerDealershipsList.innerHTML = rows.map((dealership) => {
-      const enrollmentCode = String(dealership.enrollmentCode || '').trim();
-      const enrollmentUrl = String(dealership.enrollmentUrl || buildClientEnrollmentUrl(enrollmentCode) || '').trim();
+      const dealerCode = String(dealership.dealerCode || dealership.enrollmentCode || '').trim();
+      const enrollmentUrl = String(dealership.enrollmentUrl || buildClientEnrollmentUrl(dealerCode) || '').trim();
       const createdAt = formatDisplayDate(dealership.createdAt, { fallback: '--', includeTime: false });
       return `
         <div class="rounded-2xl border ${dealership.active ? 'border-[#CCFF00]/20 bg-[#CCFF00]/5' : 'border-white/10 bg-white/5'} p-4">
@@ -5139,12 +5142,12 @@ tailwind.config = {
               </div>
               <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">${escapeHtml(dealership.dealershipId || dealership.id || '--')}</p>
               <p class="mt-3 text-sm text-on-surface-variant">Plan: <span class="text-on-surface">${escapeHtml(String(dealership.plan || 'monthly').toUpperCase())}</span> · Users: <span class="text-on-surface">${escapeHtml(String(dealership.userCount ?? 0))}</span> · Created: <span class="text-on-surface">${escapeHtml(createdAt)}</span></p>
-              <p class="mt-2 text-xs text-on-surface-variant">Enrollment code: <span class="text-[#CCFF00]">${escapeHtml(enrollmentCode || '--')}</span></p>
+              <p class="mt-2 text-xs text-on-surface-variant">Dealer code: <span class="text-[#CCFF00]">${escapeHtml(dealerCode || '--')}</span></p>
               <p class="mt-4 text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]">Tap to view full roster</p>
             </button>
             <div class="flex flex-col items-start gap-2 md:items-end">
-              <button type="button" data-copy-dealership-link="${escapeHtml(enrollmentUrl)}" class="rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">Copy link</button>
-              <a href="${escapeHtml(enrollmentUrl)}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Open</a>
+              ${enrollmentUrl ? `<button type="button" data-copy-dealership-link="${escapeHtml(enrollmentUrl)}" class="rounded-full border border-[#CCFF00]/30 bg-[#CCFF00]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/50 hover:bg-[#CCFF00]/15">Copy link</button>` : ''}
+              ${enrollmentUrl ? `<a href="${escapeHtml(enrollmentUrl)}" target="_blank" rel="noreferrer" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Open</a>` : ''}
             </div>
           </div>
         </div>
@@ -5158,7 +5161,7 @@ tailwind.config = {
         try {
           await copyTextToClipboard(url);
           if (developerDealershipCreateState) {
-            developerDealershipCreateState.textContent = 'Enrollment link copied to clipboard.';
+            developerDealershipCreateState.textContent = 'Join link copied to clipboard.';
           }
         } catch (error) {
           if (developerDealershipCreateState) {
@@ -5183,7 +5186,7 @@ tailwind.config = {
   async function handleDeveloperDealershipCreate(event) {
     event?.preventDefault?.();
     const name = String(developerDealershipNameInput?.value || '').trim();
-    const enrollmentCode = String(developerDealershipCodeInput?.value || '').trim();
+    const dealerCode = String(developerDealershipCodeInput?.value || '').trim();
     const plan = String(developerDealershipPlanInput?.value || 'monthly').trim().toLowerCase() || 'monthly';
 
     if (!name) {
@@ -5191,14 +5194,6 @@ tailwind.config = {
         developerDealershipCreateState.textContent = 'Enter a dealership name.';
       }
       developerDealershipNameInput?.focus();
-      return;
-    }
-
-    if (!enrollmentCode) {
-      if (developerDealershipCreateState) {
-        developerDealershipCreateState.textContent = 'Enter an enrollment code.';
-      }
-      developerDealershipCodeInput?.focus();
       return;
     }
 
@@ -5215,7 +5210,7 @@ tailwind.config = {
       const response = await fetch('/api/admin/dealership/create', {
         method: 'POST',
         headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ name, enrollmentCode, plan }),
+        body: JSON.stringify({ name, dealerCode: dealerCode || undefined, enrollmentCode: dealerCode || undefined, plan }),
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.ok) {
@@ -5223,11 +5218,12 @@ tailwind.config = {
       }
 
       const dealership = payload.dealership || {};
-      const code = String(dealership.enrollmentCode || enrollmentCode).trim();
+      const code = String(dealership.dealerCode || dealership.enrollmentCode || dealerCode).trim();
       const enrollmentUrl = String(dealership.enrollmentUrl || buildClientEnrollmentUrl(code) || '').trim();
       state.developerDealershipCreateResult = {
         ...dealership,
         name: dealership.name || name,
+        dealerCode: code,
         enrollmentCode: code,
         enrollmentUrl,
       };
@@ -8048,9 +8044,11 @@ tailwind.config = {
         body: JSON.stringify({
           name,
           email: identifier,
-          code,
+          dealerCode: code || undefined,
+          enrollmentCode: code || undefined,
+          code: code || undefined,
           role,
-          enrollmentType: code ? 'invite' : 'self',
+          enrollmentType: code ? 'dealer_code' : 'self_signup',
           mockMode: state.mockUserMode || undefined,
           mockRoleOverride: getMockRoleOverride() || undefined,
         }),
@@ -8070,6 +8068,11 @@ tailwind.config = {
       await loadBootstrap();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unable to create account.';
+      if (/code|dealership/i.test(message)) {
+        setAuthCodeFieldError(true);
+      } else {
+        setAuthCodeFieldError(false);
+      }
       if (authStatusText) {
         authStatusText.textContent = message;
       }

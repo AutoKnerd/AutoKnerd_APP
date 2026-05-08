@@ -2640,7 +2640,32 @@ function safeFilename(value) {
 }
 
 function normalizeEnrollmentCode(value) {
+  return normalizeDealerCode(value);
+}
+
+function normalizeDealerCode(value) {
   return String(value || '').trim().toLowerCase();
+}
+
+function getDealershipCodeData(data = {}) {
+  const dealerCode = String(data.dealerCode || data.enrollmentCode || '').trim();
+  const dealerCodeNormalized = normalizeDealerCode(data.dealerCodeNormalized || dealerCode);
+  return {
+    dealerCode,
+    dealerCodeNormalized,
+  };
+}
+
+function isDealershipDeactivated(dealershipData = {}) {
+  return dealershipData.active === false || String(dealershipData.accountStatus || '').trim().toLowerCase() === 'inactive';
+}
+
+function getTrialWindowTimestamps(days = 14) {
+  const now = new Date();
+  const trialDays = Math.max(1, Number(days) || 14);
+  const trialStartedAt = admin.firestore.Timestamp.fromDate(now);
+  const trialEndsAt = admin.firestore.Timestamp.fromDate(new Date(now.getTime() + trialDays * 24 * 60 * 60 * 1000));
+  return { trialStartedAt, trialEndsAt };
 }
 
 function isPrivilegedDealershipRole(roleLabel) {
@@ -2686,12 +2711,16 @@ function buildEnrollmentUrl(origin, enrollmentCode) {
 function serializeDealershipRecord(doc, userCount = 0, origin = '') {
   const data = doc?.data?.() || {};
   const dealershipId = String(data.dealershipId || doc?.id || '').trim();
-  const enrollmentCode = normalizeEnrollmentCode(data.enrollmentCode || '');
+  const { dealerCode, dealerCodeNormalized } = getDealershipCodeData(data);
+  const enrollmentCode = dealerCode;
   return {
     id: String(doc?.id || dealershipId || '').trim(),
     dealershipId,
     name: String(data.name || data.dealer_name || data.storeName || dealershipId || 'Dealership').trim(),
+    dealerCode,
+    dealerCodeNormalized,
     enrollmentCode,
+    enrollmentCodeNormalized: dealerCodeNormalized,
     enrollmentUrl: buildEnrollmentUrl(origin, enrollmentCode) || '',
     active: data.active !== false,
     plan: String(data.plan || 'monthly').trim() || 'monthly',
@@ -2828,12 +2857,14 @@ function resolveUserDealershipData(userData = {}) {
   const legacyDealershipIds = Array.isArray(userData?.dealershipIds)
     ? Array.from(new Set(userData.dealershipIds.map((value) => String(value || '').trim()).filter(Boolean)))
     : [];
-  const fallbackDealershipId = primaryDealershipId || (legacyDealershipIds.length === 1 ? legacyDealershipIds[0] : '');
+  const fallbackDealershipId = primaryDealershipId
+    || (legacyDealershipIds.length === 1 ? legacyDealershipIds[0] : '')
+    || 'independent';
 
   return {
     dealershipId: fallbackDealershipId,
     dealershipIds: fallbackDealershipId ? [fallbackDealershipId] : [],
-    hasDealershipId: Boolean(fallbackDealershipId),
+    hasDealershipId: Boolean(primaryDealershipId || legacyDealershipIds.length),
   };
 }
 
@@ -2868,23 +2899,36 @@ function resolveDealershipNameForUser(userData = {}, dealershipNameMap = new Map
   const explicitName = String(userData?.dealershipName || userData?.storeName || userData?.companyName || '').trim();
   if (explicitName) return explicitName;
   const displayId = getDealershipDisplayId(userData, scopedDealershipIds);
+  if (displayId === 'independent') return 'Independent';
   return String(dealershipNameMap.get(displayId) || displayId || fallback || 'Current dealership').trim();
 }
 
 async function lookupDealershipByEnrollmentCode(code) {
+  return lookupDealershipByDealerCode(code);
+}
+
+async function lookupDealershipByDealerCode(code) {
   if (!firebaseDb) return null;
-  const normalizedCode = normalizeEnrollmentCode(code);
+  const normalizedCode = normalizeDealerCode(code);
   if (!normalizedCode) return null;
 
-  const directSnap = await firebaseDb.collection('dealerships').where('enrollmentCode', '==', normalizedCode).limit(1).get().catch(() => null);
-  if (directSnap && !directSnap.empty) {
-    const doc = directSnap.docs[0];
-    return { id: doc.id, data: doc.data() || {}, field: 'enrollmentCode' };
+  const directFields = ['dealerCodeNormalized', 'enrollmentCode', 'dealerCode'];
+  for (const field of directFields) {
+    const directSnap = await firebaseDb.collection('dealerships').where(field, '==', normalizedCode).limit(1).get().catch(() => null);
+    if (directSnap && !directSnap.empty) {
+      const doc = directSnap.docs[0];
+      return { id: doc.id, data: doc.data() || {}, field };
+    }
   }
 
   const dealershipsSnap = await firebaseDb.collection('dealerships').get().catch(() => null);
   const docs = dealershipsSnap?.docs || [];
-  const match = docs.find((doc) => normalizeEnrollmentCode(doc.data()?.enrollmentCode) === normalizedCode);
+  const match = docs.find((doc) => {
+    const dealershipData = doc.data() || {};
+    const codeData = getDealershipCodeData(dealershipData);
+    return codeData.dealerCodeNormalized === normalizedCode
+      || normalizeDealerCode(dealershipData.enrollmentCode) === normalizedCode;
+  });
   if (match) {
     return { id: match.id, data: match.data() || {}, field: 'scan' };
   }
@@ -4574,6 +4618,9 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
   const nextDealershipId = resolvedDealershipData.dealershipId || '';
   const nextDealershipIds = resolvedDealershipData.dealershipIds;
   let resolvedDealershipName = String(userData.dealershipName || userData.storeName || userData.companyName || '').trim();
+  if (!resolvedDealershipName && nextDealershipId === 'independent') {
+    resolvedDealershipName = 'Independent';
+  }
   if (!resolvedDealershipName && nextDealershipId) {
     const dealershipSnap = await firebaseDb.collection('dealerships').doc(nextDealershipId).get().catch(() => null);
     resolvedDealershipName = String(dealershipSnap?.data()?.name || dealershipSnap?.data()?.dealer_name || dealershipSnap?.data()?.storeName || '').trim();
@@ -5343,8 +5390,9 @@ async function handleAuthEnroll(req, res) {
     const roleLabel = normalizeRoleLabel(body.role || body.roleLabel || 'Sales Consultant');
     const roleProfile = getRoleProfile(roleLabel);
     const visibilityScope = getVisibilityScopeForRole(roleLabel);
-    const enrollmentCode = normalizeEnrollmentCode(body.enrollmentCode || body.code || body.dealerCode || body.accessCode || '');
-    const dealershipRecord = enrollmentCode ? await lookupDealershipByEnrollmentCode(enrollmentCode) : null;
+    const dealerCodeDisplay = String(body.dealerCode || body.enrollmentCode || body.code || body.accessCode || '').trim();
+    const dealerCodeNormalized = normalizeDealerCode(dealerCodeDisplay);
+    const dealershipRecord = dealerCodeNormalized ? await lookupDealershipByDealerCode(dealerCodeNormalized) : null;
 
     if (!name) {
       return sendJson(res, 400, { ok: false, message: 'First and last name are required.' });
@@ -5352,32 +5400,15 @@ async function handleAuthEnroll(req, res) {
     if (!email && !staffId) {
       return sendJson(res, 400, { ok: false, message: 'Email or staff ID is required.' });
     }
-    if (!enrollmentCode) {
-      return sendJson(res, 400, { ok: false, message: 'An enrollment code is required.' });
-    }
     if (!firebaseDb) {
       return sendJson(res, 500, { ok: false, message: 'Enrollment requires Firebase.' });
-    }
-    if (!dealershipRecord) {
-      return sendJson(res, 404, { ok: false, message: 'Enrollment code not found.' });
-    }
-
-    const dealershipData = dealershipRecord.data || {};
-    if (dealershipData.active === false) {
-      return sendJson(res, 403, { ok: false, message: 'This dealership enrollment code is inactive.' });
     }
 
     const existingDoc = await findUserDocByIdentifier(email || staffId);
     const userId = existingDoc?.id || body.userId || crypto.randomUUID();
-    const dealershipId = String(dealershipRecord.id || '').trim();
-    const dealershipName = String(dealershipData.name || dealershipData.dealer_name || dealershipData.storeName || dealershipId).trim();
-    const dealershipIds = Array.from(new Set([
-      dealershipId,
-      ...(Array.isArray(body.dealershipIds) ? body.dealershipIds : []),
-    ].map((value) => String(value || '').trim()).filter(Boolean)));
     const invitedBy = String(body.invitedBy || '').trim();
     const managerId = String(body.managerId || '').trim();
-    const enrollments = {
+    const baseEnrollment = {
       userId,
       firstName,
       lastName,
@@ -5394,27 +5425,50 @@ async function handleAuthEnroll(req, res) {
       visibilityScope,
       visibilityScopeLabel: getVisibilityScopeLabel(visibilityScope),
       visibilityScopeDescription: getVisibilityScopeDescription(visibilityScope),
-      enrollmentType: 'dealer_code',
-      enrollmentMode: 'dealer_code',
+      enrollmentType: dealerCodeNormalized ? 'dealer_code' : 'self_signup',
+      enrollmentMode: dealerCodeNormalized ? 'dealer_code' : 'self_signup',
       enrollmentStatus: 'active',
       invitedBy: invitedBy || undefined,
       managerId: managerId || undefined,
       parentUserId: managerId || invitedBy || undefined,
-      dealershipId: dealershipId || undefined,
-      selfDeclaredDealershipId: dealershipId || undefined,
-      dealershipIds: dealershipIds.length ? dealershipIds : undefined,
-      dealershipName: dealershipName || undefined,
-      dealershipEnrollmentCode: enrollmentCode || undefined,
-      dealerCode: enrollmentCode || undefined,
-      inviteCode: enrollmentCode || undefined,
       createdAt: existingDoc ? existingDoc.data()?.createdAt || admin.firestore.FieldValue.serverTimestamp() : admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       enrolledAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    Object.keys(enrollments).forEach((key) => {
-      if (enrollments[key] === undefined) {
-        delete enrollments[key];
+    if (dealerCodeNormalized) {
+      if (!dealershipRecord) {
+        return sendJson(res, 404, { ok: false, message: 'Dealer code not found. Please check the code and try again.' });
+      }
+
+      const dealershipData = dealershipRecord.data || {};
+      if (isDealershipDeactivated(dealershipData)) {
+        return sendJson(res, 403, { ok: false, message: 'This dealership is not accepting new users.' });
+      }
+
+      const dealershipId = String(dealershipRecord.id || '').trim();
+      const dealershipName = String(dealershipData.name || dealershipData.dealer_name || dealershipData.storeName || dealershipId).trim();
+      const dealershipIds = [dealershipId].filter(Boolean);
+      const trialWindow = getTrialWindowTimestamps(14);
+
+      baseEnrollment.dealershipId = dealershipId || undefined;
+      baseEnrollment.selfDeclaredDealershipId = dealershipId || undefined;
+      baseEnrollment.dealershipIds = dealershipIds.length ? dealershipIds : undefined;
+      baseEnrollment.dealershipName = dealershipName || undefined;
+      baseEnrollment.dealershipEnrollmentCode = dealerCodeDisplay || undefined;
+      baseEnrollment.dealerCode = dealerCodeDisplay || undefined;
+      baseEnrollment.dealerCodeNormalized = dealerCodeNormalized || undefined;
+      baseEnrollment.inviteCode = dealerCodeDisplay || undefined;
+      baseEnrollment.subscriptionStatus = 'trialing';
+      baseEnrollment.trialStartedAt = trialWindow.trialStartedAt;
+      baseEnrollment.trialEndsAt = trialWindow.trialEndsAt;
+      baseEnrollment.ppp_enabled = Boolean(dealershipData.enablePppProtocol);
+      baseEnrollment.saas_ppp_enabled = Boolean(dealershipData.enableSaasPppTraining);
+    }
+
+    Object.keys(baseEnrollment).forEach((key) => {
+      if (baseEnrollment[key] === undefined) {
+        delete baseEnrollment[key];
       }
     });
 
@@ -5427,7 +5481,7 @@ async function handleAuthEnroll(req, res) {
 
     await firebaseDb.collection('users').doc(userId).set({
       ...safeDefaults,
-      ...enrollments,
+      ...baseEnrollment,
       preferences: {
         ...(existingDoc?.data()?.preferences && typeof existingDoc.data().preferences === 'object' ? existingDoc.data().preferences : {}),
         ...(body.preferences && typeof body.preferences === 'object' ? body.preferences : {}),
@@ -5449,10 +5503,10 @@ async function handleAuthEnroll(req, res) {
         visibilityScope,
         visibilityScopeLabel: getVisibilityScopeLabel(visibilityScope),
         visibilityScopeDescription: getVisibilityScopeDescription(visibilityScope),
-        enrollmentType: 'dealer_code',
-        dealershipId: dealershipId || null,
-        dealershipName: dealershipName || null,
-        enrollmentCode,
+        enrollmentType: dealerCodeNormalized ? 'dealer_code' : 'self_signup',
+        dealershipId: baseEnrollment.dealershipId || null,
+        dealershipName: baseEnrollment.dealershipName || null,
+        dealerCode: dealerCodeDisplay || null,
       },
     });
   } catch (error) {
@@ -5484,29 +5538,36 @@ async function handleAdminDealershipCreate(req, res) {
 
     const name = String(body.name || '').trim();
     const plan = String(body.plan || 'monthly').trim().toLowerCase() || 'monthly';
-    const enrollmentCode = normalizeEnrollmentCode(body.enrollmentCode);
+    const dealerCodeDisplay = String(body.dealerCode || body.enrollmentCode || '').trim();
+    const dealerCodeNormalized = normalizeDealerCode(dealerCodeDisplay);
     if (!name) {
       return sendJson(res, 400, { ok: false, message: 'A dealership name is required.' });
     }
-    if (!enrollmentCode) {
-      return sendJson(res, 400, { ok: false, message: 'An enrollment code is required.' });
-    }
 
-    const existingEnrollment = await lookupDealershipByEnrollmentCode(enrollmentCode);
+    const existingEnrollment = dealerCodeNormalized ? await lookupDealershipByDealerCode(dealerCodeNormalized) : null;
     if (existingEnrollment) {
-      return sendJson(res, 409, { ok: false, message: 'That enrollment code is already in use.' });
+      return sendJson(res, 409, { ok: false, message: 'That dealer code is already in use.' });
     }
 
     const dealershipId = await generateUniqueDealershipId(name);
     const dealershipDoc = {
       dealershipId,
       name,
-      enrollmentCode,
+      dealerCode: dealerCodeDisplay || undefined,
+      dealerCodeNormalized: dealerCodeNormalized || undefined,
+      enrollmentCode: dealerCodeDisplay || undefined,
+      enrollmentCodeNormalized: dealerCodeNormalized || undefined,
       active: true,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       plan,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
+
+    Object.keys(dealershipDoc).forEach((key) => {
+      if (dealershipDoc[key] === undefined) {
+        delete dealershipDoc[key];
+      }
+    });
 
     await firebaseDb.collection('dealerships').doc(dealershipId).set(dealershipDoc, { merge: false });
     developerDashboardCache.clear();
@@ -5521,6 +5582,104 @@ async function handleAdminDealershipCreate(req, res) {
   } catch (error) {
     console.error('[admin-dealership-create] failed', error);
     return sendJson(res, 500, { ok: false, message: 'Unable to create dealership.' });
+  }
+}
+
+async function handleAdminDealershipUpdate(req, res) {
+  try {
+    const body = await readBody(req);
+    const token = getRequestToken(req, new URL(req.url, `http://${req.headers.host || 'localhost'}`), body);
+    const authSession = getAuthSession(token);
+    if (!authSession?.userId) {
+      return sendJson(res, 401, { ok: false, authRequired: true, message: 'Sign in required.' });
+    }
+
+    const bundle = await fetchUserBundle(authSession.userId, body.roleOverride, body.mockMode, body.mockRoleOverride);
+    if (!bundle?.user) {
+      return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
+    }
+    const roleLabel = normalizeRoleLabel(bundle.user.roleLabel || bundle.user.role);
+    if (!isPrivilegedDealershipRole(roleLabel)) {
+      return sendJson(res, 403, { ok: false, message: 'Developer or Admin access required.' });
+    }
+    if (!firebaseDb) {
+      return sendJson(res, 500, { ok: false, message: 'Enrollment requires Firebase.' });
+    }
+
+    const dealershipId = String(body.dealershipId || body.id || '').trim();
+    if (!dealershipId) {
+      return sendJson(res, 400, { ok: false, message: 'A dealershipId is required.' });
+    }
+
+    const dealershipRecord = await lookupDealershipById(dealershipId);
+    if (!dealershipRecord) {
+      return sendJson(res, 404, { ok: false, message: 'That dealership was not found.' });
+    }
+
+    const currentData = dealershipRecord.data || {};
+    const nextName = body.name !== undefined ? String(body.name || '').trim() : String(currentData.name || currentData.dealer_name || currentData.storeName || dealershipId).trim();
+    const hasDealerCodeField = Object.prototype.hasOwnProperty.call(body, 'dealerCode')
+      || Object.prototype.hasOwnProperty.call(body, 'enrollmentCode')
+      || Object.prototype.hasOwnProperty.call(body, 'clearDealerCode');
+    const nextDealerCodeDisplay = hasDealerCodeField
+      ? String(body.dealerCode || body.enrollmentCode || '').trim()
+      : String(currentData.dealerCode || currentData.enrollmentCode || '').trim();
+    const nextDealerCodeNormalized = normalizeDealerCode(nextDealerCodeDisplay);
+
+    if (nextDealerCodeNormalized) {
+      const duplicate = await lookupDealershipByDealerCode(nextDealerCodeNormalized);
+      if (duplicate && String(duplicate.id || '').trim() !== dealershipId) {
+        return sendJson(res, 409, { ok: false, message: 'That dealer code is already in use.' });
+      }
+    }
+
+    const updates = {
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (body.name !== undefined) {
+      updates.name = nextName || dealershipId;
+    }
+
+    if (hasDealerCodeField) {
+      if (nextDealerCodeNormalized) {
+        updates.dealerCode = nextDealerCodeDisplay;
+        updates.dealerCodeNormalized = nextDealerCodeNormalized;
+        updates.enrollmentCode = nextDealerCodeDisplay;
+        updates.enrollmentCodeNormalized = nextDealerCodeNormalized;
+      } else {
+        updates.dealerCode = admin.firestore.FieldValue.delete();
+        updates.dealerCodeNormalized = admin.firestore.FieldValue.delete();
+        updates.enrollmentCode = admin.firestore.FieldValue.delete();
+        updates.enrollmentCodeNormalized = admin.firestore.FieldValue.delete();
+      }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(body, 'active')) {
+      updates.active = isTruthyFlag(body.active);
+    }
+    if (Object.prototype.hasOwnProperty.call(body, 'plan')) {
+      updates.plan = String(body.plan || 'monthly').trim().toLowerCase() || 'monthly';
+    }
+    if (Object.prototype.hasOwnProperty.call(body, 'enablePppProtocol')) {
+      updates.enablePppProtocol = isTruthyFlag(body.enablePppProtocol);
+    }
+    if (Object.prototype.hasOwnProperty.call(body, 'enableSaasPppTraining')) {
+      updates.enableSaasPppTraining = isTruthyFlag(body.enableSaasPppTraining);
+    }
+
+    await firebaseDb.collection('dealerships').doc(dealershipRecord.id).set(updates, { merge: true });
+    developerDashboardCache.clear();
+    const updatedSnap = await firebaseDb.collection('dealerships').doc(dealershipRecord.id).get().catch(() => null);
+    const updatedDealership = serializeDealershipRecord(updatedSnap, 0, getRequestOrigin(req));
+    return sendJson(res, 200, {
+      ok: true,
+      dealershipId: dealershipRecord.id,
+      dealership: updatedDealership,
+    });
+  } catch (error) {
+    console.error('[admin-dealership-update] failed', error);
+    return sendJson(res, 500, { ok: false, message: 'Unable to update dealership.' });
   }
 }
 
@@ -6126,15 +6285,12 @@ async function handleStartSession(req, res) {
     if (!bundle) {
       return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
     }
-    const dealershipId = String(bundle.user?.dealershipId || bundle.user?.selfDeclaredDealershipId || '').trim();
-    if (!dealershipId) {
-      return sendJson(res, 400, { ok: false, message: 'Authenticated user is missing a dealership assignment.' });
-    }
+    const dealershipId = String(bundle.user?.dealershipId || bundle.user?.selfDeclaredDealershipId || 'independent').trim() || 'independent';
     const dealershipIds = Array.from(new Set([
       dealershipId,
       ...getResolvedDealershipIds(bundle.user),
     ]));
-    const dealershipName = String(bundle.user?.dealershipName || bundle.user?.storeName || bundle.user?.companyName || '').trim();
+    const dealershipName = String(bundle.user?.dealershipName || bundle.user?.storeName || bundle.user?.companyName || (dealershipId === 'independent' ? 'Independent' : '')).trim() || 'Independent';
 
     const isFreshUp = isTruthyFlag(body.freshUp);
     const allowedCategories = getRoleLessonCategories(bundle.roleProfile?.roleLabel || bundle.user.role, bundle.roleProfile?.roleType || bundle.user.roleType);
@@ -6733,6 +6889,10 @@ async function routeRequest(req, res) {
 
   if (req.method === 'POST' && url.pathname === '/api/admin/dealership/create') {
     return handleAdminDealershipCreate(req, res);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/admin/dealership/update') {
+    return handleAdminDealershipUpdate(req, res);
   }
 
   if (req.method === 'GET' && url.pathname === '/api/admin/dealerships') {
