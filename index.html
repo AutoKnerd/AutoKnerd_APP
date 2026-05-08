@@ -2136,6 +2136,7 @@ tailwind.config = {
     session: null,
     reviewSession: null,
     authMode: localStorage.getItem("autoknerd:authMode") || 'signin',
+    authCodeFieldError: false,
     authToken: localStorage.getItem("autoknerd:authToken") || '',
     developerDashboard: null,
     developerDashboardStatus: 'idle',
@@ -2974,12 +2975,13 @@ tailwind.config = {
         ? 'Enter your dealer code to create your account and assign it to the right dealership.'
         : 'Sign in with your portable AutoKnerd account to bring your coaching history, progress, and role-based dashboard with you from one dealership to the next.';
     }
-    setAuthCodeFieldError(false);
+    setAuthCodeFieldError(state.authCodeFieldError);
   }
 
   function setAuthCodeFieldError(active = false) {
     if (!authCodeInput) return;
     const shouldHighlight = Boolean(active);
+    state.authCodeFieldError = shouldHighlight;
     authCodeInput.setAttribute('aria-invalid', shouldHighlight ? 'true' : 'false');
     authCodeInput.style.borderColor = shouldHighlight ? '#ff4d4d' : '';
     authCodeInput.style.backgroundColor = shouldHighlight ? 'rgba(42, 16, 16, 0.96)' : '';
@@ -8066,6 +8068,7 @@ tailwind.config = {
         throw new Error(payload.message || 'Unable to create account.');
       }
       saveAuthSession(payload.token, payload.bundle?.user?.userId || '');
+      setAuthCodeFieldError(false);
       setAuthMode('signin');
       if (authStatusText) {
         authStatusText.textContent = 'Account created.';
