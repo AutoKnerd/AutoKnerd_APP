@@ -5403,6 +5403,9 @@ async function handleAuthEnroll(req, res) {
     if (!firebaseDb) {
       return sendJson(res, 500, { ok: false, message: 'Enrollment requires Firebase.' });
     }
+    if (!dealerCodeNormalized) {
+      return sendJson(res, 400, { ok: false, message: 'Dealer code is required.' });
+    }
 
     const existingDoc = await findUserDocByIdentifier(email || staffId);
     const userId = existingDoc?.id || body.userId || crypto.randomUUID();
@@ -5425,8 +5428,8 @@ async function handleAuthEnroll(req, res) {
       visibilityScope,
       visibilityScopeLabel: getVisibilityScopeLabel(visibilityScope),
       visibilityScopeDescription: getVisibilityScopeDescription(visibilityScope),
-      enrollmentType: dealerCodeNormalized ? 'dealer_code' : 'self_signup',
-      enrollmentMode: dealerCodeNormalized ? 'dealer_code' : 'self_signup',
+      enrollmentType: 'dealer_code',
+      enrollmentMode: 'dealer_code',
       enrollmentStatus: 'active',
       invitedBy: invitedBy || undefined,
       managerId: managerId || undefined,
@@ -5503,7 +5506,7 @@ async function handleAuthEnroll(req, res) {
         visibilityScope,
         visibilityScopeLabel: getVisibilityScopeLabel(visibilityScope),
         visibilityScopeDescription: getVisibilityScopeDescription(visibilityScope),
-        enrollmentType: dealerCodeNormalized ? 'dealer_code' : 'self_signup',
+        enrollmentType: 'dealer_code',
         dealershipId: baseEnrollment.dealershipId || null,
         dealershipName: baseEnrollment.dealershipName || null,
         dealerCode: dealerCodeDisplay || null,
