@@ -1063,7 +1063,7 @@ tailwind.config = {
       <span id="profileRole" class="font-['Manrope'] text-lg font-black uppercase tracking-widest leading-none text-[#CCFF00]">STATS</span>
     </button>
     <button id="profileHeaderMenuBtn" type="button" class="h-10 w-10 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest transition-opacity hover:opacity-80 active:scale-95 duration-200" aria-label="Open account menu">
-      <img id="profileHeaderAvatar" alt="Profile avatar" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLobh7LCzxnFHg_XB00lQn0AaoJy0WZgZgXrG6Jy0pQo-j-5SFLta1g8yumiS9rdTIWa1Xum_u-MqKzF3Ny6RB8vLaCYtkSj6EEGM32_9MnhwwVxh7-wDD1JPMMZjIeCPvIIf3jXhbktT18pujzRmffL3CCEg76PXvATWGbDFC8OnqywutSSPqzzsIgsPqtwNCOqQEHTChvzZ1pn-b_IL83fkZicbRVLnDN0zs3u9BCiBEc1XuvwNEstnugkGO5OtlSKGJ8AIGioQJUZ"/>
+      <img id="profileHeaderAvatar" alt="Profile avatar" class="h-full w-full object-cover" src="/gear-head.png"/>
     </button>
   </header>
   <div class="bg-background text-on-surface min-h-screen pt-20 pb-32 overflow-x-hidden relative selection:bg-primary/30 selection:text-primary">
@@ -1079,7 +1079,7 @@ tailwind.config = {
         <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
           <div class="relative group">
             <div class="w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden border-[3px] border-surface-container-highest relative z-10 shadow-[0_0_40px_rgba(204,255,0,0.1)]">
-              <img id="profileAvatar" alt="Alex Rivera" class="w-full h-full object-cover" data-alt="Professional portrait of Alex Rivera, focused expression, modern minimal background with a hint of dramatic edge lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLobh7LCzxnFHg_XB00lQn0AaoJy0WZgZgXrG6Jy0pQo-j-5SFLta1g8yumiS9rdTIWa1Xum_u-MqKzF3Ny6RB8vLaCYtkSj6EEGM32_9MnhwwVxh7-wDD1JPMMZjIeCPvIIf3jXhbktT18pujzRmffL3CCEg76PXvATWGbDFC8OnqywutSSPqzzsIgsPqtwNCOqQEHTChvzZ1pn-b_IL83fkZicbRVLnDN0zs3u9BCiBEc1XuvwNEstnugkGO5OtlSKGJ8AIGioQJUZ"/>
+              <img id="profileAvatar" alt="Profile avatar" class="w-full h-full object-cover" data-alt="AutoKnerd gear avatar" src="/gear-head.png"/>
             </div>
             <div class="absolute -inset-2 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-2xl z-0 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div id="profileAvatarLevel" class="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-surface-container-highest text-primary font-headline font-bold text-sm px-4 py-1 rounded-full z-20 border border-outline-variant/20 shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
@@ -3792,6 +3792,7 @@ tailwind.config = {
   }
 
   const avatarAsset = (path) => `${window.location.origin}${encodeURI(path)}`;
+  const defaultAvatarSrc = avatarAsset('/gear-head.png');
 
   const avatarOptions = [
     { id: 'blue', label: 'Blue', src: avatarAsset('/Avatars/Blue.png') },
@@ -4345,14 +4346,14 @@ tailwind.config = {
   }
 
   function syncAvatarPreview(avatarUrl) {
-    const nextAvatar = String(avatarUrl || '').trim();
-    if (refs.profileAvatar && nextAvatar) refs.profileAvatar.src = nextAvatar;
-    if (refs.profileHeaderAvatar && nextAvatar) refs.profileHeaderAvatar.src = nextAvatar;
-    syncHeaderAvatar(refs.homeProfileAvatar, refs.homeProfileAvatarIcon, nextAvatar);
-    syncHeaderAvatar(refs.toolsHubProfileAvatar, refs.toolsHubProfileAvatarIcon, nextAvatar);
-    if (refs.managerAvatarImage && nextAvatar) refs.managerAvatarImage.src = nextAvatar;
-    if (refs.aiOutputAvatarImage && nextAvatar) refs.aiOutputAvatarImage.src = nextAvatar;
-    syncDeveloperProfileAvatar(nextAvatar);
+    const nextAvatar = String(avatarUrl || '').trim() || defaultAvatarSrc;
+    if (refs.profileAvatar) refs.profileAvatar.src = nextAvatar;
+    if (refs.profileHeaderAvatar) refs.profileHeaderAvatar.src = nextAvatar;
+    syncHeaderAvatar(refs.homeProfileAvatar, refs.homeProfileAvatarIcon, String(avatarUrl || '').trim());
+    syncHeaderAvatar(refs.toolsHubProfileAvatar, refs.toolsHubProfileAvatarIcon, String(avatarUrl || '').trim());
+    if (refs.managerAvatarImage) refs.managerAvatarImage.src = nextAvatar;
+    if (refs.aiOutputAvatarImage) refs.aiOutputAvatarImage.src = nextAvatar;
+    syncDeveloperProfileAvatar(String(avatarUrl || '').trim());
   }
 
   function slugifyText(value) {
@@ -7600,7 +7601,7 @@ tailwind.config = {
       }
     }
 
-    const avatarSrc = user.avatarUrl || refs.profileAvatar?.src;
+    const avatarSrc = user.avatarUrl || defaultAvatarSrc;
     if (avatarSrc) {
       refs.profileAvatar.src = avatarSrc;
       if (refs.profileHeaderAvatar) refs.profileHeaderAvatar.src = avatarSrc;
