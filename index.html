@@ -3011,14 +3011,16 @@ tailwind.config = {
     );
   }
 
-  function canOpenDeveloperTools(bundle = state.bundle) {
-    const roleLabel = formatRoleTitle(bundle?.user?.roleLabel || bundle?.user?.role);
+  function hasDeveloperAccess(bundle = state.bundle) {
+    const activeDeveloperBundle = getActiveDeveloperBundle();
     return Boolean(
-      state.internalToolsEnabled
-      || isDeveloperSession()
+      isDeveloperAccount(activeDeveloperBundle)
       || isDeveloperAccount(bundle)
-      || isStoreLeadershipRole(roleLabel)
     );
+  }
+
+  function canOpenDeveloperTools(bundle = state.bundle) {
+    return hasDeveloperAccess(bundle);
   }
 
   function isDeveloperConsoleVisible() {
@@ -3562,7 +3564,7 @@ tailwind.config = {
   }
 
   function openDeveloperPanel() {
-    if (!isDeveloperSession() && !state.internalToolsEnabled && !isDeveloperAccount(state.bundle)) {
+    if (!hasDeveloperAccess()) {
       showSettings();
       return;
     }
@@ -3761,7 +3763,7 @@ tailwind.config = {
   }
 
   function updateInternalToolsVisibility() {
-    const enabled = Boolean(state.internalToolsEnabled || isDeveloperSession() || isDeveloperAccount(state.bundle));
+    const enabled = hasDeveloperAccess();
     const showDeveloperTrigger = canOpenDeveloperTools();
     const showDeveloperMenuBtn = showDeveloperTrigger || isDeveloperConsoleVisible();
     if (homeMenuBtn) homeMenuBtn.classList.toggle('hidden-screen', !showDeveloperTrigger);
@@ -3784,7 +3786,7 @@ tailwind.config = {
       settingsPrivacyState.textContent = state.shareAnonymousDataEnabled ? 'On · anonymous coaching data can help improve trends' : 'Off';
     }
     if (settingsInternalToolsState) {
-      settingsInternalToolsState.textContent = (state.internalToolsEnabled || isDeveloperSession() || isDeveloperAccount(state.bundle))
+      settingsInternalToolsState.textContent = hasDeveloperAccess()
         ? 'Visible · developer tools enabled'
         : 'Hidden · developer tools off';
     }
