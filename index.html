@@ -3002,6 +3002,11 @@ tailwind.config = {
     return roleLabel === 'Developer';
   }
 
+  function isDeveloperOrAdminAccount(bundle) {
+    const roleLabel = formatRoleTitle(bundle?.user?.roleLabel || bundle?.user?.role);
+    return roleLabel === 'Developer' || roleLabel === 'Admin';
+  }
+
   function isDeveloperSession() {
     return Boolean(
       state.developerSessionActive ||
@@ -3014,8 +3019,8 @@ tailwind.config = {
   function hasDeveloperAccess(bundle = state.bundle) {
     const activeDeveloperBundle = getActiveDeveloperBundle();
     return Boolean(
-      isDeveloperAccount(activeDeveloperBundle)
-      || isDeveloperAccount(bundle)
+      isDeveloperOrAdminAccount(activeDeveloperBundle)
+      || isDeveloperOrAdminAccount(bundle)
     );
   }
 
