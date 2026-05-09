@@ -4439,6 +4439,69 @@ async function handleAuthForgotPassword(req, res) {
   }
 }
 
+async function handleAuthResetPasswordVerify(req, res) {
+  try {
+    const body = await readBody(req);
+    const oobCode = String(body.oobCode || body.code || '').trim();
+    if (!oobCode) {
+      return sendJson(res, 400, { ok: false, message: 'Missing reset code.' });
+    }
+    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=${encodeURIComponent(FIREBASE_WEB_API_KEY)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oobCode }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = payload?.error?.message || payload?.message || 'Unable to verify reset code.';
+      return sendJson(res, response.status || 500, { ok: false, message });
+    }
+    return sendJson(res, 200, {
+      ok: true,
+      email: payload.email || null,
+      requestType: payload.requestType || 'PASSWORD_RESET',
+    });
+  } catch (error) {
+    console.error('[auth-reset-password-verify] failed', error);
+    return sendJson(res, 500, { ok: false, message: 'Unable to verify reset code.' });
+  }
+}
+
+async function handleAuthResetPasswordConfirm(req, res) {
+  try {
+    const body = await readBody(req);
+    const oobCode = String(body.oobCode || body.code || '').trim();
+    const newPassword = String(body.newPassword || body.password || '').trim();
+    if (!oobCode) {
+      return sendJson(res, 400, { ok: false, message: 'Missing reset code.' });
+    }
+    if (!newPassword) {
+      return sendJson(res, 400, { ok: false, message: 'Enter a new password.' });
+    }
+    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=${encodeURIComponent(FIREBASE_WEB_API_KEY)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        oobCode,
+        newPassword,
+      }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = payload?.error?.message || payload?.message || 'Unable to update password.';
+      return sendJson(res, response.status || 500, { ok: false, message });
+    }
+    return sendJson(res, 200, {
+      ok: true,
+      email: payload.email || null,
+      requestType: payload.requestType || 'PASSWORD_RESET',
+    });
+  } catch (error) {
+    console.error('[auth-reset-password-confirm] failed', error);
+    return sendJson(res, 500, { ok: false, message: 'Unable to update password.' });
+  }
+}
+
 function candidatePerformanceScore(member, candidates) {
   const candidate = candidates.find((item) => item.id === member.id);
   if (!candidate) return 0;
@@ -6999,7 +7062,7 @@ async function handleCompleteSession(req, res) {
 async function routeRequest(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
 
-  if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
+  if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/reset-password')) {
     return serveIndex(res);
   }
 
@@ -7017,6 +7080,14 @@ async function routeRequest(req, res) {
 
   if (req.method === 'POST' && url.pathname === '/api/auth/forgot-password') {
     return handleAuthForgotPassword(req, res);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/auth/reset-password/verify') {
+    return handleAuthResetPasswordVerify(req, res);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/auth/reset-password/confirm') {
+    return handleAuthResetPasswordConfirm(req, res);
   }
 
   if (req.method === 'POST' && url.pathname === '/api/admin/dealership/create') {

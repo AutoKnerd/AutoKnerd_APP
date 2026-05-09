@@ -454,6 +454,44 @@ tailwind.config = {
   </div>
 </div>
 
+<div id="resetPasswordScreen" class="screen hidden-screen fixed inset-0 z-30 flex items-center justify-center px-4">
+  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(204,255,0,0.08),_transparent_60%)]"></div>
+  <div class="relative w-full max-w-md rounded-[2rem] border border-white/10 bg-[#111111]/95 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+    <div class="mb-5 flex justify-center">
+      <img src="/AutoKnerd%20Logo.png" alt="AutoKnerd logo" class="h-20 w-auto object-contain" />
+    </div>
+    <div class="space-y-3">
+      <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]/80">Reset password</p>
+      <h1 class="font-headline text-3xl font-bold text-on-surface">Set a new password</h1>
+      <p id="resetPasswordCopy" class="text-sm leading-relaxed text-on-surface-variant">
+        We’ll verify your reset code and let you set a new password right here.
+      </p>
+    </div>
+
+    <div class="mt-6 space-y-4">
+      <label class="block space-y-2">
+        <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Account email</span>
+        <input id="resetPasswordEmailInput" type="text" readonly class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-on-surface/90 outline-none" />
+      </label>
+      <label class="block space-y-2">
+        <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">New password</span>
+        <input id="resetPasswordNewInput" type="password" autocomplete="new-password" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Create a new password" />
+      </label>
+      <label class="block space-y-2">
+        <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Confirm password</span>
+        <input id="resetPasswordConfirmInput" type="password" autocomplete="new-password" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Repeat the new password" />
+      </label>
+      <button id="resetPasswordSubmitBtn" type="button" class="w-full rounded-full bg-[#CCFF00] px-5 py-4 font-headline text-sm font-bold uppercase tracking-[0.18em] text-black transition hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(204,255,0,0.25)] active:scale-95">
+        Update password
+      </button>
+      <button id="resetPasswordBackBtn" type="button" class="w-full rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-5 py-3 font-headline text-[11px] font-bold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15 active:scale-95">
+        Back to sign in
+      </button>
+      <p id="resetPasswordStatusText" class="text-xs uppercase tracking-[0.24em] text-on-surface-variant">Waiting for reset code</p>
+    </div>
+  </div>
+</div>
+
 <div id="homeScreen" class="screen">
   <div id="coachHomePanel">
   <header class="fixed top-0 w-full border-t border-white/10 bg-[#0e0e0e]/60 backdrop-blur-2xl bg-gradient-to-b from-white/5 to-transparent shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] grid grid-cols-[auto,1fr,auto] items-center px-6 h-16 z-50">
@@ -2136,6 +2174,9 @@ tailwind.config = {
     reviewSession: null,
     authMode: localStorage.getItem("autoknerd:authMode") || 'signin',
     authCodeFieldError: false,
+    resetPasswordCode: '',
+    resetPasswordEmail: '',
+    resetPasswordLoading: false,
     authToken: localStorage.getItem("autoknerd:authToken") || '',
     developerDashboard: null,
     developerDashboardStatus: 'idle',
@@ -2222,6 +2263,7 @@ tailwind.config = {
   const bootScreen = document.getElementById("bootScreen");
   const homeScreen = document.getElementById("homeScreen");
   const authScreen = document.getElementById("authScreen");
+  const resetPasswordScreen = document.getElementById("resetPasswordScreen");
   const menuOverlay = document.getElementById("menuOverlay");
   const aiOutputScreen = document.getElementById("aiOutputScreen");
   const sessionScreen = document.getElementById("sessionScreen");
@@ -2307,6 +2349,13 @@ tailwind.config = {
   const authCodeLabel = document.getElementById("authCodeLabel");
   const authEnrollmentNote = document.getElementById("authEnrollmentNote");
   const authStatusText = document.getElementById("authStatusText");
+  const resetPasswordEmailInput = document.getElementById("resetPasswordEmailInput");
+  const resetPasswordNewInput = document.getElementById("resetPasswordNewInput");
+  const resetPasswordConfirmInput = document.getElementById("resetPasswordConfirmInput");
+  const resetPasswordSubmitBtn = document.getElementById("resetPasswordSubmitBtn");
+  const resetPasswordBackBtn = document.getElementById("resetPasswordBackBtn");
+  const resetPasswordStatusText = document.getElementById("resetPasswordStatusText");
+  const resetPasswordCopy = document.getElementById("resetPasswordCopy");
   const startSessionBtn = document.getElementById("startSessionBtn");
   const freshUpBossBtn = document.getElementById("freshUpBossBtn");
   const homeMenuBtn = document.getElementById("homeMenuBtn");
@@ -2547,6 +2596,14 @@ tailwind.config = {
     authForgotPasswordBtn,
     authSignInModeBtn,
     authEnrollModeBtn,
+    resetPasswordScreen,
+    resetPasswordEmailInput,
+    resetPasswordNewInput,
+    resetPasswordConfirmInput,
+    resetPasswordSubmitBtn,
+    resetPasswordBackBtn,
+    resetPasswordStatusText,
+    resetPasswordCopy,
     authNameFields,
     authFirstNameField,
     authLastNameField,
@@ -2710,6 +2767,7 @@ tailwind.config = {
   function hideAllScreens() {
     stopDeveloperLiveRefresh();
     if (authScreen) authScreen.classList.add("hidden-screen");
+    if (resetPasswordScreen) resetPasswordScreen.classList.add("hidden-screen");
     homeScreen.classList.add("hidden-screen");
     aiOutputScreen.classList.add("hidden-screen");
     sessionScreen.classList.add("hidden-screen");
@@ -2929,6 +2987,86 @@ tailwind.config = {
       authIdentifierInput.focus({ preventScroll: true });
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function showResetPassword(message = '') {
+    hideAllScreens();
+    if (bootScreen) bootScreen.classList.add("hidden-screen");
+    if (resetPasswordStatusText) {
+      resetPasswordStatusText.textContent = message || 'Waiting for reset code';
+    }
+    if (resetPasswordScreen) {
+      resetPasswordScreen.classList.remove("hidden-screen");
+    }
+    if (resetPasswordEmailInput) {
+      resetPasswordEmailInput.value = state.resetPasswordEmail || '';
+    }
+    if (resetPasswordNewInput) {
+      resetPasswordNewInput.value = '';
+      resetPasswordNewInput.focus({ preventScroll: true });
+    }
+    if (resetPasswordConfirmInput) {
+      resetPasswordConfirmInput.value = '';
+    }
+    if (resetPasswordSubmitBtn) {
+      resetPasswordSubmitBtn.disabled = Boolean(state.resetPasswordLoading);
+      resetPasswordSubmitBtn.textContent = state.resetPasswordLoading ? 'Updating...' : 'Update password';
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function isResetPasswordRoute() {
+    const url = new URL(window.location.href);
+    return url.pathname === '/reset-password' || url.searchParams.get('mode') === 'resetPassword';
+  }
+
+  function getResetPasswordCodeFromLocation() {
+    const url = new URL(window.location.href);
+    return String(url.searchParams.get('oobCode') || url.searchParams.get('code') || '').trim();
+  }
+
+  async function loadResetPasswordFlow() {
+    const code = getResetPasswordCodeFromLocation();
+    state.resetPasswordCode = code;
+    state.resetPasswordEmail = '';
+    state.resetPasswordLoading = true;
+    showResetPassword('Verifying reset code...');
+    if (!code) {
+      state.resetPasswordLoading = false;
+      showResetPassword('Reset code is missing.');
+      return null;
+    }
+    try {
+      const response = await fetch('/api/auth/reset-password/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oobCode: code }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message || 'Unable to verify reset code.');
+      }
+      state.resetPasswordEmail = String(payload.email || '').trim();
+      state.resetPasswordLoading = false;
+      showResetPassword();
+      if (resetPasswordStatusText) {
+        resetPasswordStatusText.textContent = 'Reset code verified.';
+      }
+      if (resetPasswordCopy && state.resetPasswordEmail) {
+        resetPasswordCopy.textContent = `Set a new password for ${state.resetPasswordEmail}.`;
+      }
+      if (resetPasswordEmailInput) {
+        resetPasswordEmailInput.value = state.resetPasswordEmail || '';
+      }
+      return payload;
+    } catch (error) {
+      state.resetPasswordLoading = false;
+      const message = error instanceof Error ? error.message : 'Unable to verify reset code.';
+      showResetPassword(message);
+      return null;
+    } finally {
+      state.resetPasswordLoading = false;
+    }
   }
 
   function setAuthMode(mode) {
@@ -7843,6 +7981,12 @@ tailwind.config = {
   }
 
   async function loadBootstrap() {
+    if (isResetPasswordRoute()) {
+      clearTimeout(bootFallbackTimer);
+      if (bootScreen) bootScreen.classList.add("hidden-screen");
+      await loadResetPasswordFlow();
+      return null;
+    }
     if (isFileRuntime()) {
       clearTimeout(bootFallbackTimer);
       showBootConnectionError('AutoKnerd was opened as a local file. Redirecting to the live app server now.', {
@@ -8200,6 +8344,72 @@ tailwind.config = {
     } finally {
       if (authForgotPasswordBtn) {
         authForgotPasswordBtn.disabled = false;
+      }
+    }
+  }
+
+  async function submitResetPassword() {
+    const code = String(state.resetPasswordCode || getResetPasswordCodeFromLocation() || '').trim();
+    const newPassword = String(resetPasswordNewInput?.value || '').trim();
+    const confirmPassword = String(resetPasswordConfirmInput?.value || '').trim();
+    if (!code) {
+      if (resetPasswordStatusText) {
+        resetPasswordStatusText.textContent = 'Reset code is missing.';
+      }
+      return;
+    }
+    if (!newPassword) {
+      if (resetPasswordStatusText) {
+        resetPasswordStatusText.textContent = 'Enter a new password.';
+      }
+      resetPasswordNewInput?.focus();
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      if (resetPasswordStatusText) {
+        resetPasswordStatusText.textContent = 'Passwords do not match.';
+      }
+      resetPasswordConfirmInput?.focus();
+      return;
+    }
+    if (resetPasswordSubmitBtn) {
+      resetPasswordSubmitBtn.disabled = true;
+      resetPasswordSubmitBtn.textContent = 'Updating...';
+    }
+    if (resetPasswordStatusText) {
+      resetPasswordStatusText.textContent = 'Updating your password...';
+    }
+    try {
+      const response = await fetch('/api/auth/reset-password/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          oobCode: code,
+          newPassword,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message || 'Unable to update password.');
+      }
+      if (resetPasswordStatusText) {
+        resetPasswordStatusText.textContent = 'Password updated. Sign in with your new password.';
+      }
+      state.authMode = 'signin';
+      localStorage.setItem("autoknerd:authMode", 'signin');
+      setTimeout(() => {
+        window.history.replaceState({}, '', '/');
+        showAuth('Password updated. Sign in to continue.');
+      }, 900);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to update password.';
+      if (resetPasswordStatusText) {
+        resetPasswordStatusText.textContent = message;
+      }
+    } finally {
+      if (resetPasswordSubmitBtn) {
+        resetPasswordSubmitBtn.disabled = false;
+        resetPasswordSubmitBtn.textContent = 'Update password';
       }
     }
   }
@@ -8678,6 +8888,17 @@ tailwind.config = {
   if (authForgotPasswordBtn) authForgotPasswordBtn.addEventListener("click", () => {
     void submitForgotPassword();
   });
+  if (resetPasswordSubmitBtn) {
+    resetPasswordSubmitBtn.addEventListener("click", () => {
+      void submitResetPassword();
+    });
+  }
+  if (resetPasswordBackBtn) {
+    resetPasswordBackBtn.addEventListener("click", () => {
+      window.history.replaceState({}, '', '/');
+      showAuth('Sign in to continue');
+    });
+  }
   if (authIdentifierInput) {
     authIdentifierInput.addEventListener("keydown", (event) => {
       if (event.key === 'Enter') {
@@ -8699,6 +8920,22 @@ tailwind.config = {
       if (event.key === 'Enter' && state.authMode === 'enroll') {
         event.preventDefault();
         void submitEnrollment();
+      }
+    });
+  }
+  if (resetPasswordNewInput) {
+    resetPasswordNewInput.addEventListener("keydown", (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        void submitResetPassword();
+      }
+    });
+  }
+  if (resetPasswordConfirmInput) {
+    resetPasswordConfirmInput.addEventListener("keydown", (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        void submitResetPassword();
       }
     });
   }
