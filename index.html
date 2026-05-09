@@ -392,18 +392,7 @@ tailwind.config = {
     <div class="mb-5 flex justify-center">
       <img src="/AutoKnerd%20Logo.png" alt="AutoKnerd logo" class="h-20 w-auto object-contain" />
     </div>
-    <div class="flex items-center justify-between gap-4">
-      <div>
-        <h1 class="font-headline text-3xl font-bold text-on-surface">Sign in</h1>
-      </div>
-      <div class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#CCFF00]">v.2</div>
-    </div>
-
-    <p class="mt-4 text-sm leading-relaxed text-on-surface-variant">
-      Use your dealership email or staff ID to load your coaching profile, lesson history, and role-specific dashboard.
-    </p>
-
-    <div class="mt-5 grid grid-cols-2 gap-2 rounded-full border border-white/10 bg-black/25 p-1">
+    <div class="grid grid-cols-2 gap-2 rounded-full border border-white/10 bg-black/25 p-1">
       <button id="authSignInModeBtn" type="button" class="rounded-full bg-[#CCFF00] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-black transition active:scale-95">
         Sign in
       </button>
@@ -413,25 +402,41 @@ tailwind.config = {
     </div>
 
     <div class="mt-6 space-y-4">
-      <label id="authNameField" class="hidden block space-y-2">
-        <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Full name</span>
-        <input id="authNameInput" type="text" autocomplete="name" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Alex Rivera" />
-      </label>
+      <div id="authNameFields" class="hidden grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <label id="authFirstNameField" class="block space-y-2">
+          <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">First name</span>
+          <input id="authFirstNameInput" type="text" autocomplete="given-name" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="First name" />
+        </label>
+        <label id="authLastNameField" class="block space-y-2">
+          <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Last name</span>
+          <input id="authLastNameInput" type="text" autocomplete="family-name" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Last name" />
+        </label>
+      </div>
       <label class="block space-y-2">
         <span id="authIdentifierLabel" class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Email or staff ID</span>
         <input id="authIdentifierInput" type="text" autocomplete="username" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="name@store.com or user ID" />
+      </label>
+      <label id="authPasswordField" class="hidden block space-y-2">
+        <span id="authPasswordLabel" class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Create password</span>
+        <input id="authPasswordInput" type="password" autocomplete="new-password" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Create a password" />
       </label>
       <label class="block space-y-2">
         <span id="authCodeLabel" class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Password</span>
         <input id="authCodeInput" type="password" autocomplete="current-password" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="Enter your password" />
       </label>
-      <label id="authRoleField" class="hidden block space-y-2">
-        <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Select role</span>
-        <select id="authRoleSelect" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition focus:border-[#CCFF00]/40 focus:bg-black/40">
+      <div class="flex items-center justify-end">
+        <button id="authForgotPasswordBtn" type="button" class="text-[11px] font-bold uppercase tracking-[0.22em] text-[#CCFF00]/80 transition hover:text-[#CCFF00]">
+          Forgot password?
+        </button>
+      </div>
+        <label id="authRoleField" class="hidden block space-y-2">
+          <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Select role</span>
+          <select id="authRoleSelect" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-on-surface outline-none transition focus:border-[#CCFF00]/40 focus:bg-black/40">
           <option>Sales Consultant</option>
           <option>BDC</option>
           <option>Service Writer</option>
           <option>Parts Consultant</option>
+          <option>Parts Advisor</option>
           <option>Finance Manager</option>
           <option>Sales Manager</option>
           <option>Service Manager</option>
@@ -444,12 +449,6 @@ tailwind.config = {
       <button id="authSubmitBtn" type="button" class="w-full rounded-full bg-[#CCFF00] px-5 py-4 font-headline text-sm font-bold uppercase tracking-[0.18em] text-black transition hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(204,255,0,0.25)] active:scale-95">
         Continue
       </button>
-      <button id="authDeveloperBtn" type="button" class="w-full rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-5 py-3 font-headline text-[11px] font-bold uppercase tracking-[0.22em] text-[#CCFF00] transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15 active:scale-95">
-        Temporary Developer Login
-      </button>
-      <p id="authEnrollmentNote" class="text-xs leading-relaxed text-on-surface-variant">
-        Sign in with your portable AutoKnerd account to bring your coaching history, progress, and role-based dashboard with you from one dealership to the next.
-      </p>
       <p id="authStatusText" class="text-xs uppercase tracking-[0.24em] text-on-surface-variant">Waiting for your account</p>
     </div>
   </div>
@@ -1087,7 +1086,7 @@ tailwind.config = {
             </div>
           </div>
           <div class="text-center md:text-left flex-1 space-y-2 mt-4 md:mt-0">
-            <h1 id="profileName" class="font-headline text-5xl md:text-7xl font-bold tracking-tight leading-none text-on-surface">ALEX<br/><span class="text-surface-variant">RIVERA</span></h1>
+            <h1 id="profileName" class="font-headline text-5xl md:text-7xl font-bold tracking-tight leading-none text-on-surface"></h1>
             <p id="profileTitle" class="font-label text-sm uppercase tracking-widest text-on-surface-variant">Senior Sales Consultant</p>
             <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-4 pt-4">
               <span class="inline-flex items-center gap-1 px-3 py-1 bg-surface-container-low text-on-surface text-xs font-label uppercase tracking-widest rounded-full border border-outline-variant/30">
@@ -2289,16 +2288,22 @@ tailwind.config = {
   const bootStatusText = document.getElementById("bootStatusText");
   const bootRetryBtn = document.getElementById("bootRetryBtn");
   const authIdentifierInput = document.getElementById("authIdentifierInput");
-  const authNameInput = document.getElementById("authNameInput");
+  const authFirstNameInput = document.getElementById("authFirstNameInput");
+  const authLastNameInput = document.getElementById("authLastNameInput");
+  const authPasswordInput = document.getElementById("authPasswordInput");
   const authCodeInput = document.getElementById("authCodeInput");
   const authSubmitBtn = document.getElementById("authSubmitBtn");
-  const authDeveloperBtn = document.getElementById("authDeveloperBtn");
+  const authForgotPasswordBtn = document.getElementById("authForgotPasswordBtn");
   const authSignInModeBtn = document.getElementById("authSignInModeBtn");
   const authEnrollModeBtn = document.getElementById("authEnrollModeBtn");
-  const authNameField = document.getElementById("authNameField");
+  const authNameFields = document.getElementById("authNameFields");
+  const authFirstNameField = document.getElementById("authFirstNameField");
+  const authLastNameField = document.getElementById("authLastNameField");
   const authRoleField = document.getElementById("authRoleField");
   const authRoleSelect = document.getElementById("authRoleSelect");
   const authIdentifierLabel = document.getElementById("authIdentifierLabel");
+  const authPasswordField = document.getElementById("authPasswordField");
+  const authPasswordLabel = document.getElementById("authPasswordLabel");
   const authCodeLabel = document.getElementById("authCodeLabel");
   const authEnrollmentNote = document.getElementById("authEnrollmentNote");
   const authStatusText = document.getElementById("authStatusText");
@@ -2535,13 +2540,16 @@ tailwind.config = {
     managerMomentumSummary: document.getElementById("managerMomentumSummary"),
     managerMomentumLabels: document.getElementById("managerMomentumLabels"),
     authIdentifierInput,
-    authNameInput,
+    authFirstNameInput,
+    authLastNameInput,
     authCodeInput,
     authSubmitBtn,
-    authDeveloperBtn,
+    authForgotPasswordBtn,
     authSignInModeBtn,
     authEnrollModeBtn,
-    authNameField,
+    authNameFields,
+    authFirstNameField,
+    authLastNameField,
     authRoleField,
     authRoleSelect,
     authIdentifierLabel,
@@ -2766,7 +2774,7 @@ tailwind.config = {
 
   async function refreshAutoForgeOutput({ reason = 'generate' } = {}) {
     if (!state.bundle?.user) return;
-    const roleOverride = getDeveloperRoleOverride() || state.bundle.user.roleOverride || '';
+    const roleOverride = state.developerSessionActive ? (getDeveloperRoleOverride() || state.bundle.user.roleOverride || '') : '';
     const mockRoleOverride = getMockRoleOverride() || (state.mockUserMode ? roleOverride : '');
     const storeSelection = getManagerStoreSelection(state.bundle.user.userId);
     const loadingMessage = reason === 'refresh'
@@ -2892,10 +2900,6 @@ tailwind.config = {
 
   function showHome(options = {}) {
     const { replaceRoute = false } = options;
-    if (state.bundle?.user && isDeveloperAccount(state.bundle) && !state.developerImpersonationUserId) {
-      showDeveloperConsole();
-      return;
-    }
     hideAllScreens();
     state.reviewSession = null;
     if (bootScreen) bootScreen.classList.add("hidden-screen");
@@ -2919,8 +2923,8 @@ tailwind.config = {
     }
     renderAuthMode(state.authMode || 'signin');
     authScreen.classList.remove("hidden-screen");
-    if (state.authMode === 'enroll' && authNameInput) {
-      authNameInput.focus({ preventScroll: true });
+    if (state.authMode === 'enroll' && authFirstNameInput) {
+      authFirstNameInput.focus({ preventScroll: true });
     } else if (authIdentifierInput) {
       authIdentifierInput.focus({ preventScroll: true });
     }
@@ -2945,11 +2949,39 @@ tailwind.config = {
       authEnrollModeBtn.classList.toggle('text-black', isEnroll);
       authEnrollModeBtn.classList.toggle('text-on-surface-variant', !isEnroll);
     }
-    if (authNameField) {
-      authNameField.classList.toggle('hidden', !isEnroll);
+    if (authNameFields) {
+      authNameFields.classList.toggle('hidden', !isEnroll);
+    }
+    if (authFirstNameField) {
+      authFirstNameField.classList.toggle('hidden', !isEnroll);
+    }
+    if (authLastNameField) {
+      authLastNameField.classList.toggle('hidden', !isEnroll);
+    }
+    if (authFirstNameInput) {
+      authFirstNameInput.required = isEnroll;
+      authFirstNameInput.autocomplete = isEnroll ? 'given-name' : 'off';
+    }
+    if (authLastNameInput) {
+      authLastNameInput.required = false;
+      authLastNameInput.autocomplete = isEnroll ? 'family-name' : 'off';
     }
     if (authRoleField) {
       authRoleField.classList.toggle('hidden', !isEnroll);
+    }
+    if (authPasswordField) {
+      authPasswordField.classList.toggle('hidden', !isEnroll);
+    }
+    if (authPasswordLabel) {
+      authPasswordLabel.textContent = isEnroll ? 'Create password' : 'Password';
+    }
+    if (authPasswordInput) {
+      authPasswordInput.required = isEnroll;
+      authPasswordInput.autocomplete = isEnroll ? 'new-password' : 'off';
+      authPasswordInput.placeholder = isEnroll ? 'Create a password' : 'Password not used here';
+    }
+    if (authForgotPasswordBtn) {
+      authForgotPasswordBtn.classList.toggle('hidden', isEnroll);
     }
     if (authIdentifierLabel) {
       authIdentifierLabel.textContent = isEnroll ? 'Email address' : 'Email or staff ID';
@@ -2972,7 +3004,7 @@ tailwind.config = {
     }
     if (authEnrollmentNote) {
       authEnrollmentNote.textContent = isEnroll
-        ? 'Enter your dealer code to create your account and assign it to the right dealership.'
+        ? 'Create a password and enter your dealer code to create your account and assign it to the right dealership.'
         : 'Sign in with your portable AutoKnerd account to bring your coaching history, progress, and role-based dashboard with you from one dealership to the next.';
     }
     setAuthCodeFieldError(state.authCodeFieldError);
@@ -3108,8 +3140,9 @@ tailwind.config = {
   }
 
   function getBootstrapUserId() {
+    const impersonationUserId = String(state.developerImpersonationUserId || localStorage.getItem("autoknerd:developerImpersonationUserId") || '').trim();
     return (
-      state.developerImpersonationUserId ||
+      (state.developerSessionActive ? impersonationUserId : '') ||
       String(localStorage.getItem("autoknerd:userId") || '').trim() ||
       state.developerSessionUserId ||
       ''
@@ -3160,6 +3193,8 @@ tailwind.config = {
     localStorage.removeItem("autoknerd:developerSession");
     localStorage.removeItem("autoknerd:developerUserId");
     localStorage.removeItem("autoknerd:developerImpersonationUserId");
+    localStorage.removeItem("autoknerd:roleOverride");
+    localStorage.removeItem("autoknerd:mockRoleOverride");
     localStorage.removeItem("autoknerd:developerDealershipsLocalEntries");
   }
 
@@ -4607,10 +4642,13 @@ tailwind.config = {
     const momentum = Math.max(0, Math.round(Number(member.momentumScore || 0)));
     const freshUp = Math.max(0, Math.round(Number(member.freshUpMeter || 0)));
     const role = formatRoleTitle(member.role || member.roleLabel || 'Team Member');
+    const roleOptions = ['Sales Consultant', 'BDC', 'Service Writer', 'Parts Consultant', 'Parts Advisor', 'Finance Manager', 'Sales Manager', 'Service Manager', 'Parts Manager', 'General Manager', 'Owner', 'Trainer'];
+    const selectedRole = String(member.roleLabel || member.role || '').trim() || 'Sales Consultant';
     const statusTone = momentum >= 75 ? 'text-[#CCFF00]' : momentum >= 34 ? 'text-[#06EBF7]' : 'text-error';
     const isInactive = String(member.accountStatus || '').toLowerCase() === 'inactive' || member.active === false;
     const memberDealershipId = getMemberDealershipId(member);
     const dealershipOptions = buildDealershipSelectOptions(Array.isArray(dashboard?.dealerships) ? dashboard.dealerships : [], memberDealershipId);
+    const roleSelectOptions = roleOptions.map((option) => `<option ${option === selectedRole ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('');
     const avatar = member.avatarUrl
       ? `<img src="${escapeHtml(member.avatarUrl)}" alt="${escapeHtml(member.name || 'User')} avatar" class="h-12 w-12 rounded-full object-cover border border-white/10" />`
       : `<div class="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5"><span class="material-symbols-outlined text-[#CCFF00]">person</span></div>`;
@@ -4662,6 +4700,12 @@ tailwind.config = {
         <details class="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
           <summary class="cursor-pointer list-none font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Manage user</summary>
           <form data-dev-user-update-form data-user-id="${escapeHtml(member.id || member.userId || '')}" class="mt-4 space-y-4">
+            <label class="block space-y-2">
+              <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Role</span>
+              <select data-field="role" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none focus:border-[#CCFF00]/40 focus:bg-white/10">
+                ${roleSelectOptions}
+              </select>
+            </label>
             <label class="block space-y-2">
               <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Dealership</span>
               <select data-field="dealershipId" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none focus:border-[#CCFF00]/40 focus:bg-white/10">
@@ -4985,9 +5029,11 @@ tailwind.config = {
     const form = event?.currentTarget;
     if (!form) return;
     const userId = String(form.getAttribute('data-user-id') || '').trim();
+    const roleSelect = form.querySelector('[data-field="role"]');
     const dealershipSelect = form.querySelector('[data-field="dealershipId"]');
     const resetProgressInput = form.querySelector('[data-field="resetProgress"]');
     const deactivateInput = form.querySelector('[data-field="deactivate"]');
+    const role = String(roleSelect?.value || '').trim();
     const reassignDealershipId = String(dealershipSelect?.value || '').trim();
     const resetProgress = Boolean(resetProgressInput?.checked);
     const deactivate = Boolean(deactivateInput?.checked);
@@ -5008,6 +5054,7 @@ tailwind.config = {
         headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           userId,
+          role: role || undefined,
           dealershipId: reassignDealershipId || undefined,
           resetProgress,
           deactivate,
@@ -5606,8 +5653,9 @@ tailwind.config = {
   }
 
   function splitName(name) {
-    const parts = String(name || "Alex Rivera").trim().split(/\s+/).filter(Boolean);
-    if (parts.length <= 1) return [parts[0] || "Alex", "Rivera"];
+    const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+    if (parts.length <= 0) return ['', ''];
+    if (parts.length === 1) return [parts[0], ''];
     return [parts.slice(0, -1).join(" "), parts[parts.length - 1]];
   }
 
@@ -5615,6 +5663,7 @@ tailwind.config = {
     const value = String(role || "").trim();
     if (!value) return "Sales Consultant";
     if (value === "manager") return "Sales Manager";
+    if (value === "Parts Advisor") return "Parts Consultant";
     return value;
   }
 
@@ -7523,7 +7572,9 @@ tailwind.config = {
     const roleLabel = formatRoleTitle(user.roleLabel || user.role);
     refs.profileRole.textContent = 'STATS';
     refs.profileAvatarLevel.textContent = getLevelLabel(level);
-    refs.profileName.innerHTML = `${firstName.toUpperCase()}<br/><span class="text-surface-variant">${lastName.toUpperCase()}</span>`;
+    refs.profileName.innerHTML = lastName
+      ? `${firstName.toUpperCase()}<br/><span class="text-surface-variant">${lastName.toUpperCase()}</span>`
+      : `${firstName.toUpperCase()}`;
     refs.profileTitle.textContent = roleLabel;
     refs.profileStreak.textContent = `${user.streak || 0} Day${Number(user.streak) === 1 ? "" : "s"} Streak`;
     refs.profileLevelLarge.textContent = getLevelLabel(level);
@@ -7893,19 +7944,7 @@ tailwind.config = {
         void refreshAutoForgeOutput({ reason: 'open' });
         return payload;
       }
-      // Show developer console if the user's actual Firestore role is Developer,
-      // even when a roleOverride (e.g. Parts Manager) is active from a test session.
-      const isRealDeveloper = isDeveloperAccount(state.bundle)
-        || normalizeRoleLabel(state.bundle?.user?.sourceRole || '') === 'Developer';
-      if (isRealDeveloper && !state.developerImpersonationUserId) {
-        // Ensure developerUserId is saved so ensureDeveloperSessionBundle can recover
-        setDeveloperSessionActive(true, state.bundle.user.userId);
-        // Clear any stale roleOverride so future bootstraps land on the dev console
-        if (!isDeveloperAccount(state.bundle)) setDeveloperRoleOverride('');
-        showDeveloperConsole();
-      } else {
-        applyAppRouteFromLocation();
-      }
+      showHome({ replaceRoute: true });
       return state.bundle;
     } catch (error) {
       if (String(error?.name || '') === 'AbortError' || String(error?.message || '') === 'BOOTSTRAP_TIMEOUT') {
@@ -7955,7 +7994,7 @@ tailwind.config = {
       authCodeInput?.focus();
       return;
     }
-    [authSubmitBtn, authDeveloperBtn, authSignInModeBtn, authEnrollModeBtn].forEach((button) => {
+    [authSubmitBtn, authForgotPasswordBtn, authSignInModeBtn, authEnrollModeBtn].forEach((button) => {
       if (button) {
         button.disabled = true;
       }
@@ -7978,7 +8017,7 @@ tailwind.config = {
           accessCode: code,
           temporaryDeveloperLogin,
           mockMode: state.mockUserMode || undefined,
-          roleOverride: getDeveloperRoleOverride() || undefined,
+          roleOverride: state.developerSessionActive ? (getDeveloperRoleOverride() || undefined) : undefined,
           mockRoleOverride: getMockRoleOverride() || undefined,
         }),
       });
@@ -7988,6 +8027,10 @@ tailwind.config = {
         throw new Error(payload.message || 'Unable to sign in.');
       }
       saveAuthSession(payload.token, payload.bundle?.user?.userId || '');
+      clearDeveloperImpersonation();
+      setDeveloperRoleOverride('');
+      setDeveloperSessionActive(false);
+      setDeveloperSessionUserId('');
       setAuthCodeFieldError(false);
       if (payload.bundle?.user?.roleLabel === 'Developer') {
         setInternalToolsEnabled(true);
@@ -8007,9 +8050,6 @@ tailwind.config = {
         authSubmitBtn.disabled = false;
         authSubmitBtn.textContent = 'Continue';
       }
-      if (authDeveloperBtn) {
-        authDeveloperBtn.disabled = false;
-      }
       if (authSignInModeBtn) {
         authSignInModeBtn.disabled = false;
       }
@@ -8020,15 +8060,18 @@ tailwind.config = {
   }
 
   async function submitEnrollment() {
-    const name = String(authNameInput?.value || '').trim();
+    const firstName = String(authFirstNameInput?.value || '').trim();
+    const lastName = String(authLastNameInput?.value || '').trim();
+    const name = [firstName, lastName].filter(Boolean).join(' ').trim();
     const identifier = String(authIdentifierInput?.value || '').trim();
+    const password = String(authPasswordInput?.value || '').trim();
     const code = String(authCodeInput?.value || '').trim();
     const role = String(authRoleSelect?.value || 'Sales Consultant').trim();
-    if (!name) {
+    if (!firstName) {
       if (authStatusText) {
-        authStatusText.textContent = 'Enter the full name for the new account.';
+        authStatusText.textContent = 'Enter a first name for the new account.';
       }
-      authNameInput?.focus();
+      authFirstNameInput?.focus();
       return;
     }
     if (!identifier) {
@@ -8036,6 +8079,13 @@ tailwind.config = {
         authStatusText.textContent = 'Enter an email address for the new account.';
       }
       authIdentifierInput?.focus();
+      return;
+    }
+    if (!password) {
+      if (authStatusText) {
+        authStatusText.textContent = 'Create a password for the new account.';
+      }
+      authPasswordInput?.focus();
       return;
     }
     if (!code) {
@@ -8046,7 +8096,7 @@ tailwind.config = {
       authCodeInput?.focus();
       return;
     }
-    [authSubmitBtn, authDeveloperBtn, authSignInModeBtn, authEnrollModeBtn].forEach((button) => {
+    [authSubmitBtn, authForgotPasswordBtn, authSignInModeBtn, authEnrollModeBtn].forEach((button) => {
       if (button) button.disabled = true;
     });
     if (authSubmitBtn) {
@@ -8060,8 +8110,11 @@ tailwind.config = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          firstName,
+          lastName,
           name,
           email: identifier,
+          password,
           dealerCode: code,
           enrollmentCode: code,
           code,
@@ -8076,6 +8129,10 @@ tailwind.config = {
         throw new Error(payload.message || 'Unable to create account.');
       }
       saveAuthSession(payload.token, payload.bundle?.user?.userId || '');
+      clearDeveloperImpersonation();
+      setDeveloperRoleOverride('');
+      setDeveloperSessionActive(false);
+      setDeveloperSessionUserId('');
       setAuthCodeFieldError(false);
       setAuthMode('signin');
       if (authStatusText) {
@@ -8098,7 +8155,7 @@ tailwind.config = {
       showAuth(message);
       setAuthMode('enroll');
     } finally {
-      [authSubmitBtn, authDeveloperBtn, authSignInModeBtn, authEnrollModeBtn].forEach((button) => {
+      [authSubmitBtn, authForgotPasswordBtn, authSignInModeBtn, authEnrollModeBtn].forEach((button) => {
         if (button) button.disabled = false;
       });
       if (authSubmitBtn) {
@@ -8107,13 +8164,44 @@ tailwind.config = {
     }
   }
 
-  async function submitDeveloperAuth() {
-    if (authIdentifierInput) authIdentifierInput.value = 'andrew@autoknerd.com';
-    if (authCodeInput) authCodeInput.value = '';
-    if (authStatusText) {
-      authStatusText.textContent = 'Signing in as developer...';
+  async function submitForgotPassword() {
+    const identifier = String(authIdentifierInput?.value || '').trim();
+    if (!identifier) {
+      if (authStatusText) {
+        authStatusText.textContent = 'Enter your email or staff ID first.';
+      }
+      authIdentifierInput?.focus();
+      return;
     }
-    await submitAuth({ allowEmptyCode: true, temporaryDeveloperLogin: true });
+    if (authStatusText) {
+      authStatusText.textContent = 'Preparing password reset link...';
+    }
+    if (authForgotPasswordBtn) {
+      authForgotPasswordBtn.disabled = true;
+    }
+    try {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message || 'Unable to start password reset.');
+      }
+      if (authStatusText) {
+        authStatusText.textContent = payload.message || 'Password reset email sent.';
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to start password reset.';
+      if (authStatusText) {
+        authStatusText.textContent = message;
+      }
+    } finally {
+      if (authForgotPasswordBtn) {
+        authForgotPasswordBtn.disabled = false;
+      }
+    }
   }
 
   async function startSession(lessonCategory = '', options = {}) {
@@ -8136,7 +8224,7 @@ tailwind.config = {
     startSessionBtn.disabled = true;
     startSessionBtn.innerHTML = '<span>LAUNCHING...</span><span class="material-symbols-outlined animate-pulse">hourglass_top</span>';
     try {
-      const roleOverride = getDeveloperRoleOverride() || undefined;
+      const roleOverride = state.developerSessionActive ? (getDeveloperRoleOverride() || undefined) : undefined;
       const mockRoleOverride = getMockRoleOverride() || (state.mockUserMode ? roleOverride : undefined);
       const response = await fetch('/api/session/start', {
         method: 'POST',
@@ -8587,8 +8675,8 @@ tailwind.config = {
   });
   if (authSignInModeBtn) authSignInModeBtn.addEventListener("click", () => setAuthMode('signin'));
   if (authEnrollModeBtn) authEnrollModeBtn.addEventListener("click", () => setAuthMode('enroll'));
-  if (authDeveloperBtn) authDeveloperBtn.addEventListener("click", () => {
-    void submitDeveloperAuth();
+  if (authForgotPasswordBtn) authForgotPasswordBtn.addEventListener("click", () => {
+    void submitForgotPassword();
   });
   if (authIdentifierInput) {
     authIdentifierInput.addEventListener("keydown", (event) => {
@@ -8598,8 +8686,16 @@ tailwind.config = {
       }
     });
   }
-  if (authNameInput) {
-    authNameInput.addEventListener("keydown", (event) => {
+  if (authFirstNameInput) {
+    authFirstNameInput.addEventListener("keydown", (event) => {
+      if (event.key === 'Enter' && state.authMode === 'enroll') {
+        event.preventDefault();
+        void submitEnrollment();
+      }
+    });
+  }
+  if (authLastNameInput) {
+    authLastNameInput.addEventListener("keydown", (event) => {
       if (event.key === 'Enter' && state.authMode === 'enroll') {
         event.preventDefault();
         void submitEnrollment();

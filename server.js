@@ -928,6 +928,7 @@ function normalizeRoleLabel(role) {
   const value = String(role || '').trim();
   if (!value) return 'Sales Consultant';
   if (value === 'manager') return 'Sales Manager';
+  if (value === 'Parts Advisor') return 'Parts Consultant';
   return value;
 }
 
@@ -4340,6 +4341,104 @@ async function verifyFirebaseEmailPassword(email, password) {
   }
 }
 
+async function upsertFirebaseAuthPasswordUser({ email, password, displayName }) {
+  const normalizedEmail = normalizeEmail(email);
+  const normalizedPassword = String(password || '').trim();
+  const normalizedDisplayName = String(displayName || '').trim();
+  if (!normalizedEmail || !normalizedPassword) {
+    return { ok: false, reason: 'missing_fields' };
+  }
+  if (!admin.apps.length || typeof admin.auth !== 'function') {
+    return { ok: false, reason: 'unavailable' };
+  }
+
+  try {
+    const auth = admin.auth();
+    const existingUser = await auth.getUserByEmail(normalizedEmail).catch(() => null);
+    if (existingUser?.uid) {
+      const updated = await auth.updateUser(existingUser.uid, {
+        password: normalizedPassword,
+        displayName: normalizedDisplayName || existingUser.displayName || undefined,
+      });
+      return { ok: true, uid: updated.uid, mode: 'updated' };
+    }
+
+    const created = await auth.createUser({
+      email: normalizedEmail,
+      password: normalizedPassword,
+      displayName: normalizedDisplayName || undefined,
+      emailVerified: false,
+    });
+    return { ok: true, uid: created.uid, mode: 'created' };
+  } catch (error) {
+    console.warn('[auth] unable to upsert Firebase password user', error);
+    return { ok: false, reason: String(error?.message || error?.code || 'auth_error') };
+  }
+}
+
+function getRequestOrigin(req) {
+  const forwardedProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+  const protocol = forwardedProto || 'http';
+  const host = String(req.headers.host || '').trim();
+  return host ? `${protocol}://${host}` : `http://localhost:${PORT}`;
+}
+
+async function handleAuthForgotPassword(req, res) {
+  try {
+    const body = await readBody(req);
+    const identifier = String(body.identifier || body.email || body.userId || '').trim();
+    if (!identifier) {
+      return sendJson(res, 400, { ok: false, message: 'Enter your email or staff ID first.' });
+    }
+    if (!firebaseDb) {
+      return sendJson(res, 500, { ok: false, message: 'Password reset requires Firebase.' });
+    }
+    if (!admin.apps.length || typeof admin.auth !== 'function') {
+      return sendJson(res, 500, { ok: false, message: 'Password reset is unavailable right now.' });
+    }
+
+    const userDoc = await findUserDocByIdentifier(identifier);
+    if (!userDoc?.exists) {
+      return sendJson(res, 404, { ok: false, message: 'No matching account was found.' });
+    }
+
+    const userData = userDoc.data() || {};
+    const email = normalizeEmail(userData.email || userData.loginEmail || identifier);
+    if (!email || !email.includes('@')) {
+      return sendJson(res, 400, { ok: false, message: 'That account does not have an email address for reset.' });
+    }
+
+    const origin = getRequestOrigin(req);
+    const firebaseResetEndpoint = `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${encodeURIComponent(FIREBASE_WEB_API_KEY)}`;
+    const firebaseResponse = await fetch(firebaseResetEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        requestType: 'PASSWORD_RESET',
+        email,
+        continueUrl: `${origin}/?view=profile`,
+        canHandleCodeInApp: true,
+      }),
+    });
+    const firebasePayload = await firebaseResponse.json().catch(() => ({}));
+    if (!firebaseResponse.ok) {
+      const firebaseMessage = firebasePayload?.error?.message || firebasePayload?.message || 'Unable to send the reset email.';
+      throw new Error(firebaseMessage);
+    }
+
+    return sendJson(res, 200, {
+      ok: true,
+      email,
+      message: 'Password reset email sent.',
+    });
+  } catch (error) {
+    console.error('[auth-forgot-password] failed', error);
+    return sendJson(res, 500, { ok: false, message: 'Unable to send the reset email.' });
+  }
+}
+
 function candidatePerformanceScore(member, candidates) {
   const candidate = candidates.find((item) => item.id === member.id);
   if (!candidate) return 0;
@@ -4653,7 +4752,7 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
   const xp = Number(userData.xp || 0);
   const level = calculateLevel(xp);
   const overrideRole = normalizeDeveloperRoleOverride(roleOverride);
-  const effectiveRole = overrideRole || userData.role;
+  const effectiveRole = overrideRole || userData.roleLabel || userData.role;
   const roleProfile = getRoleProfile(effectiveRole);
   const roleType = roleProfile.roleType;
   const storedRecentSessions = normalizeStoredRecentSessions(userData.recentSessions, userData.recentSession);
@@ -4744,6 +4843,7 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
       userId: userDoc.id,
       ...userData,
       sourceRole: userData.role,
+      sourceRoleLabel: userData.roleLabel || null,
       role: effectiveRole,
       roleLabel: roleProfile.roleLabel,
       stats,
@@ -5386,6 +5486,7 @@ async function handleAuthEnroll(req, res) {
     const lastName = String(body.lastName || '').trim();
     const name = String(body.name || '').trim() || [firstName, lastName].filter(Boolean).join(' ').trim();
     const email = String(body.email || '').trim();
+    const password = String(body.password || body.passcode || body.loginPassword || '').trim();
     const staffId = String(body.staffId || body.userId || '').trim();
     const roleLabel = normalizeRoleLabel(body.role || body.roleLabel || 'Sales Consultant');
     const roleProfile = getRoleProfile(roleLabel);
@@ -5395,10 +5496,13 @@ async function handleAuthEnroll(req, res) {
     const dealershipRecord = dealerCodeNormalized ? await lookupDealershipByDealerCode(dealerCodeNormalized) : null;
 
     if (!name) {
-      return sendJson(res, 400, { ok: false, message: 'First and last name are required.' });
+      return sendJson(res, 400, { ok: false, message: 'First name is required.' });
     }
     if (!email && !staffId) {
       return sendJson(res, 400, { ok: false, message: 'Email or staff ID is required.' });
+    }
+    if (!password) {
+      return sendJson(res, 400, { ok: false, message: 'Password is required.' });
     }
     if (!firebaseDb) {
       return sendJson(res, 500, { ok: false, message: 'Enrollment requires Firebase.' });
@@ -5411,6 +5515,12 @@ async function handleAuthEnroll(req, res) {
     const userId = existingDoc?.id || body.userId || crypto.randomUUID();
     const invitedBy = String(body.invitedBy || '').trim();
     const managerId = String(body.managerId || '').trim();
+    const authResult = email
+      ? await upsertFirebaseAuthPasswordUser({ email, password, displayName: name })
+      : { ok: true, uid: null, mode: 'skipped' };
+    if (!authResult.ok) {
+      return sendJson(res, 500, { ok: false, message: 'Unable to create the login password.' });
+    }
     const baseEnrollment = {
       userId,
       firstName,
@@ -5437,6 +5547,7 @@ async function handleAuthEnroll(req, res) {
       createdAt: existingDoc ? existingDoc.data()?.createdAt || admin.firestore.FieldValue.serverTimestamp() : admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       enrolledAt: admin.firestore.FieldValue.serverTimestamp(),
+      authUserId: authResult.uid || undefined,
     };
 
     if (dealerCodeNormalized) {
@@ -5986,6 +6097,9 @@ async function handleAdminUserUpdateDealership(req, res) {
     const nextDealershipEnrollmentCode = nextDealership
       ? normalizeEnrollmentCode(nextDealership.data?.enrollmentCode || '')
       : String(targetUserData.dealershipEnrollmentCode || targetUserData.dealerCode || targetUserData.inviteCode || targetUserData.accessCode || '').trim();
+    const requestedRole = String(body.role || body.roleLabel || '').trim();
+    const nextRoleLabel = requestedRole ? normalizeRoleLabel(requestedRole) : '';
+    const nextRoleProfile = nextRoleLabel ? getRoleProfile(nextRoleLabel) : null;
 
     const nextDealershipIds = Array.from(new Set([
       nextDealershipId,
@@ -6006,6 +6120,16 @@ async function handleAdminUserUpdateDealership(req, res) {
       updates.dealershipEnrollmentCode = nextDealershipEnrollmentCode || undefined;
       updates.dealerCode = nextDealershipEnrollmentCode || undefined;
       updates.inviteCode = nextDealershipEnrollmentCode || undefined;
+    }
+
+    if (nextRoleProfile) {
+      updates.role = nextRoleLabel;
+      updates.roleLabel = nextRoleLabel;
+      updates.roleType = nextRoleProfile.roleType;
+      updates.roleScope = nextRoleProfile.maxEnrollmentScope || null;
+      updates.visibilityScope = nextRoleProfile.visibilityScope;
+      updates.visibilityScopeLabel = nextRoleProfile.visibilityScopeLabel;
+      updates.visibilityScopeDescription = nextRoleProfile.visibilityScopeDescription;
     }
 
     if (resetProgress) {
@@ -6048,6 +6172,7 @@ async function handleAdminUserUpdateDealership(req, res) {
       updates: {
         dealershipId: nextDealershipId || null,
         dealershipName: nextDealershipName || null,
+        role: nextRoleLabel || null,
         resetProgress,
         deactivate,
         reactivate,
@@ -6888,6 +7013,10 @@ async function routeRequest(req, res) {
 
   if (req.method === 'POST' && url.pathname === '/api/auth/enroll') {
     return handleAuthEnroll(req, res);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/auth/forgot-password') {
+    return handleAuthForgotPassword(req, res);
   }
 
   if (req.method === 'POST' && url.pathname === '/api/admin/dealership/create') {
