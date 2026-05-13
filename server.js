@@ -3338,24 +3338,24 @@ function normalizeSessionStartOutput(raw, fallback) {
   const output = raw && typeof raw === 'object' ? raw : {};
   const targetUserTurns = clamp(Math.round(Number(output.targetUserTurns ?? fallback.targetUserTurns)), 3, 8);
   return {
-    title: String(output.title || fallback.title),
-    lessonCategory: String(output.lessonCategory || fallback.lessonCategory || ''),
-    lessonTitle: String(output.lessonTitle || fallback.lessonTitle || ''),
-    description: String(output.description || fallback.description),
-    coachLine: String(output.coachLine || fallback.coachLine),
-    customerOpening: String(output.customerOpening || fallback.customerOpening),
-    focus: String(output.focus || fallback.focus),
-    trustLabel: String(output.trustLabel || fallback.trustLabel),
+    title: sanitizeBrandAgnosticText(output.title || fallback.title),
+    lessonCategory: sanitizeBrandAgnosticText(output.lessonCategory || fallback.lessonCategory || ''),
+    lessonTitle: sanitizeBrandAgnosticText(output.lessonTitle || fallback.lessonTitle || ''),
+    description: sanitizeBrandAgnosticText(output.description || fallback.description),
+    coachLine: sanitizeBrandAgnosticText(output.coachLine || fallback.coachLine),
+    customerOpening: sanitizeBrandAgnosticText(output.customerOpening || fallback.customerOpening),
+    focus: sanitizeBrandAgnosticText(output.focus || fallback.focus),
+    trustLabel: sanitizeBrandAgnosticText(output.trustLabel || fallback.trustLabel),
     targetUserTurns,
-    customerName: String(output.customerName || fallback.customerName),
-    scenarioSummary: String(output.scenarioSummary || fallback.scenarioSummary),
-    customerConcern: String(output.customerConcern || fallback.customerConcern),
-    choices: normalizeChoiceSet(output.choices, fallback.choices),
-    freshUpSystemLabel: String(output.freshUpSystemLabel || fallback.freshUpSystemLabel || ''),
-    freshUpBossLabel: String(output.freshUpBossLabel || fallback.freshUpBossLabel || ''),
-    freshUpAudience: String(output.freshUpAudience || fallback.freshUpAudience || ''),
-    freshUpReadyCopy: String(output.freshUpReadyCopy || fallback.freshUpReadyCopy || ''),
-    freshUpLockedCopy: String(output.freshUpLockedCopy || fallback.freshUpLockedCopy || ''),
+    customerName: sanitizeBrandAgnosticText(output.customerName || fallback.customerName),
+    scenarioSummary: sanitizeBrandAgnosticText(output.scenarioSummary || fallback.scenarioSummary),
+    customerConcern: sanitizeBrandAgnosticText(output.customerConcern || fallback.customerConcern),
+    choices: normalizeChoiceSet(sanitizeBrandAgnosticOutput(output.choices), sanitizeBrandAgnosticOutput(fallback.choices)),
+    freshUpSystemLabel: sanitizeBrandAgnosticText(output.freshUpSystemLabel || fallback.freshUpSystemLabel || ''),
+    freshUpBossLabel: sanitizeBrandAgnosticText(output.freshUpBossLabel || fallback.freshUpBossLabel || ''),
+    freshUpAudience: sanitizeBrandAgnosticText(output.freshUpAudience || fallback.freshUpAudience || ''),
+    freshUpReadyCopy: sanitizeBrandAgnosticText(output.freshUpReadyCopy || fallback.freshUpReadyCopy || ''),
+    freshUpLockedCopy: sanitizeBrandAgnosticText(output.freshUpLockedCopy || fallback.freshUpLockedCopy || ''),
   };
 }
 
@@ -3363,15 +3363,17 @@ function normalizeSessionResult(raw, fallback) {
   const output = raw && typeof raw === 'object' ? raw : {};
   const ratingsSource = output.ratings && typeof output.ratings === 'object' ? output.ratings : {};
   return {
-    trainedTrait: String(output.trainedTrait || fallback.trainedTrait),
+    trainedTrait: sanitizeBrandAgnosticText(output.trainedTrait || fallback.trainedTrait),
     xpAwarded: clamp(Number(output.xpAwarded ?? fallback.xpAwarded), -100, 100),
-    coachSummary: String(output.coachSummary || fallback.coachSummary),
-    recommendedNextFocus: String(output.recommendedNextFocus || fallback.recommendedNextFocus),
-    trustLabel: String(output.trustLabel || fallback.trustLabel),
-    resultTitle: String(output.resultTitle || fallback.resultTitle),
-    resultBody: String(output.resultBody || fallback.resultBody),
+    coachSummary: sanitizeBrandAgnosticText(output.coachSummary || fallback.coachSummary),
+    recommendedNextFocus: sanitizeBrandAgnosticText(output.recommendedNextFocus || fallback.recommendedNextFocus),
+    trustLabel: sanitizeBrandAgnosticText(output.trustLabel || fallback.trustLabel),
+    resultTitle: sanitizeBrandAgnosticText(output.resultTitle || fallback.resultTitle),
+    resultBody: sanitizeBrandAgnosticText(output.resultBody || fallback.resultBody),
     severity: output.severity === 'behavior_violation' ? 'behavior_violation' : 'normal',
-    flags: Array.isArray(output.flags) ? output.flags.slice(0, 8).map((flag) => String(flag)) : (fallback.flags || []),
+    flags: Array.isArray(output.flags)
+      ? output.flags.slice(0, 8).map((flag) => sanitizeBrandAgnosticText(flag))
+      : (fallback.flags || []),
     ratings: {
       empathy: clampScore(ratingsSource.empathy ?? fallback.ratings.empathy),
       listening: clampScore(ratingsSource.listening ?? fallback.ratings.listening),
@@ -3399,9 +3401,93 @@ function normalizeChoiceSet(rawChoices, fallbackChoices) {
     const item = source[index] || {};
     return {
       letter,
-      text: String(item.text || fallbackChoices?.[index]?.text || ''),
+      text: sanitizeBrandAgnosticText(item.text || fallbackChoices?.[index]?.text || ''),
     };
   });
+}
+
+const BRAND_AGNOSTIC_REPLACEMENTS = [
+  { pattern: /\bLand Rover\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bMercedes-Benz\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bGeneral Motors\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bToyota\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bHonda\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bFord\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bChevrolet\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bChevy\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bGMC\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bNissan\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bHyundai\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bKia\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bMazda\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bSubaru\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bBMW\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bAudi\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bVolkswagen\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bVW\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bLexus\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bAcura\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bInfiniti\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bLincoln\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bBuick\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bCadillac\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bChrysler\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bDodge\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bJeep\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bRam\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bPorsche\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bVolvo\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bJaguar\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bRivian\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bTesla\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bMitsubishi\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bMini\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bMaserati\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bBentley\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bFerrari\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bLamborghini\b/gi, replacement: 'the manufacturer' },
+  { pattern: /\bMopar\b/gi, replacement: 'OEM parts' },
+  { pattern: /\bMotorcraft\b/gi, replacement: 'OEM parts' },
+  { pattern: /\bACDelco\b/gi, replacement: 'OEM parts' },
+  { pattern: /\bDelco\b/gi, replacement: 'OEM parts' },
+  { pattern: /\bBosch\b/gi, replacement: 'OEM parts' },
+  { pattern: /\bDenso\b/gi, replacement: 'OEM parts' },
+  { pattern: /\bToyota Genuine\b/gi, replacement: 'manufacturer parts' },
+  { pattern: /\bHonda Genuine\b/gi, replacement: 'manufacturer parts' },
+  { pattern: /\bFord Genuine\b/gi, replacement: 'manufacturer parts' },
+  { pattern: /\bGenuine Toyota\b/gi, replacement: 'manufacturer parts' },
+  { pattern: /\bGenuine Honda\b/gi, replacement: 'manufacturer parts' },
+  { pattern: /\bGenuine Ford\b/gi, replacement: 'manufacturer parts' },
+];
+
+function sanitizeBrandAgnosticText(value) {
+  let text = String(value ?? '');
+  for (const { pattern, replacement } of BRAND_AGNOSTIC_REPLACEMENTS) {
+    text = text.replace(pattern, replacement);
+  }
+  return text
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .replace(/\(\s+/g, '(')
+    .replace(/\s+\)/g, ')')
+    .trim();
+}
+
+function sanitizeBrandAgnosticOutput(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeBrandAgnosticOutput(item));
+  }
+  if (value && typeof value === 'object') {
+    const next = {};
+    for (const [key, item] of Object.entries(value)) {
+      next[key] = sanitizeBrandAgnosticOutput(item);
+    }
+    return next;
+  }
+  if (typeof value === 'string') {
+    return sanitizeBrandAgnosticText(value);
+  }
+  return value;
 }
 
 function buildDefaultChoices({ focusLine, customerConcern, roleType, turnIndex }) {
@@ -3809,10 +3895,10 @@ function normalizeSessionTurnOutput(raw, fallback) {
   const output = raw && typeof raw === 'object' ? raw : {};
   const ratingsSource = output.ratings && typeof output.ratings === 'object' ? output.ratings : {};
   return {
-    customerReply: String(output.customerReply || fallback.customerReply),
-    coachNote: String(output.coachNote || fallback.coachNote),
-    trustLabel: String(output.trustLabel || fallback.trustLabel),
-    choices: normalizeChoiceSet(output.choices, fallback.choices),
+    customerReply: sanitizeBrandAgnosticText(output.customerReply || fallback.customerReply),
+    coachNote: sanitizeBrandAgnosticText(output.coachNote || fallback.coachNote),
+    trustLabel: sanitizeBrandAgnosticText(output.trustLabel || fallback.trustLabel),
+    choices: normalizeChoiceSet(sanitizeBrandAgnosticOutput(output.choices), sanitizeBrandAgnosticOutput(fallback.choices)),
     ratings: {
       empathy: clampScore(ratingsSource.empathy ?? fallback.ratings.empathy),
       listening: clampScore(ratingsSource.listening ?? fallback.ratings.listening),
@@ -3827,6 +3913,9 @@ function normalizeSessionTurnOutput(raw, fallback) {
 function buildSessionResultPrompt({ bundle, session, userMessage }) {
   const history = session.messages
     .map((message) => `${message.sender}: ${message.text}`)
+    .join('\n');
+  const sanitizedHistory = session.messages
+    .map((message) => `${message.sender}: ${sanitizeBrandAgnosticText(message.text)}`)
     .join('\n');
   const roleProfile = bundle.roleProfile || getRoleProfile(bundle.user.role);
   return [
@@ -3849,10 +3938,12 @@ function buildSessionResultPrompt({ bundle, session, userMessage }) {
     `Current user turns completed: ${session.currentUserTurns}.`,
     `Turn XP total so far: ${session.turnXpTotal || 0}.`,
     `Response mode counts: ${JSON.stringify(session.responseModeCounts || { multiple_choice: 0, verbatim: 0 })}.`,
-    `Latest user message: ${userMessage || 'none'}.`,
+    `Latest user message: ${sanitizeBrandAgnosticText(userMessage) || 'none'}.`,
     `Running ratings snapshot: ${JSON.stringify(session.runningRatings || {})}`,
     'Conversation history:',
-    history || '(no history)',
+    sanitizedHistory || '(no history)',
+    'Do not mention any automotive manufacturer name, model name, trim name, or branded parts name.',
+    'Use generic terms like the manufacturer, the vehicle, the truck, the SUV, OEM part, or manufacturer part.',
     'Return raw JSON only with this exact shape:',
     '{',
     '  "trainedTrait": "trait name",',
@@ -5006,6 +5097,8 @@ async function generateFreshUpStartSession(bundle) {
     `Today's focus: ${focus.title}. Micro focus: ${focus.microFocus}.`,
     `Sprocket insight: ${insight}.`,
     'Recommended session length: 5-7 user turns.',
+    'Do not mention any automotive manufacturer name, model name, trim name, or branded parts name.',
+    'Use generic terms like the manufacturer, the vehicle, the truck, the SUV, OEM part, or manufacturer part.',
     'Return JSON only with:',
     '{',
     '  "title": "short mission title",',
@@ -5099,6 +5192,8 @@ async function generateStartSession(bundle, lessonCategoryOverride = null, optio
     `Today's focus: ${focus.title}. Micro focus: ${focus.microFocus}.`,
     `Sprocket insight: ${insight}.`,
     `Recommended session length: ${targetRange.min}-${targetRange.max} user turns.`,
+    'Do not mention any automotive manufacturer name, model name, trim name, or branded parts name.',
+    'Use generic terms like the manufacturer, the vehicle, the truck, the SUV, OEM part, or manufacturer part.',
     'Return JSON only with:',
     '{',
     '  "title": "short mission title",',
@@ -5139,6 +5234,8 @@ async function generateStartSession(bundle, lessonCategoryOverride = null, optio
 async function generateSessionTurn(bundle, session, payload) {
   const userMessage = String(payload.answer || payload.message || '').trim();
   const history = session.messages.map((message) => `${message.sender}: ${message.text}`).join('\n');
+  const sanitizedHistory = session.messages.map((message) => `${message.sender}: ${sanitizeBrandAgnosticText(message.text)}`).join('\n');
+  const sanitizedUserMessage = sanitizeBrandAgnosticText(userMessage);
   const prompt = [
     'You are Sprocket, AutoKnerd\'s dealership customer scenario engine.',
     `Continue a live customer conversation for a ${bundle.roleProfile?.roleLabel || bundle.user.role}.`,
@@ -5150,9 +5247,11 @@ async function generateSessionTurn(bundle, session, payload) {
     `Target user turns: ${session.targetUserTurns}.`,
     `Current user turns completed: ${session.currentUserTurns}.`,
     `Current trust label: ${session.trustLabel}.`,
-    `Latest user response: ${userMessage || 'none'}.`,
+    `Latest user response: ${sanitizedUserMessage || 'none'}.`,
     'Conversation history:',
-    history || '(no history)',
+    sanitizedHistory || '(no history)',
+    'Do not mention any automotive manufacturer name, model name, trim name, or branded parts name.',
+    'Use generic terms like the manufacturer, the vehicle, the truck, the SUV, OEM part, or manufacturer part.',
     'Return JSON only with:',
     '{',
     '  "customerReply": "1-2 sentences as the customer",',

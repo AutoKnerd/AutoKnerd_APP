@@ -446,6 +446,18 @@ tailwind.config = {
           <option>Trainer</option>
         </select>
       </label>
+      <div id="authAgreementField" class="hidden rounded-2xl border border-white/10 bg-black/25 px-4 py-4">
+        <label class="flex items-start gap-3">
+          <input id="authAgreementCheckbox" type="checkbox" class="mt-1 h-4 w-4 rounded border-white/20 bg-black/40 text-[#CCFF00] focus:ring-[#CCFF00]/40" />
+          <span class="text-sm leading-relaxed text-on-surface-variant">
+            I agree to the
+            <button id="authPrivacyLinkBtn" type="button" class="font-semibold text-[#CCFF00] transition hover:text-[#f3ffca]">Privacy Policy</button>
+            and
+            <button id="authTermsLinkBtn" type="button" class="font-semibold text-[#CCFF00] transition hover:text-[#f3ffca]">Terms of Use</button>
+            for this account.
+          </span>
+        </label>
+      </div>
       <button id="authSubmitBtn" type="button" class="w-full rounded-full bg-[#CCFF00] px-5 py-4 font-headline text-sm font-bold uppercase tracking-[0.18em] text-black transition hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(204,255,0,0.25)] active:scale-95">
         Continue
       </button>
@@ -729,7 +741,7 @@ tailwind.config = {
         <div class="space-y-6">
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface text-lg">Empathy</span>
+              <span id="managerCxEmpathyLabel" class="font-headline font-bold text-on-surface text-lg">Empathy</span>
               <span id="managerCxEmpathyValue" class="font-body text-sm text-on-surface-variant">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -738,7 +750,7 @@ tailwind.config = {
           </div>
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface text-lg">Trust Building</span>
+              <span id="managerCxTrustLabel" class="font-headline font-bold text-on-surface text-lg">Trust Building</span>
               <span id="managerCxTrustValue" class="font-body text-sm text-on-surface-variant">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -747,7 +759,7 @@ tailwind.config = {
           </div>
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface text-lg">Active Listening</span>
+              <span id="managerCxListeningLabel" class="font-headline font-bold text-on-surface text-lg">Active Listening</span>
               <span id="managerCxListeningValue" class="font-body text-sm text-on-surface-variant">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -756,7 +768,7 @@ tailwind.config = {
           </div>
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface text-lg">Pacing</span>
+              <span id="managerCxPacingLabel" class="font-headline font-bold text-on-surface text-lg">Pacing</span>
               <span id="managerCxPacingValue" class="font-body text-sm text-on-surface-variant">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -765,7 +777,7 @@ tailwind.config = {
           </div>
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface text-lg">Confidence</span>
+              <span id="managerCxConfidenceLabel" class="font-headline font-bold text-on-surface text-lg">Confidence</span>
               <span id="managerCxConfidenceValue" class="font-body text-sm text-on-surface-variant">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -774,7 +786,7 @@ tailwind.config = {
           </div>
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface-variant text-lg">Closing</span>
+              <span id="managerCxClosingLabel" class="font-headline font-bold text-on-surface-variant text-lg">Closing</span>
               <span id="managerCxClosingValue" class="font-body text-sm text-error">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -2217,6 +2229,7 @@ tailwind.config = {
     isCompleting: false,
     selectedChoice: null,
     selectedChoiceText: '',
+    legalReturnScreen: '',
     developerRoleOverride: localStorage.getItem("autoknerd:roleOverride") || '',
     mockRoleOverride: localStorage.getItem("autoknerd:mockRoleOverride") || '',
     mockUserMode: localStorage.getItem("autoknerd:mockUserMode") === "1",
@@ -2347,6 +2360,10 @@ tailwind.config = {
   const authPasswordField = document.getElementById("authPasswordField");
   const authPasswordLabel = document.getElementById("authPasswordLabel");
   const authCodeLabel = document.getElementById("authCodeLabel");
+  const authAgreementField = document.getElementById("authAgreementField");
+  const authAgreementCheckbox = document.getElementById("authAgreementCheckbox");
+  const authPrivacyLinkBtn = document.getElementById("authPrivacyLinkBtn");
+  const authTermsLinkBtn = document.getElementById("authTermsLinkBtn");
   const authEnrollmentNote = document.getElementById("authEnrollmentNote");
   const authStatusText = document.getElementById("authStatusText");
   const resetPasswordEmailInput = document.getElementById("resetPasswordEmailInput");
@@ -2638,16 +2655,22 @@ tailwind.config = {
     managerCxAverageLabel: document.getElementById("managerCxAverageLabel"),
     managerCxEmpathyValue: document.getElementById("managerCxEmpathyValue"),
     managerCxEmpathyBar: document.getElementById("managerCxEmpathyBar"),
+    managerCxEmpathyLabel: document.getElementById("managerCxEmpathyLabel"),
     managerCxTrustValue: document.getElementById("managerCxTrustValue"),
     managerCxTrustBar: document.getElementById("managerCxTrustBar"),
+    managerCxTrustLabel: document.getElementById("managerCxTrustLabel"),
     managerCxListeningValue: document.getElementById("managerCxListeningValue"),
     managerCxListeningBar: document.getElementById("managerCxListeningBar"),
+    managerCxListeningLabel: document.getElementById("managerCxListeningLabel"),
     managerCxPacingValue: document.getElementById("managerCxPacingValue"),
     managerCxPacingBar: document.getElementById("managerCxPacingBar"),
+    managerCxPacingLabel: document.getElementById("managerCxPacingLabel"),
     managerCxConfidenceValue: document.getElementById("managerCxConfidenceValue"),
     managerCxConfidenceBar: document.getElementById("managerCxConfidenceBar"),
+    managerCxConfidenceLabel: document.getElementById("managerCxConfidenceLabel"),
     managerCxClosingValue: document.getElementById("managerCxClosingValue"),
     managerCxClosingBar: document.getElementById("managerCxClosingBar"),
+    managerCxClosingLabel: document.getElementById("managerCxClosingLabel"),
     managerMomentumValue: document.getElementById("managerMomentumValue"),
     managerMomentumChart: document.getElementById("managerMomentumChart"),
     managerTeamMonitorList: document.getElementById("managerTeamMonitorList"),
@@ -3130,6 +3153,9 @@ tailwind.config = {
     }
     if (authCodeLabel) {
       authCodeLabel.textContent = isEnroll ? 'Invite / dealer code' : 'Password';
+    }
+    if (authAgreementField) {
+      authAgreementField.classList.toggle('hidden', !isEnroll);
     }
     if (authCodeInput) {
       authCodeInput.type = isEnroll ? 'text' : 'password';
@@ -3669,6 +3695,7 @@ tailwind.config = {
   }
 
   function showPrivacy() {
+    state.legalReturnScreen = state.legalReturnScreen || 'settings';
     hideAllScreens();
     privacyScreen.classList.remove("hidden-screen");
     document.title = 'Privacy Policy';
@@ -3676,6 +3703,7 @@ tailwind.config = {
   }
 
   function showTerms() {
+    state.legalReturnScreen = state.legalReturnScreen || 'settings';
     hideAllScreens();
     termsScreen.classList.remove("hidden-screen");
     document.title = 'Terms of Use';
@@ -6374,11 +6402,11 @@ tailwind.config = {
 
   function getCxThresholdTheme(value) {
     const score = Math.max(0, Math.min(100, Math.round(Number(value || 0))));
-    if (score <= 33) {
+    if (score < 60) {
       return {
-        textColor: '#ff7351',
-        fillColor: '#ff7351',
-        glow: '0 0 10px rgba(255,115,81,0.5)',
+        textColor: '#B026FF',
+        fillColor: '#B026FF',
+        glow: '0 0 12px rgba(176,38,255,0.8), 0 0 24px rgba(176,38,255,0.35)',
       };
     }
     if (score < 75) {
@@ -6763,6 +6791,7 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.empathy ?? user.stats?.empathy?.score ?? 0)),
         valueRef: refs.managerCxEmpathyValue,
         barRef: refs.managerCxEmpathyBar,
+        labelRef: refs.managerCxEmpathyLabel,
         color: 'primary',
       },
       {
@@ -6770,6 +6799,7 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.trust ?? user.stats?.trust?.score ?? 0)),
         valueRef: refs.managerCxTrustValue,
         barRef: refs.managerCxTrustBar,
+        labelRef: refs.managerCxTrustLabel,
         color: 'primary',
       },
       {
@@ -6777,6 +6807,7 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.listening ?? user.stats?.listening?.score ?? 0)),
         valueRef: refs.managerCxListeningValue,
         barRef: refs.managerCxListeningBar,
+        labelRef: refs.managerCxListeningLabel,
         color: 'primary',
       },
       {
@@ -6784,6 +6815,7 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.followUp ?? user.stats?.followUp?.score ?? 0)),
         valueRef: refs.managerCxPacingValue,
         barRef: refs.managerCxPacingBar,
+        labelRef: refs.managerCxPacingLabel,
         color: 'primary',
       },
       {
@@ -6791,6 +6823,7 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.relationship ?? user.stats?.relationship?.score ?? 0)),
         valueRef: refs.managerCxConfidenceValue,
         barRef: refs.managerCxConfidenceBar,
+        labelRef: refs.managerCxConfidenceLabel,
         color: 'primary',
       },
       {
@@ -6798,15 +6831,21 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.closing ?? user.stats?.closing?.score ?? 0)),
         valueRef: refs.managerCxClosingValue,
         barRef: refs.managerCxClosingBar,
+        labelRef: refs.managerCxClosingLabel,
       },
     ];
 
     cxMetrics.forEach((metric) => {
       const theme = getCxThresholdTheme(metric.value);
+      const isLowScore = metric.value < 60;
       if (metric.valueRef) {
         metric.valueRef.textContent = `${metric.value}%`;
         metric.valueRef.className = 'font-body text-sm';
         metric.valueRef.style.color = theme.textColor;
+      }
+      if (metric.labelRef) {
+        metric.labelRef.style.color = isLowScore ? theme.textColor : '';
+        metric.labelRef.style.textShadow = isLowScore ? '0 0 10px rgba(176,38,255,0.55)' : '';
       }
       if (metric.barRef) {
         setWidth(metric.barRef, metric.value);
@@ -8240,6 +8279,13 @@ tailwind.config = {
       authCodeInput?.focus();
       return;
     }
+    if (!authAgreementCheckbox?.checked) {
+      if (authStatusText) {
+        authStatusText.textContent = 'Please agree to the Privacy Policy and Terms of Use.';
+      }
+      authAgreementCheckbox?.focus();
+      return;
+    }
     [authSubmitBtn, authForgotPasswordBtn, authSignInModeBtn, authEnrollModeBtn].forEach((button) => {
       if (button) button.disabled = true;
     });
@@ -8278,6 +8324,9 @@ tailwind.config = {
       setDeveloperSessionActive(false);
       setDeveloperSessionUserId('');
       setAuthCodeFieldError(false);
+      if (authAgreementCheckbox) {
+        authAgreementCheckbox.checked = false;
+      }
       setAuthMode('signin');
       if (authStatusText) {
         authStatusText.textContent = 'Account created.';
@@ -8665,8 +8714,24 @@ tailwind.config = {
       toolWorkspaceDraftMeta.textContent = 'Draft cleared.';
     }
   });
-  if (privacyBackBtn) privacyBackBtn.addEventListener("click", showSettings);
-  if (termsBackBtn) termsBackBtn.addEventListener("click", showSettings);
+  if (privacyBackBtn) privacyBackBtn.addEventListener("click", () => {
+    const returnScreen = state.legalReturnScreen || 'settings';
+    state.legalReturnScreen = '';
+    if (returnScreen === 'auth') {
+      showAuth();
+      return;
+    }
+    showSettings();
+  });
+  if (termsBackBtn) termsBackBtn.addEventListener("click", () => {
+    const returnScreen = state.legalReturnScreen || 'settings';
+    state.legalReturnScreen = '';
+    if (returnScreen === 'auth') {
+      showAuth();
+      return;
+    }
+    showSettings();
+  });
   if (storeRequestBackBtn) storeRequestBackBtn.addEventListener("click", showHome);
   if (storeRequestResetBtn) storeRequestResetBtn.addEventListener("click", () => {
     if (storeRequestName) storeRequestName.value = '';
@@ -8692,6 +8757,22 @@ tailwind.config = {
   });
   if (settingsBackBtn) settingsBackBtn.addEventListener("click", showHome);
   if (historyBackBtn) historyBackBtn.addEventListener("click", showHome);
+  if (authPrivacyLinkBtn) authPrivacyLinkBtn.addEventListener("click", () => {
+    state.legalReturnScreen = 'auth';
+    showPrivacy();
+  });
+  if (authTermsLinkBtn) authTermsLinkBtn.addEventListener("click", () => {
+    state.legalReturnScreen = 'auth';
+    showTerms();
+  });
+  if (openPrivacyBtn) openPrivacyBtn.addEventListener("click", () => {
+    state.legalReturnScreen = 'settings';
+    showPrivacy();
+  });
+  if (openTermsBtn) openTermsBtn.addEventListener("click", () => {
+    state.legalReturnScreen = 'settings';
+    showTerms();
+  });
   continueBtn.addEventListener("click", completeSession);
   if (refs.managerDeployBtn) refs.managerDeployBtn.addEventListener("click", showAIOutput);
   if (refs.managerLaunchProtocolBtn) refs.managerLaunchProtocolBtn.addEventListener("click", () => startSession());
@@ -8730,14 +8811,6 @@ tailwind.config = {
   if (returnDashboardBtn) returnDashboardBtn.addEventListener("click", () => {
     closeMenu();
     showHome();
-  });
-  if (openPrivacyBtn) openPrivacyBtn.addEventListener("click", () => {
-    closeMenu();
-    showPrivacy();
-  });
-  if (openTermsBtn) openTermsBtn.addEventListener("click", () => {
-    closeMenu();
-    showTerms();
   });
   if (closeProfileMenuBtn) closeProfileMenuBtn.addEventListener("click", closeProfileMenu);
   if (profileMenuViewProfileBtn) profileMenuViewProfileBtn.addEventListener("click", () => {
