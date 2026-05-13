@@ -507,7 +507,7 @@ tailwind.config = {
 <div id="homeScreen" class="screen">
   <div id="coachHomePanel">
   <header class="fixed top-0 w-full border-t border-white/10 bg-[#0e0e0e]/60 backdrop-blur-2xl bg-gradient-to-b from-white/5 to-transparent shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] grid grid-cols-[auto,1fr,auto] items-center px-6 h-16 z-50">
-    <button id="homeMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-2 text-zinc-500 transition-colors duration-300 hover:border-[#CCFF00]/30 hover:bg-white/10 hover:text-[#CCFF00]" aria-label="Open developer tools">
+    <button id="homeMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-2 text-zinc-500 transition-colors duration-300 hover:border-[#CCFF00]/30 hover:bg-white/10 hover:text-[#CCFF00]" aria-label="Open developer menu">
       <img src="/gear-head.png" alt="" aria-hidden="true" class="h-7 w-7 object-contain" />
     </button>
     <h1 class="justify-self-center font-['Manrope'] uppercase tracking-widest font-black text-lg leading-none text-[#CCFF00]">HOME</h1>
@@ -599,7 +599,7 @@ tailwind.config = {
       <div class="flex items-start justify-between gap-4">
         <div>
           <p class="font-label text-xs uppercase tracking-[0.28em] text-on-surface-variant">Menu</p>
-          <h3 class="font-headline text-2xl font-bold text-on-surface">Quick Actions</h3>
+          <h3 class="font-headline text-2xl font-bold text-on-surface">Navigation</h3>
         </div>
         <button id="closeMenuBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-on-surface-variant transition hover:text-on-surface">Close</button>
       </div>
@@ -623,15 +623,22 @@ tailwind.config = {
         <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Activity</span>
         <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Session History</span>
       </button>
+      <button id="openSettingsBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Account</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Avatar & Settings</span>
+        <span class="mt-1 block text-xs text-on-surface-variant">Change profile details, avatar, privacy, and support options.</span>
+      </button>
       <button id="openDeveloperPanelBtn" type="button" class="w-full rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-4 text-left transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15">
-        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Developer</span>
-        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Open developer tools</span>
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Testing</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Role & Persona Switcher</span>
+        <span class="mt-1 block text-xs text-on-surface-variant">Preview roles, mock personas, and impersonation states.</span>
       </button>
       <div id="developerMenuSection" class="hidden-screen space-y-3 rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/5 p-3">
-        <p class="font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Developer</p>
+        <p class="font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Developer console</p>
         <button id="openDeveloperConsoleBtn" type="button" class="w-full rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-4 text-left transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15">
           <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Live Firebase</span>
-          <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Open developer console</span>
+          <span class="block mt-1 font-headline text-lg font-bold text-on-surface">All Data Dashboard</span>
+          <span class="mt-1 block text-xs text-on-surface-variant">Open users, stores, health checks, and maintenance tools.</span>
         </button>
       </div>
     </div>
@@ -1972,8 +1979,9 @@ tailwind.config = {
         <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Session History</span>
       </button>
       <button id="profileMenuSettingsBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
-        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Support</span>
-        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Settings & Support</span>
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Account</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Avatar & Settings</span>
+        <span class="mt-1 block text-xs text-on-surface-variant">Choose an avatar, update profile fields, and manage support options.</span>
       </button>
       <button id="profileMenuSignOutBtn" type="button" class="w-full rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-4 text-left transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15">
         <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Account</span>
@@ -1985,14 +1993,14 @@ tailwind.config = {
 
 <div id="developerScreen" class="screen hidden-screen">
   <header class="fixed top-0 w-full z-50 bg-[#0e0e0e] dark:bg-[#000000] no-border-tonal-shift-only flat-no-shadows grid grid-cols-[auto,1fr,auto] items-center px-6 h-16 w-full">
-    <button id="developerMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-1.5 text-gray-500 transition-opacity duration-200 hover:opacity-80 active:bg-surface-container" aria-label="Open developer tools">
+    <button id="developerMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-1.5 text-gray-500 transition-opacity duration-200 hover:opacity-80 active:bg-surface-container" aria-label="Open developer menu">
       <img src="/gear-head.png" alt="" aria-hidden="true" class="h-7 w-7 object-contain" />
     </button>
     <h1 id="developerTitle" class="justify-self-center font-['Manrope'] text-lg font-black uppercase tracking-widest leading-none text-[#CCFF00]">
       DEVELOPER
     </h1>
     <div class="justify-self-end flex items-center gap-2">
-      <button id="developerProfileBtn" type="button" class="h-10 w-10 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest transition-opacity hover:opacity-80 active:scale-95 duration-200" aria-label="Open profile">
+      <button id="developerProfileBtn" type="button" class="h-10 w-10 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest transition-opacity hover:opacity-80 active:scale-95 duration-200" aria-label="Open profile and avatar options">
         <img id="developerProfileAvatar" alt="Profile avatar" class="hidden h-full w-full object-cover" src="" />
         <span id="developerProfileAvatarIcon" class="material-symbols-outlined text-on-surface-variant text-sm">person</span>
       </button>
@@ -3835,7 +3843,7 @@ tailwind.config = {
   }
 
   function openDeveloperPanel() {
-    if (!hasDeveloperAccess()) {
+    if (!hasDeveloperAccess() && !isDeveloperConsoleVisible()) {
       showSettings();
       return;
     }
@@ -4034,7 +4042,7 @@ tailwind.config = {
   }
 
   function updateInternalToolsVisibility() {
-    const enabled = hasDeveloperAccess();
+    const enabled = hasDeveloperAccess() || isDeveloperConsoleVisible();
     const showDeveloperTrigger = canOpenDeveloperTools();
     const showDeveloperMenuBtn = showDeveloperTrigger || isDeveloperConsoleVisible();
     if (homeMenuBtn) homeMenuBtn.classList.toggle('hidden-screen', !showDeveloperTrigger);
@@ -5731,7 +5739,9 @@ tailwind.config = {
 
   function renderAvatarPicker() {
     if (!refs.settingsAvatarPicker) return;
-    if (!refs.settingsAvatarPicker.dataset.rendered) {
+    const pickerNeedsRender = !refs.settingsAvatarPicker.dataset.rendered
+      || refs.settingsAvatarPicker.querySelectorAll('[data-avatar-url]').length !== avatarOptions.length;
+    if (pickerNeedsRender) {
       refs.settingsAvatarPicker.innerHTML = avatarOptions.map((option) => `
         <button
           type="button"
