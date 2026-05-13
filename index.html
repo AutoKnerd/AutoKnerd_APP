@@ -2084,7 +2084,7 @@ tailwind.config = {
           </div>
           <label class="block space-y-2">
             <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Dealership name</span>
-            <input id="developerDealershipNameInput" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-white/10" placeholder="Sunrise Honda" />
+            <input id="developerDealershipNameInput" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-white/10" placeholder="Sunrise Motors" />
           </label>
           <label class="block space-y-2">
             <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Dealer code</span>
@@ -3423,10 +3423,10 @@ tailwind.config = {
       const statusController = new AbortController();
       const dashboardTimeout = window.setTimeout(() => dashboardController.abort(new Error('DEVELOPER_DASHBOARD_TIMEOUT')), 12000);
       const statusTimeout = window.setTimeout(() => statusController.abort(), 8000);
-      let response;
-      let systemStatusResponse;
+      let response = null;
+      let systemStatusResponse = null;
       try {
-        [response, systemStatusResponse] = await Promise.all([
+        const [dashboardResult, statusResult] = await Promise.allSettled([
           fetch(dashboardUrl, {
             method: 'GET',
             cache: 'no-store',
@@ -3440,12 +3440,19 @@ tailwind.config = {
             signal: statusController.signal,
           }).catch(() => null),
         ]);
+        systemStatusResponse = statusResult.status === 'fulfilled' ? statusResult.value : null;
+        if (dashboardResult.status === 'fulfilled') {
+          response = dashboardResult.value;
+        } else {
+          throw dashboardResult.reason || new Error('Unable to load developer data.');
+        }
       } finally {
         clearTimeout(dashboardTimeout);
         clearTimeout(statusTimeout);
       }
       const payload = await response.json().catch(() => ({}));
       const statusPayload = systemStatusResponse ? await systemStatusResponse.json().catch(() => ({})) : {};
+      state.developerSystemStatus = systemStatusResponse?.ok && statusPayload.ok ? (statusPayload.status || null) : null;
       if (response.status === 401 || response.status === 403) {
         await signOutAndShowAuth('Session expired. Please sign in again.');
         return null;
@@ -3455,7 +3462,6 @@ tailwind.config = {
       }
       state.developerDashboard = payload.dashboard || state.developerDashboard || null;
       state.developerDashboardStatus = String(payload.dashboardStatus || (payload.dashboard ? 'live' : 'offline')).trim() || 'offline';
-      state.developerSystemStatus = systemStatusResponse?.ok && statusPayload.ok ? (statusPayload.status || null) : null;
       renderDeveloperConsole(developerBundle, state.developerDashboard);
       return state.developerDashboard;
     } catch (error) {
@@ -3490,11 +3496,13 @@ tailwind.config = {
         summary: null,
       };
       const developerBundle = await ensureDeveloperSessionBundle();
-      if (developerBundle) {
-        renderDeveloperConsole(developerBundle, state.developerDashboard);
-        void refreshDeveloperDashboard();
-        startDeveloperLiveRefresh();
+      if (!developerBundle) {
+        await signOutAndShowAuth('Developer session expired. Please sign in again.');
+        return;
       }
+      renderDeveloperConsole(developerBundle, state.developerDashboard);
+      void refreshDeveloperDashboard();
+      startDeveloperLiveRefresh();
       developerScreen.classList.remove("hidden-screen");
       updateInternalToolsVisibility();
       updateDeveloperImpersonationPanel();
