@@ -3267,6 +3267,50 @@ tailwind.config = {
     setDeveloperImpersonationUserId('');
   }
 
+  function isTemporaryDeveloperUserId(userId) {
+    return String(userId || '').trim().toLowerCase() === 'andrew@autoknerd.com';
+  }
+
+  function isLocalDevelopmentRuntime() {
+    const hostname = String(window.location.hostname || '').toLowerCase();
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  }
+
+  function getLocalTemporaryDeveloperUserId() {
+    return isLocalDevelopmentRuntime() ? 'andrew@autoknerd.com' : '';
+  }
+
+  async function restoreTemporaryDeveloperSession(developerUserId) {
+    if (!isTemporaryDeveloperUserId(developerUserId)) return null;
+    try {
+      const response = await fetch('/api/auth/sign-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: developerUserId,
+          temporaryDeveloperLogin: true,
+          mockMode: state.mockUserMode || undefined,
+          mockRoleOverride: getMockRoleOverride() || undefined,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok || !isDeveloperAccount(payload.bundle)) {
+        return null;
+      }
+      saveAuthSession(payload.token, payload.bundle.user.userId);
+      state.bundle = payload.bundle;
+      state.user = payload.bundle.user;
+      state.developerSessionBundle = payload.bundle;
+      setDeveloperSessionActive(true, payload.bundle.user.userId);
+      setDeveloperSessionUserId(payload.bundle.user.userId);
+      state.developerDashboard = payload.bundle.developerDashboard || state.developerDashboard || null;
+      return payload.bundle;
+    } catch (error) {
+      console.warn('Unable to restore temporary developer session', error);
+      return null;
+    }
+  }
+
   function getActiveDeveloperBundle() {
     if (state.developerSessionBundle?.user && isDeveloperAccount(state.developerSessionBundle)) {
       return state.developerSessionBundle;
@@ -3280,8 +3324,15 @@ tailwind.config = {
   async function ensureDeveloperSessionBundle() {
     const activeBundle = getActiveDeveloperBundle();
     if (activeBundle) return activeBundle;
-    const developerUserId = state.developerSessionUserId || String(localStorage.getItem("autoknerd:developerUserId") || '').trim();
-    if (!developerUserId || !getAuthToken()) return null;
+    const developerUserId = (
+      state.developerSessionUserId ||
+      String(localStorage.getItem("autoknerd:developerUserId") || '').trim() ||
+      getLocalTemporaryDeveloperUserId()
+    );
+    if (!developerUserId) return null;
+    if (!getAuthToken()) {
+      return restoreTemporaryDeveloperSession(developerUserId);
+    }
     try {
       const query = new URLSearchParams();
       query.set('userId', developerUserId);
@@ -3292,14 +3343,14 @@ tailwind.config = {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.ok || !isDeveloperAccount(payload)) {
-        return null;
+        return restoreTemporaryDeveloperSession(developerUserId);
       }
       state.developerSessionBundle = payload;
       setDeveloperSessionActive(true, payload.user.userId);
       return payload;
     } catch (error) {
       console.warn('Unable to restore developer session bundle', error);
-      return null;
+      return restoreTemporaryDeveloperSession(developerUserId);
     }
   }
 
@@ -3401,7 +3452,7 @@ tailwind.config = {
     }
   }
 
-  async function refreshDeveloperDashboard({ silent = false } = {}) {
+  async function refreshDeveloperDashboard({ silent = false, allowSessionRestore = true } = {}) {
     const developerBundle = await ensureDeveloperSessionBundle();
     if (!developerBundle?.user || !isDeveloperAccount(developerBundle)) return null;
     if (!silent && developerLiveState) {
@@ -3454,6 +3505,12 @@ tailwind.config = {
       const statusPayload = systemStatusResponse ? await systemStatusResponse.json().catch(() => ({})) : {};
       state.developerSystemStatus = systemStatusResponse?.ok && statusPayload.ok ? (statusPayload.status || null) : null;
       if (response.status === 401 || response.status === 403) {
+        const restoredBundle = allowSessionRestore
+          ? await restoreTemporaryDeveloperSession(developerBundle.user?.userId || state.developerSessionUserId || localStorage.getItem("autoknerd:developerUserId") || '')
+          : null;
+        if (restoredBundle) {
+          return refreshDeveloperDashboard({ silent, allowSessionRestore: false });
+        }
         await signOutAndShowAuth('Session expired. Please sign in again.');
         return null;
       }
