@@ -4467,13 +4467,6 @@ async function upsertFirebaseAuthPasswordUser({ email, password, displayName }) 
   }
 }
 
-function getRequestOrigin(req) {
-  const forwardedProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
-  const protocol = forwardedProto || 'http';
-  const host = String(req.headers.host || '').trim();
-  return host ? `${protocol}://${host}` : `http://localhost:${PORT}`;
-}
-
 async function handleAuthForgotPassword(req, res) {
   try {
     const body = await readBody(req);
