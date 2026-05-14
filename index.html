@@ -3730,7 +3730,14 @@ tailwind.config = {
   }
 
   function openProfileMenu() {
-    if (!profileMenuOverlay) return;
+    if (isFileRuntime()) {
+      redirectToLocalApp();
+      return;
+    }
+    if (!profileMenuOverlay) {
+      showSettings();
+      return;
+    }
     if (menuOverlay) menuOverlay.classList.add("hidden-screen");
     profileMenuOverlay.classList.remove("hidden-screen");
   }
@@ -9154,6 +9161,11 @@ tailwind.config = {
       clearChoiceSelection();
     }
   });
+
+  // File previews skip the local app server that developer auth and menus depend on.
+  if (isFileRuntime()) {
+    redirectToLocalApp();
+  }
 
   loadBootstrap().catch((error) => {
     console.error(error);
