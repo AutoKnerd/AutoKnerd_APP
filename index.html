@@ -8287,11 +8287,16 @@ tailwind.config = {
       saveAuthSession(payload.token, payload.bundle?.user?.userId || '');
       clearDeveloperImpersonation();
       setDeveloperRoleOverride('');
-      setDeveloperSessionActive(false);
-      setDeveloperSessionUserId('');
       setAuthCodeFieldError(false);
-      if (payload.bundle?.user?.roleLabel === 'Developer') {
+      if (isDeveloperAccount(payload.bundle)) {
+        state.developerSessionBundle = payload.bundle;
+        setDeveloperSessionActive(true, payload.bundle.user.userId);
+        setDeveloperSessionUserId(payload.bundle.user.userId);
         setInternalToolsEnabled(true);
+      } else {
+        state.developerSessionBundle = null;
+        setDeveloperSessionActive(false);
+        setDeveloperSessionUserId('');
       }
       await loadBootstrap();
     } catch (error) {
