@@ -446,6 +446,18 @@ tailwind.config = {
           <option>Trainer</option>
         </select>
       </label>
+      <div id="authAgreementField" class="hidden rounded-2xl border border-white/10 bg-black/25 px-4 py-4">
+        <label class="flex items-start gap-3">
+          <input id="authAgreementCheckbox" type="checkbox" class="mt-1 h-4 w-4 rounded border-white/20 bg-black/40 text-[#CCFF00] focus:ring-[#CCFF00]/40" />
+          <span class="text-sm leading-relaxed text-on-surface-variant">
+            I agree to the
+            <button id="authPrivacyLinkBtn" type="button" class="font-semibold text-[#CCFF00] transition hover:text-[#f3ffca]">Privacy Policy</button>
+            and
+            <button id="authTermsLinkBtn" type="button" class="font-semibold text-[#CCFF00] transition hover:text-[#f3ffca]">Terms of Use</button>
+            for this account.
+          </span>
+        </label>
+      </div>
       <button id="authSubmitBtn" type="button" class="w-full rounded-full bg-[#CCFF00] px-5 py-4 font-headline text-sm font-bold uppercase tracking-[0.18em] text-black transition hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(204,255,0,0.25)] active:scale-95">
         Continue
       </button>
@@ -495,7 +507,7 @@ tailwind.config = {
 <div id="homeScreen" class="screen">
   <div id="coachHomePanel">
   <header class="fixed top-0 w-full border-t border-white/10 bg-[#0e0e0e]/60 backdrop-blur-2xl bg-gradient-to-b from-white/5 to-transparent shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] grid grid-cols-[auto,1fr,auto] items-center px-6 h-16 z-50">
-    <button id="homeMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-2 text-zinc-500 transition-colors duration-300 hover:border-[#CCFF00]/30 hover:bg-white/10 hover:text-[#CCFF00]" aria-label="Open developer tools">
+    <button id="homeMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-2 text-zinc-500 transition-colors duration-300 hover:border-[#CCFF00]/30 hover:bg-white/10 hover:text-[#CCFF00]" aria-label="Open developer menu">
       <img src="/gear-head.png" alt="" aria-hidden="true" class="h-7 w-7 object-contain" />
     </button>
     <h1 class="justify-self-center font-['Manrope'] uppercase tracking-widest font-black text-lg leading-none text-[#CCFF00]">HOME</h1>
@@ -587,7 +599,7 @@ tailwind.config = {
       <div class="flex items-start justify-between gap-4">
         <div>
           <p class="font-label text-xs uppercase tracking-[0.28em] text-on-surface-variant">Menu</p>
-          <h3 class="font-headline text-2xl font-bold text-on-surface">Quick Actions</h3>
+          <h3 class="font-headline text-2xl font-bold text-on-surface">Navigation</h3>
         </div>
         <button id="closeMenuBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-on-surface-variant transition hover:text-on-surface">Close</button>
       </div>
@@ -611,15 +623,22 @@ tailwind.config = {
         <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Activity</span>
         <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Session History</span>
       </button>
+      <button id="openSettingsBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Account</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Avatar & Settings</span>
+        <span class="mt-1 block text-xs text-on-surface-variant">Change profile details, avatar, privacy, and support options.</span>
+      </button>
       <button id="openDeveloperPanelBtn" type="button" class="w-full rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-4 text-left transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15">
-        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Developer</span>
-        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Open developer tools</span>
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Testing</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Role & Persona Switcher</span>
+        <span class="mt-1 block text-xs text-on-surface-variant">Preview roles, mock personas, and impersonation states.</span>
       </button>
       <div id="developerMenuSection" class="hidden-screen space-y-3 rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/5 p-3">
-        <p class="font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Developer</p>
+        <p class="font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Developer console</p>
         <button id="openDeveloperConsoleBtn" type="button" class="w-full rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-4 text-left transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15">
           <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Live Firebase</span>
-          <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Open developer console</span>
+          <span class="block mt-1 font-headline text-lg font-bold text-on-surface">All Data Dashboard</span>
+          <span class="mt-1 block text-xs text-on-surface-variant">Open users, stores, health checks, and maintenance tools.</span>
         </button>
       </div>
     </div>
@@ -729,7 +748,7 @@ tailwind.config = {
         <div class="space-y-6">
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface text-lg">Empathy</span>
+              <span id="managerCxEmpathyLabel" class="font-headline font-bold text-on-surface text-lg">Empathy</span>
               <span id="managerCxEmpathyValue" class="font-body text-sm text-on-surface-variant">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -738,7 +757,7 @@ tailwind.config = {
           </div>
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface text-lg">Trust Building</span>
+              <span id="managerCxTrustLabel" class="font-headline font-bold text-on-surface text-lg">Trust Building</span>
               <span id="managerCxTrustValue" class="font-body text-sm text-on-surface-variant">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -747,7 +766,7 @@ tailwind.config = {
           </div>
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface text-lg">Active Listening</span>
+              <span id="managerCxListeningLabel" class="font-headline font-bold text-on-surface text-lg">Active Listening</span>
               <span id="managerCxListeningValue" class="font-body text-sm text-on-surface-variant">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -756,7 +775,7 @@ tailwind.config = {
           </div>
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface text-lg">Pacing</span>
+              <span id="managerCxPacingLabel" class="font-headline font-bold text-on-surface text-lg">Pacing</span>
               <span id="managerCxPacingValue" class="font-body text-sm text-on-surface-variant">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -765,7 +784,7 @@ tailwind.config = {
           </div>
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface text-lg">Confidence</span>
+              <span id="managerCxConfidenceLabel" class="font-headline font-bold text-on-surface text-lg">Confidence</span>
               <span id="managerCxConfidenceValue" class="font-body text-sm text-on-surface-variant">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -774,7 +793,7 @@ tailwind.config = {
           </div>
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="font-headline font-bold text-on-surface-variant text-lg">Closing</span>
+              <span id="managerCxClosingLabel" class="font-headline font-bold text-on-surface-variant text-lg">Closing</span>
               <span id="managerCxClosingValue" class="font-body text-sm text-error">--%</span>
             </div>
             <div class="w-full h-2 bg-background/80 rounded-full overflow-hidden border border-outline-variant/20">
@@ -1960,8 +1979,9 @@ tailwind.config = {
         <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Session History</span>
       </button>
       <button id="profileMenuSettingsBtn" type="button" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-left transition hover:border-white/20 hover:bg-white/10">
-        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Support</span>
-        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Settings & Support</span>
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Account</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Avatar & Settings</span>
+        <span class="mt-1 block text-xs text-on-surface-variant">Choose an avatar, update profile fields, and manage support options.</span>
       </button>
       <button id="profileMenuSignOutBtn" type="button" class="w-full rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-4 text-left transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15">
         <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Account</span>
@@ -1973,14 +1993,14 @@ tailwind.config = {
 
 <div id="developerScreen" class="screen hidden-screen">
   <header class="fixed top-0 w-full z-50 bg-[#0e0e0e] dark:bg-[#000000] no-border-tonal-shift-only flat-no-shadows grid grid-cols-[auto,1fr,auto] items-center px-6 h-16 w-full">
-    <button id="developerMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-1.5 text-gray-500 transition-opacity duration-200 hover:opacity-80 active:bg-surface-container" aria-label="Open developer tools">
+    <button id="developerMenuBtn" type="button" class="hidden-screen rounded-full border border-white/10 bg-white/5 p-1.5 text-gray-500 transition-opacity duration-200 hover:opacity-80 active:bg-surface-container" aria-label="Open developer menu">
       <img src="/gear-head.png" alt="" aria-hidden="true" class="h-7 w-7 object-contain" />
     </button>
     <h1 id="developerTitle" class="justify-self-center font-['Manrope'] text-lg font-black uppercase tracking-widest leading-none text-[#CCFF00]">
       DEVELOPER
     </h1>
     <div class="justify-self-end flex items-center gap-2">
-      <button id="developerProfileBtn" type="button" class="h-10 w-10 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest transition-opacity hover:opacity-80 active:scale-95 duration-200" aria-label="Open profile">
+      <button id="developerProfileBtn" type="button" class="h-10 w-10 overflow-hidden rounded-full border border-outline-variant/30 bg-surface-container-highest transition-opacity hover:opacity-80 active:scale-95 duration-200" aria-label="Open profile and avatar options">
         <img id="developerProfileAvatar" alt="Profile avatar" class="hidden h-full w-full object-cover" src="" />
         <span id="developerProfileAvatarIcon" class="material-symbols-outlined text-on-surface-variant text-sm">person</span>
       </button>
@@ -2072,7 +2092,7 @@ tailwind.config = {
           </div>
           <label class="block space-y-2">
             <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Dealership name</span>
-            <input id="developerDealershipNameInput" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-white/10" placeholder="Sunrise Honda" />
+            <input id="developerDealershipNameInput" type="text" class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface outline-none placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-white/10" placeholder="Sunrise Motors" />
           </label>
           <label class="block space-y-2">
             <span class="font-label text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Dealer code</span>
@@ -2217,6 +2237,7 @@ tailwind.config = {
     isCompleting: false,
     selectedChoice: null,
     selectedChoiceText: '',
+    legalReturnScreen: '',
     developerRoleOverride: localStorage.getItem("autoknerd:roleOverride") || '',
     mockRoleOverride: localStorage.getItem("autoknerd:mockRoleOverride") || '',
     mockUserMode: localStorage.getItem("autoknerd:mockUserMode") === "1",
@@ -2347,6 +2368,10 @@ tailwind.config = {
   const authPasswordField = document.getElementById("authPasswordField");
   const authPasswordLabel = document.getElementById("authPasswordLabel");
   const authCodeLabel = document.getElementById("authCodeLabel");
+  const authAgreementField = document.getElementById("authAgreementField");
+  const authAgreementCheckbox = document.getElementById("authAgreementCheckbox");
+  const authPrivacyLinkBtn = document.getElementById("authPrivacyLinkBtn");
+  const authTermsLinkBtn = document.getElementById("authTermsLinkBtn");
   const authEnrollmentNote = document.getElementById("authEnrollmentNote");
   const authStatusText = document.getElementById("authStatusText");
   const resetPasswordEmailInput = document.getElementById("resetPasswordEmailInput");
@@ -2638,16 +2663,22 @@ tailwind.config = {
     managerCxAverageLabel: document.getElementById("managerCxAverageLabel"),
     managerCxEmpathyValue: document.getElementById("managerCxEmpathyValue"),
     managerCxEmpathyBar: document.getElementById("managerCxEmpathyBar"),
+    managerCxEmpathyLabel: document.getElementById("managerCxEmpathyLabel"),
     managerCxTrustValue: document.getElementById("managerCxTrustValue"),
     managerCxTrustBar: document.getElementById("managerCxTrustBar"),
+    managerCxTrustLabel: document.getElementById("managerCxTrustLabel"),
     managerCxListeningValue: document.getElementById("managerCxListeningValue"),
     managerCxListeningBar: document.getElementById("managerCxListeningBar"),
+    managerCxListeningLabel: document.getElementById("managerCxListeningLabel"),
     managerCxPacingValue: document.getElementById("managerCxPacingValue"),
     managerCxPacingBar: document.getElementById("managerCxPacingBar"),
+    managerCxPacingLabel: document.getElementById("managerCxPacingLabel"),
     managerCxConfidenceValue: document.getElementById("managerCxConfidenceValue"),
     managerCxConfidenceBar: document.getElementById("managerCxConfidenceBar"),
+    managerCxConfidenceLabel: document.getElementById("managerCxConfidenceLabel"),
     managerCxClosingValue: document.getElementById("managerCxClosingValue"),
     managerCxClosingBar: document.getElementById("managerCxClosingBar"),
+    managerCxClosingLabel: document.getElementById("managerCxClosingLabel"),
     managerMomentumValue: document.getElementById("managerMomentumValue"),
     managerMomentumChart: document.getElementById("managerMomentumChart"),
     managerTeamMonitorList: document.getElementById("managerTeamMonitorList"),
@@ -3131,6 +3162,9 @@ tailwind.config = {
     if (authCodeLabel) {
       authCodeLabel.textContent = isEnroll ? 'Invite / dealer code' : 'Password';
     }
+    if (authAgreementField) {
+      authAgreementField.classList.toggle('hidden', !isEnroll);
+    }
     if (authCodeInput) {
       authCodeInput.type = isEnroll ? 'text' : 'password';
       authCodeInput.placeholder = isEnroll ? 'Dealer code required to join' : 'Enter your password';
@@ -3241,6 +3275,50 @@ tailwind.config = {
     setDeveloperImpersonationUserId('');
   }
 
+  function isTemporaryDeveloperUserId(userId) {
+    return String(userId || '').trim().toLowerCase() === 'andrew@autoknerd.com';
+  }
+
+  function isLocalDevelopmentRuntime() {
+    const hostname = String(window.location.hostname || '').toLowerCase();
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  }
+
+  function getLocalTemporaryDeveloperUserId() {
+    return isLocalDevelopmentRuntime() ? 'andrew@autoknerd.com' : '';
+  }
+
+  async function restoreTemporaryDeveloperSession(developerUserId) {
+    if (!isTemporaryDeveloperUserId(developerUserId)) return null;
+    try {
+      const response = await fetch('/api/auth/sign-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: developerUserId,
+          temporaryDeveloperLogin: true,
+          mockMode: state.mockUserMode || undefined,
+          mockRoleOverride: getMockRoleOverride() || undefined,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok || !isDeveloperAccount(payload.bundle)) {
+        return null;
+      }
+      saveAuthSession(payload.token, payload.bundle.user.userId);
+      state.bundle = payload.bundle;
+      state.user = payload.bundle.user;
+      state.developerSessionBundle = payload.bundle;
+      setDeveloperSessionActive(true, payload.bundle.user.userId);
+      setDeveloperSessionUserId(payload.bundle.user.userId);
+      state.developerDashboard = payload.bundle.developerDashboard || state.developerDashboard || null;
+      return payload.bundle;
+    } catch (error) {
+      console.warn('Unable to restore temporary developer session', error);
+      return null;
+    }
+  }
+
   function getActiveDeveloperBundle() {
     if (state.developerSessionBundle?.user && isDeveloperAccount(state.developerSessionBundle)) {
       return state.developerSessionBundle;
@@ -3254,8 +3332,15 @@ tailwind.config = {
   async function ensureDeveloperSessionBundle() {
     const activeBundle = getActiveDeveloperBundle();
     if (activeBundle) return activeBundle;
-    const developerUserId = state.developerSessionUserId || String(localStorage.getItem("autoknerd:developerUserId") || '').trim();
-    if (!developerUserId || !getAuthToken()) return null;
+    const developerUserId = (
+      state.developerSessionUserId ||
+      String(localStorage.getItem("autoknerd:developerUserId") || '').trim() ||
+      getLocalTemporaryDeveloperUserId()
+    );
+    if (!developerUserId) return null;
+    if (!getAuthToken()) {
+      return restoreTemporaryDeveloperSession(developerUserId);
+    }
     try {
       const query = new URLSearchParams();
       query.set('userId', developerUserId);
@@ -3266,14 +3351,14 @@ tailwind.config = {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.ok || !isDeveloperAccount(payload)) {
-        return null;
+        return restoreTemporaryDeveloperSession(developerUserId);
       }
       state.developerSessionBundle = payload;
       setDeveloperSessionActive(true, payload.user.userId);
       return payload;
     } catch (error) {
       console.warn('Unable to restore developer session bundle', error);
-      return null;
+      return restoreTemporaryDeveloperSession(developerUserId);
     }
   }
 
@@ -3375,7 +3460,7 @@ tailwind.config = {
     }
   }
 
-  async function refreshDeveloperDashboard({ silent = false } = {}) {
+  async function refreshDeveloperDashboard({ silent = false, allowSessionRestore = true } = {}) {
     const developerBundle = await ensureDeveloperSessionBundle();
     if (!developerBundle?.user || !isDeveloperAccount(developerBundle)) return null;
     if (!silent && developerLiveState) {
@@ -3397,10 +3482,10 @@ tailwind.config = {
       const statusController = new AbortController();
       const dashboardTimeout = window.setTimeout(() => dashboardController.abort(new Error('DEVELOPER_DASHBOARD_TIMEOUT')), 12000);
       const statusTimeout = window.setTimeout(() => statusController.abort(), 8000);
-      let response;
-      let systemStatusResponse;
+      let response = null;
+      let systemStatusResponse = null;
       try {
-        [response, systemStatusResponse] = await Promise.all([
+        const [dashboardResult, statusResult] = await Promise.allSettled([
           fetch(dashboardUrl, {
             method: 'GET',
             cache: 'no-store',
@@ -3414,13 +3499,26 @@ tailwind.config = {
             signal: statusController.signal,
           }).catch(() => null),
         ]);
+        systemStatusResponse = statusResult.status === 'fulfilled' ? statusResult.value : null;
+        if (dashboardResult.status === 'fulfilled') {
+          response = dashboardResult.value;
+        } else {
+          throw dashboardResult.reason || new Error('Unable to load developer data.');
+        }
       } finally {
         clearTimeout(dashboardTimeout);
         clearTimeout(statusTimeout);
       }
       const payload = await response.json().catch(() => ({}));
       const statusPayload = systemStatusResponse ? await systemStatusResponse.json().catch(() => ({})) : {};
+      state.developerSystemStatus = systemStatusResponse?.ok && statusPayload.ok ? (statusPayload.status || null) : null;
       if (response.status === 401 || response.status === 403) {
+        const restoredBundle = allowSessionRestore
+          ? await restoreTemporaryDeveloperSession(developerBundle.user?.userId || state.developerSessionUserId || localStorage.getItem("autoknerd:developerUserId") || '')
+          : null;
+        if (restoredBundle) {
+          return refreshDeveloperDashboard({ silent, allowSessionRestore: false });
+        }
         await signOutAndShowAuth('Session expired. Please sign in again.');
         return null;
       }
@@ -3429,7 +3527,6 @@ tailwind.config = {
       }
       state.developerDashboard = payload.dashboard || state.developerDashboard || null;
       state.developerDashboardStatus = String(payload.dashboardStatus || (payload.dashboard ? 'live' : 'offline')).trim() || 'offline';
-      state.developerSystemStatus = systemStatusResponse?.ok && statusPayload.ok ? (statusPayload.status || null) : null;
       renderDeveloperConsole(developerBundle, state.developerDashboard);
       return state.developerDashboard;
     } catch (error) {
@@ -3464,11 +3561,13 @@ tailwind.config = {
         summary: null,
       };
       const developerBundle = await ensureDeveloperSessionBundle();
-      if (developerBundle) {
-        renderDeveloperConsole(developerBundle, state.developerDashboard);
-        void refreshDeveloperDashboard();
-        startDeveloperLiveRefresh();
+      if (!developerBundle) {
+        await signOutAndShowAuth('Developer session expired. Please sign in again.');
+        return;
       }
+      renderDeveloperConsole(developerBundle, state.developerDashboard);
+      void refreshDeveloperDashboard();
+      startDeveloperLiveRefresh();
       developerScreen.classList.remove("hidden-screen");
       updateInternalToolsVisibility();
       updateDeveloperImpersonationPanel();
@@ -3631,7 +3730,14 @@ tailwind.config = {
   }
 
   function openProfileMenu() {
-    if (!profileMenuOverlay) return;
+    if (isFileRuntime()) {
+      redirectToLocalApp();
+      return;
+    }
+    if (!profileMenuOverlay) {
+      showSettings();
+      return;
+    }
     if (menuOverlay) menuOverlay.classList.add("hidden-screen");
     profileMenuOverlay.classList.remove("hidden-screen");
   }
@@ -3669,6 +3775,7 @@ tailwind.config = {
   }
 
   function showPrivacy() {
+    state.legalReturnScreen = state.legalReturnScreen || 'settings';
     hideAllScreens();
     privacyScreen.classList.remove("hidden-screen");
     document.title = 'Privacy Policy';
@@ -3676,6 +3783,7 @@ tailwind.config = {
   }
 
   function showTerms() {
+    state.legalReturnScreen = state.legalReturnScreen || 'settings';
     hideAllScreens();
     termsScreen.classList.remove("hidden-screen");
     document.title = 'Terms of Use';
@@ -3742,7 +3850,7 @@ tailwind.config = {
   }
 
   function openDeveloperPanel() {
-    if (!hasDeveloperAccess()) {
+    if (!hasDeveloperAccess() && !isDeveloperConsoleVisible()) {
       showSettings();
       return;
     }
@@ -3941,7 +4049,7 @@ tailwind.config = {
   }
 
   function updateInternalToolsVisibility() {
-    const enabled = hasDeveloperAccess();
+    const enabled = hasDeveloperAccess() || isDeveloperConsoleVisible();
     const showDeveloperTrigger = canOpenDeveloperTools();
     const showDeveloperMenuBtn = showDeveloperTrigger || isDeveloperConsoleVisible();
     if (homeMenuBtn) homeMenuBtn.classList.toggle('hidden-screen', !showDeveloperTrigger);
@@ -5638,7 +5746,9 @@ tailwind.config = {
 
   function renderAvatarPicker() {
     if (!refs.settingsAvatarPicker) return;
-    if (!refs.settingsAvatarPicker.dataset.rendered) {
+    const pickerNeedsRender = !refs.settingsAvatarPicker.dataset.rendered
+      || refs.settingsAvatarPicker.querySelectorAll('[data-avatar-url]').length !== avatarOptions.length;
+    if (pickerNeedsRender) {
       refs.settingsAvatarPicker.innerHTML = avatarOptions.map((option) => `
         <button
           type="button"
@@ -6374,11 +6484,11 @@ tailwind.config = {
 
   function getCxThresholdTheme(value) {
     const score = Math.max(0, Math.min(100, Math.round(Number(value || 0))));
-    if (score <= 33) {
+    if (score < 60) {
       return {
-        textColor: '#ff7351',
-        fillColor: '#ff7351',
-        glow: '0 0 10px rgba(255,115,81,0.5)',
+        textColor: '#B026FF',
+        fillColor: '#B026FF',
+        glow: '0 0 12px rgba(176,38,255,0.8), 0 0 24px rgba(176,38,255,0.35)',
       };
     }
     if (score < 75) {
@@ -6763,6 +6873,7 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.empathy ?? user.stats?.empathy?.score ?? 0)),
         valueRef: refs.managerCxEmpathyValue,
         barRef: refs.managerCxEmpathyBar,
+        labelRef: refs.managerCxEmpathyLabel,
         color: 'primary',
       },
       {
@@ -6770,6 +6881,7 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.trust ?? user.stats?.trust?.score ?? 0)),
         valueRef: refs.managerCxTrustValue,
         barRef: refs.managerCxTrustBar,
+        labelRef: refs.managerCxTrustLabel,
         color: 'primary',
       },
       {
@@ -6777,6 +6889,7 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.listening ?? user.stats?.listening?.score ?? 0)),
         valueRef: refs.managerCxListeningValue,
         barRef: refs.managerCxListeningBar,
+        labelRef: refs.managerCxListeningLabel,
         color: 'primary',
       },
       {
@@ -6784,6 +6897,7 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.followUp ?? user.stats?.followUp?.score ?? 0)),
         valueRef: refs.managerCxPacingValue,
         barRef: refs.managerCxPacingBar,
+        labelRef: refs.managerCxPacingLabel,
         color: 'primary',
       },
       {
@@ -6791,6 +6905,7 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.relationship ?? user.stats?.relationship?.score ?? 0)),
         valueRef: refs.managerCxConfidenceValue,
         barRef: refs.managerCxConfidenceBar,
+        labelRef: refs.managerCxConfidenceLabel,
         color: 'primary',
       },
       {
@@ -6798,15 +6913,21 @@ tailwind.config = {
         value: Math.max(0, Math.round(departmentAverageScores?.closing ?? user.stats?.closing?.score ?? 0)),
         valueRef: refs.managerCxClosingValue,
         barRef: refs.managerCxClosingBar,
+        labelRef: refs.managerCxClosingLabel,
       },
     ];
 
     cxMetrics.forEach((metric) => {
       const theme = getCxThresholdTheme(metric.value);
+      const isLowScore = metric.value < 60;
       if (metric.valueRef) {
         metric.valueRef.textContent = `${metric.value}%`;
         metric.valueRef.className = 'font-body text-sm';
         metric.valueRef.style.color = theme.textColor;
+      }
+      if (metric.labelRef) {
+        metric.labelRef.style.color = isLowScore ? theme.textColor : '';
+        metric.labelRef.style.textShadow = isLowScore ? '0 0 10px rgba(176,38,255,0.55)' : '';
       }
       if (metric.barRef) {
         setWidth(metric.barRef, metric.value);
@@ -8173,11 +8294,16 @@ tailwind.config = {
       saveAuthSession(payload.token, payload.bundle?.user?.userId || '');
       clearDeveloperImpersonation();
       setDeveloperRoleOverride('');
-      setDeveloperSessionActive(false);
-      setDeveloperSessionUserId('');
       setAuthCodeFieldError(false);
-      if (payload.bundle?.user?.roleLabel === 'Developer') {
+      if (isDeveloperAccount(payload.bundle)) {
+        state.developerSessionBundle = payload.bundle;
+        setDeveloperSessionActive(true, payload.bundle.user.userId);
+        setDeveloperSessionUserId(payload.bundle.user.userId);
         setInternalToolsEnabled(true);
+      } else {
+        state.developerSessionBundle = null;
+        setDeveloperSessionActive(false);
+        setDeveloperSessionUserId('');
       }
       await loadBootstrap();
     } catch (error) {
@@ -8240,6 +8366,13 @@ tailwind.config = {
       authCodeInput?.focus();
       return;
     }
+    if (!authAgreementCheckbox?.checked) {
+      if (authStatusText) {
+        authStatusText.textContent = 'Please agree to the Privacy Policy and Terms of Use.';
+      }
+      authAgreementCheckbox?.focus();
+      return;
+    }
     [authSubmitBtn, authForgotPasswordBtn, authSignInModeBtn, authEnrollModeBtn].forEach((button) => {
       if (button) button.disabled = true;
     });
@@ -8278,6 +8411,9 @@ tailwind.config = {
       setDeveloperSessionActive(false);
       setDeveloperSessionUserId('');
       setAuthCodeFieldError(false);
+      if (authAgreementCheckbox) {
+        authAgreementCheckbox.checked = false;
+      }
       setAuthMode('signin');
       if (authStatusText) {
         authStatusText.textContent = 'Account created.';
@@ -8665,8 +8801,24 @@ tailwind.config = {
       toolWorkspaceDraftMeta.textContent = 'Draft cleared.';
     }
   });
-  if (privacyBackBtn) privacyBackBtn.addEventListener("click", showSettings);
-  if (termsBackBtn) termsBackBtn.addEventListener("click", showSettings);
+  if (privacyBackBtn) privacyBackBtn.addEventListener("click", () => {
+    const returnScreen = state.legalReturnScreen || 'settings';
+    state.legalReturnScreen = '';
+    if (returnScreen === 'auth') {
+      showAuth();
+      return;
+    }
+    showSettings();
+  });
+  if (termsBackBtn) termsBackBtn.addEventListener("click", () => {
+    const returnScreen = state.legalReturnScreen || 'settings';
+    state.legalReturnScreen = '';
+    if (returnScreen === 'auth') {
+      showAuth();
+      return;
+    }
+    showSettings();
+  });
   if (storeRequestBackBtn) storeRequestBackBtn.addEventListener("click", showHome);
   if (storeRequestResetBtn) storeRequestResetBtn.addEventListener("click", () => {
     if (storeRequestName) storeRequestName.value = '';
@@ -8692,6 +8844,22 @@ tailwind.config = {
   });
   if (settingsBackBtn) settingsBackBtn.addEventListener("click", showHome);
   if (historyBackBtn) historyBackBtn.addEventListener("click", showHome);
+  if (authPrivacyLinkBtn) authPrivacyLinkBtn.addEventListener("click", () => {
+    state.legalReturnScreen = 'auth';
+    showPrivacy();
+  });
+  if (authTermsLinkBtn) authTermsLinkBtn.addEventListener("click", () => {
+    state.legalReturnScreen = 'auth';
+    showTerms();
+  });
+  if (openPrivacyBtn) openPrivacyBtn.addEventListener("click", () => {
+    state.legalReturnScreen = 'settings';
+    showPrivacy();
+  });
+  if (openTermsBtn) openTermsBtn.addEventListener("click", () => {
+    state.legalReturnScreen = 'settings';
+    showTerms();
+  });
   continueBtn.addEventListener("click", completeSession);
   if (refs.managerDeployBtn) refs.managerDeployBtn.addEventListener("click", showAIOutput);
   if (refs.managerLaunchProtocolBtn) refs.managerLaunchProtocolBtn.addEventListener("click", () => startSession());
@@ -8729,15 +8897,6 @@ tailwind.config = {
   if (developerMenuBtn) developerMenuBtn.addEventListener("click", openMenu);
   if (returnDashboardBtn) returnDashboardBtn.addEventListener("click", () => {
     closeMenu();
-    showHome();
-  });
-  if (openPrivacyBtn) openPrivacyBtn.addEventListener("click", () => {
-    closeMenu();
-    showPrivacy();
-  });
-  if (openTermsBtn) openTermsBtn.addEventListener("click", () => {
-    closeMenu();
-    showTerms();
   });
   if (closeProfileMenuBtn) closeProfileMenuBtn.addEventListener("click", closeProfileMenu);
   if (profileMenuViewProfileBtn) profileMenuViewProfileBtn.addEventListener("click", () => {
@@ -9002,6 +9161,11 @@ tailwind.config = {
       clearChoiceSelection();
     }
   });
+
+  // File previews skip the local app server that developer auth and menus depend on.
+  if (isFileRuntime()) {
+    redirectToLocalApp();
+  }
 
   loadBootstrap().catch((error) => {
     console.error(error);
