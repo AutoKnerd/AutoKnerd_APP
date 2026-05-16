@@ -2,7 +2,9 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Home</title>
+<title>AutoKnerd</title>
+<link rel="icon" type="image/png" href="/gear-head.png" />
+<link rel="shortcut icon" href="/gear-head.png" />
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
@@ -461,7 +463,17 @@ tailwind.config = {
       <button id="authSubmitBtn" type="button" class="w-full rounded-full bg-[#CCFF00] px-5 py-4 font-headline text-sm font-bold uppercase tracking-[0.18em] text-black transition hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(204,255,0,0.25)] active:scale-95">
         Continue
       </button>
-      <p id="authStatusText" class="text-xs uppercase tracking-[0.24em] text-on-surface-variant">Waiting for your account</p>
+      <div class="flex flex-col gap-2 text-xs uppercase tracking-[0.24em] sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <p id="authStatusText" class="min-w-0 flex-1 text-on-surface-variant">Waiting for your account</p>
+        <a
+          href="https://www.autoknerd.com/login"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="shrink-0 text-left font-bold text-[#CCFF00]/80 transition hover:text-[#CCFF00] sm:text-right"
+        >
+          Admin Login
+        </a>
+      </div>
     </div>
   </div>
 </div>
@@ -2732,6 +2744,10 @@ tailwind.config = {
     return window.location.protocol === 'file:';
   }
 
+  function setBrowserTabTitle() {
+    document.title = 'AutoKnerd';
+  }
+
   function updateBootState({
     connection = 'Pulling live data',
     status = 'Loading your dashboard',
@@ -3778,7 +3794,7 @@ tailwind.config = {
     state.legalReturnScreen = state.legalReturnScreen || 'settings';
     hideAllScreens();
     privacyScreen.classList.remove("hidden-screen");
-    document.title = 'Privacy Policy';
+    setBrowserTabTitle();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -3786,7 +3802,7 @@ tailwind.config = {
     state.legalReturnScreen = state.legalReturnScreen || 'settings';
     hideAllScreens();
     termsScreen.classList.remove("hidden-screen");
-    document.title = 'Terms of Use';
+    setBrowserTabTitle();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -3811,7 +3827,7 @@ tailwind.config = {
     if (storeRequestScreen) {
       storeRequestScreen.classList.remove("hidden-screen");
     }
-    document.title = 'Request Store Access';
+    setBrowserTabTitle();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -5741,7 +5757,7 @@ tailwind.config = {
         button.addEventListener('click', () => openToolWorkspace(button.getAttribute('data-workspace-open')));
       });
     }
-    document.title = `${bundle.user.name || 'Account'} - ${tool.name || 'Tool Workspace'}`;
+    setBrowserTabTitle();
   }
 
   function renderAvatarPicker() {
@@ -6757,7 +6773,7 @@ tailwind.config = {
         : '<span>START SESSION</span><span class="material-symbols-outlined group-hover/btn:translate-x-1 transition-transform">play_arrow</span>';
     }
     syncAvatarPreview(user.avatarUrl || '');
-    document.title = `${firstName} - Home`;
+    setBrowserTabTitle();
     updateSettingsControls();
   }
 
@@ -7029,7 +7045,7 @@ tailwind.config = {
       });
     }
 
-    document.title = `${firstName} ${lastName ? lastName : ''} - ${roleLabel}`;
+    setBrowserTabTitle();
   }
 
   function renderSettings(bundle) {
@@ -7048,7 +7064,7 @@ tailwind.config = {
     const shareAnonymousData = bundle.user.preferences?.shareAnonymousData === true || state.shareAnonymousDataEnabled;
     state.shareAnonymousDataEnabled = Boolean(shareAnonymousData);
     updateSettingsControls();
-    document.title = `${roleLabel} - Settings`;
+    setBrowserTabTitle();
   }
 
   function renderHistory(bundle) {
@@ -7125,7 +7141,7 @@ tailwind.config = {
         }
       });
     });
-    document.title = `${bundle.user.name || 'Account'} - History`;
+    setBrowserTabTitle();
   }
 
   function renderLessonLibrary(bundle) {
@@ -7252,7 +7268,7 @@ tailwind.config = {
         });
       }
     }
-    document.title = `${bundle.user.name || 'Account'} - Lesson Library`;
+    setBrowserTabTitle();
   }
 
   function renderToolsHub(bundle) {
@@ -7483,7 +7499,7 @@ tailwind.config = {
       state.toolHub.selectedToolId = selectedTool.id;
     }
     persistToolHubLocalState(currentUserId);
-    document.title = `${bundle.user.name || 'Account'} - Tools Hub`;
+    setBrowserTabTitle();
   }
 
   function showToolsHub(options = {}) {
@@ -7653,7 +7669,7 @@ tailwind.config = {
     if (report) {
       state.autoForgeReport = report;
     }
-    document.title = `${roleLabel} - AutoKnerd Coaching Plan`;
+    setBrowserTabTitle();
   }
 
   function renderDeveloperConsole(bundle, dashboard = null) {
@@ -7759,7 +7775,7 @@ tailwind.config = {
       developerDealershipRosterSection.classList.toggle('hidden-screen', !isRosterView);
     }
 
-    document.title = `${roleLabel} - Developer Console`;
+    setBrowserTabTitle();
   }
 
   function renderSession(bundle, mission) {
@@ -7924,9 +7940,7 @@ tailwind.config = {
       if (refs.profileHeaderAvatar) refs.profileHeaderAvatar.src = avatarSrc;
     }
 
-    document.title = state.profileMode === 'team'
-      ? `${user.name || 'Team Member'} - Team Member Profile`
-      : `${roleLabel} - Profile`;
+    setBrowserTabTitle();
   }
 
   function renderEndScreen(result, updatedUser, previousUser) {
