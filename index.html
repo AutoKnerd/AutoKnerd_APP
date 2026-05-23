@@ -96,6 +96,10 @@ tailwind.config = {
     min-height: 100dvh;
   }
 
+  #homeScreen.manager-dashboard-host {
+    min-height: 0;
+  }
+
   .hidden-screen {
     display: none !important;
   }
@@ -326,6 +330,17 @@ tailwind.config = {
     transform: translateY(0);
   }
 
+  .manager-store-selector {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: none !important;
+  }
+
+  .manager-store-selector::-ms-expand {
+    display: none;
+  }
+
   @media (max-width: 768px) {
     #toolsHubScreen header {
       padding-left: 1rem;
@@ -446,6 +461,7 @@ tailwind.config = {
           <option>General Manager</option>
           <option>Owner</option>
           <option>Trainer</option>
+          <option>Demo Specialist</option>
         </select>
       </label>
       <div id="authAgreementField" class="hidden rounded-2xl border border-white/10 bg-black/25 px-4 py-4">
@@ -604,6 +620,8 @@ tailwind.config = {
   </main>
 </div>
 
+  </div>
+
 <div id="menuOverlay" class="hidden-screen fixed inset-0 z-[60] flex items-center justify-center px-4">
   <div class="absolute inset-0 bg-black/65 backdrop-blur-sm"></div>
   <div class="relative w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-hidden rounded-3xl border border-white/10 bg-[#111111] p-4 md:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
@@ -639,6 +657,11 @@ tailwind.config = {
         <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Account</span>
         <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Avatar & Settings</span>
         <span class="mt-1 block text-xs text-on-surface-variant">Change profile details, avatar, privacy, and support options.</span>
+      </button>
+      <button id="openDealerDemoBtn" type="button" class="hidden-screen w-full rounded-2xl border border-[#06EBF7]/20 bg-[#06EBF7]/10 px-4 py-4 text-left transition hover:border-[#06EBF7]/40 hover:bg-[#06EBF7]/15">
+        <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#06EBF7]">Dealer meeting</span>
+        <span class="block mt-1 font-headline text-lg font-bold text-on-surface">Dealer Demo</span>
+        <span class="mt-1 block text-xs text-on-surface-variant">Launch a clean mock-data walkthrough for owners, GMs, sales, or service.</span>
       </button>
       <button id="openDeveloperPanelBtn" type="button" class="w-full rounded-2xl border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-4 py-4 text-left transition hover:border-[#CCFF00]/40 hover:bg-[#CCFF00]/15">
         <span class="block font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Testing</span>
@@ -688,9 +711,9 @@ tailwind.config = {
       </div>
     </div>
   </div>
-</div>
+  </div>
 
-  <div id="managerDashboardPanel" class="screen hidden-screen">
+<div id="managerDashboardPanel" class="screen hidden-screen">
   <header class="fixed top-0 left-0 w-full grid grid-cols-[auto,1fr,auto] items-center px-6 py-4 bg-[#0e0e0e]/80 backdrop-blur-xl z-50 shadow-[0_0_15px_rgba(204,255,0,0.15)]">
     <button id="managerMenuBtn" type="button" class="text-gray-500 hover:opacity-80 transition-opacity scale-95 duration-200 p-2 -ml-2 rounded-full active:bg-surface-container" aria-label="Open menu">
       <span class="material-symbols-outlined text-[28px]">menu</span>
@@ -707,7 +730,25 @@ tailwind.config = {
     </div>
   </header>
 
-    <main class="container mx-auto px-4 max-w-4xl space-y-8 pt-24 pb-44">
+    <main class="container mx-auto px-4 max-w-4xl space-y-8 pt-16 pb-44">
+      <section id="managerStoreSelectorSection" class="hidden-screen bg-surface-variant/35 backdrop-blur-[18px] rounded-2xl p-4 border border-outline-variant/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_14px_30px_rgba(0,0,0,0.35)]">
+        <div class="flex items-center justify-between gap-4">
+          <div class="min-w-0">
+            <p class="font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Store View</p>
+            <h2 id="managerStoreSelectorTitle" class="mt-1 font-headline text-lg font-bold text-on-surface">All Stores</h2>
+          </div>
+          <span id="managerStoreSelectorCount" class="rounded-full border border-outline-variant/30 bg-surface-container-low px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">0 stores</span>
+        </div>
+        <div class="mt-3 flex flex-col gap-3">
+          <div class="relative">
+            <select id="managerStoreSelectorSelect" class="manager-store-selector w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-4 pr-14 text-on-surface outline-none transition hover:border-white/20 focus:border-[#CCFF00]/40 focus:ring-1 focus:ring-[#CCFF00]/30"></select>
+            <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-on-surface-variant">
+              <span class="material-symbols-outlined">expand_more</span>
+            </span>
+          </div>
+        </div>
+      </section>
+
       <section class="bg-surface-container-lowest rounded-xl p-6 relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div class="relative z-10">
           <h2 id="managerStorePerformanceTitle" class="font-headline font-bold text-on-surface-variant text-sm tracking-[0.05em] uppercase mb-1">Store Performance</h2>
@@ -748,6 +789,36 @@ tailwind.config = {
           <button id="managerDeployBtn" type="button" class="bg-gradient-to-br from-[#f3ffca] to-[#cafd00] text-on-primary font-headline font-bold uppercase tracking-wider px-8 py-4 rounded-full hover:opacity-90 transition-opacity active:scale-95 flex items-center gap-2 shadow-[0_0_20px_rgba(204,253,0,0.3)]">
             <span class="material-symbols-outlined">rocket_launch</span>
             Deploy Coaching Plan
+          </button>
+        </div>
+      </section>
+
+      <section class="bg-surface-variant/40 backdrop-blur-[20px] rounded-3xl p-6 border border-outline-variant/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_15px_35px_rgba(0,0,0,0.45)]">
+        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div class="min-w-0">
+            <p class="font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Leadership Tune</p>
+            <h2 class="mt-1 font-headline text-2xl font-bold text-on-surface">Weekly training emphasis</h2>
+            <p class="mt-2 text-sm text-on-surface-variant leading-relaxed">Set one soft coaching theme for this scope. Sessions still start from each learner's weakest trait, but the content leans toward this request.</p>
+          </div>
+          <span id="managerWeeklyTuneScopeLabel" class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#CCFF00]">Scope</span>
+        </div>
+        <div class="mt-5 space-y-4">
+          <div class="rounded-2xl border border-white/10 bg-black/25 p-4">
+            <p class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Current tune</p>
+            <p id="managerWeeklyTunePreview" class="mt-2 text-sm leading-relaxed text-on-surface-variant">No weekly tune is set yet.</p>
+            <p id="managerWeeklyTuneUpdatedAt" class="mt-2 text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Not saved yet</p>
+            <p id="managerWeeklyTuneCountdown" class="mt-1 text-[10px] uppercase tracking-[0.22em] text-[#CCFF00]">No active countdown</p>
+            <p class="mt-2 text-[10px] uppercase tracking-[0.18em] text-on-surface-variant">You can replace this tune anytime. Every save starts a fresh 7-day window.</p>
+          </div>
+          <label class="space-y-2 block">
+            <span class="block font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Free text request</span>
+            <textarea id="managerWeeklyTuneInput" rows="4" class="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-on-surface outline-none transition placeholder:text-on-surface-variant/60 focus:border-[#CCFF00]/40 focus:bg-black/40" placeholder="I would like my staff to train more on how to smile."></textarea>
+          </label>
+        </div>
+        <div class="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p id="managerWeeklyTuneState" class="font-label text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Changes not saved</p>
+          <button id="managerWeeklyTuneSaveBtn" type="button" class="rounded-full border border-[#CCFF00]/20 bg-[#CCFF00] px-5 py-3 font-headline text-sm font-bold text-black transition hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(204,255,0,0.25)] active:scale-95">
+            Save weekly tune
           </button>
         </div>
       </section>
@@ -832,24 +903,6 @@ tailwind.config = {
         <div id="managerMomentumLabels" class="flex justify-between mt-2 text-[10px] text-on-surface-variant font-label uppercase tracking-wider relative z-10"></div>
       </section>
 
-      <section id="managerStoreSelectorSection" class="hidden-screen bg-surface-variant/35 backdrop-blur-[18px] rounded-2xl p-4 border border-outline-variant/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_14px_30px_rgba(0,0,0,0.35)]">
-        <div class="flex items-center justify-between gap-4">
-          <div class="min-w-0">
-            <p class="font-label text-[10px] uppercase tracking-[0.28em] text-on-surface-variant">Store View</p>
-            <h2 id="managerStoreSelectorTitle" class="mt-1 font-headline text-lg font-bold text-on-surface">All Stores</h2>
-          </div>
-          <span id="managerStoreSelectorCount" class="rounded-full border border-outline-variant/30 bg-surface-container-low px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">0 stores</span>
-        </div>
-        <div class="mt-3 flex flex-col gap-3">
-          <div class="relative">
-            <select id="managerStoreSelectorSelect" class="w-full appearance-none rounded-2xl border border-white/10 bg-black/30 px-4 py-4 pr-12 text-on-surface outline-none transition hover:border-white/20 focus:border-[#CCFF00]/40 focus:ring-1 focus:ring-[#CCFF00]/30"></select>
-            <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-on-surface-variant">
-              <span class="material-symbols-outlined">expand_more</span>
-            </span>
-          </div>
-        </div>
-      </section>
-
       <section id="managerStaffSection" class="space-y-4">
         <div class="flex items-end justify-between gap-4">
           <div>
@@ -859,11 +912,42 @@ tailwind.config = {
           <p class="text-xs uppercase tracking-[0.24em] text-on-surface-variant">Tap a card to open the profile</p>
         </div>
         <div id="managerTeamMonitorList" class="space-y-3"></div>
+        <div id="managerSelectedTeamMemberPanel" class="hidden-screen rounded-3xl border border-[#CCFF00]/15 bg-black/35 p-5 md:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_14px_32px_rgba(0,0,0,0.35)]">
+          <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div class="min-w-0">
+              <p class="font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Selected teammate</p>
+              <h3 id="managerSelectedTeamMemberName" class="mt-1 font-headline text-2xl font-bold text-on-surface">Choose a teammate</h3>
+              <p id="managerSelectedTeamMemberRole" class="mt-1 text-sm uppercase tracking-[0.24em] text-on-surface-variant">Tap any card below</p>
+              <p id="managerSelectedTeamMemberDealership" class="mt-2 text-xs uppercase tracking-[0.22em] text-[#CCFF00]">No teammate selected yet</p>
+            </div>
+            <button id="managerSelectedTeamMemberOpenBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Open full profile</button>
+          </div>
+          <div class="mt-5 grid gap-3 md:grid-cols-4">
+            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <span class="block text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">XP</span>
+              <span id="managerSelectedTeamMemberXp" class="mt-1 block font-headline text-xl font-bold text-on-surface">--</span>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <span class="block text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Level</span>
+              <span id="managerSelectedTeamMemberLevel" class="mt-1 block font-headline text-xl font-bold text-on-surface">--</span>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <span class="block text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Momentum</span>
+              <span id="managerSelectedTeamMemberMomentum" class="mt-1 block font-headline text-xl font-bold text-[#CCFF00]">--%</span>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <span class="block text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Watch Area</span>
+              <span id="managerSelectedTeamMemberWatchArea" class="mt-1 block font-headline text-xl font-bold text-error">--</span>
+            </div>
+          </div>
+          <p id="managerSelectedTeamMemberStatus" class="mt-4 text-[10px] uppercase tracking-[0.24em] text-on-surface-variant">Tap a teammate to see the full card.</p>
+          <p id="managerSelectedTeamMemberSummary" class="mt-2 text-sm leading-relaxed text-on-surface-variant">Their sessions and CX details will appear here.</p>
+          <div id="managerSelectedTeamMemberRecent" class="mt-4 space-y-2"></div>
+        </div>
       </section>
     </main>
 
   </div>
-</div>
 
 <footer id="managerModeFooter" class="hidden-screen fixed bottom-0 left-0 w-full z-50 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:pb-4">
   <div class="mx-auto flex max-w-md items-center gap-2 rounded-full border border-white/10 bg-[#101010]/92 p-2 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
@@ -1143,6 +1227,18 @@ tailwind.config = {
     </div>
 
     <div class="max-w-4xl mx-auto px-4 md:px-6 space-y-12">
+      <section id="profileTeamSwitcherSection" class="hidden-screen rounded-3xl border border-[#CCFF00]/15 bg-black/30 px-4 py-4 md:px-6 md:py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_14px_32px_rgba(0,0,0,0.28)]">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Team profile</p>
+            <h2 class="mt-1 font-headline text-xl font-bold text-on-surface">Switch teammate</h2>
+            <p id="profileTeamSwitcherLabel" class="mt-1 text-sm text-on-surface-variant">Choose a teammate to load their full profile.</p>
+          </div>
+          <div class="w-full md:w-[360px]">
+            <select id="profileTeamSwitcherSelect" class="w-full rounded-2xl border border-white/10 bg-black/35 px-4 py-3 text-on-surface outline-none transition hover:border-white/20 focus:border-[#CCFF00]/40 focus:bg-black/45"></select>
+          </div>
+        </div>
+      </section>
       <section class="mt-8 flex flex-col gap-8">
         <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
           <div class="relative group">
@@ -2198,6 +2294,45 @@ tailwind.config = {
   </main>
 </div>
 
+<div id="dealerDemoScreen" class="screen hidden-screen">
+  <header class="fixed top-0 left-0 right-0 z-20 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-[0_0_20px_rgba(204,255,0,0.12)]">
+    <div class="flex items-center justify-between px-6 py-5">
+      <button id="dealerDemoBackBtn" type="button" class="flex items-center gap-3 text-on-surface-variant transition hover:text-on-surface">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span class="font-label text-xs font-bold uppercase tracking-[0.24em] text-[#CCFF00]">Dashboard</span>
+      </button>
+      <p class="font-label text-xs font-bold uppercase tracking-[0.28em] text-[#06EBF7]">Dealer Demo</p>
+    </div>
+  </header>
+  <main class="flex-grow pt-28 pb-32 px-4 md:px-8 max-w-6xl mx-auto space-y-8">
+    <section class="relative overflow-hidden rounded-[2rem] border border-[#06EBF7]/20 bg-[radial-gradient(circle_at_top_left,rgba(6,235,247,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-6 md:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+      <div class="relative z-10 max-w-3xl">
+        <p class="font-label text-xs uppercase tracking-[0.3em] text-[#06EBF7]">AutoKnerd sales walkthrough</p>
+        <h1 class="mt-3 font-headline text-4xl md:text-6xl font-black leading-tight text-on-surface">Choose the story you want the dealer to see.</h1>
+        <p class="mt-4 text-base md:text-lg text-on-surface-variant leading-relaxed">Every card launches a mock-data-only experience. No live dealership records are changed, and weekly tune saves stay inside the demo.</p>
+      </div>
+    </section>
+    <section id="dealerDemoPersonaGrid" class="grid gap-4 md:grid-cols-2"></section>
+    <section class="rounded-3xl border border-[#CCFF00]/15 bg-black/25 p-5">
+      <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]">Demo safety</p>
+      <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">Demo mode uses mock personas, mock stores, and local-only tune previews. It is safe to click around during a live dealer meeting.</p>
+    </section>
+  </main>
+</div>
+
+<div id="demoModeBanner" class="hidden-screen fixed left-1/2 top-3 z-[70] w-[calc(100%-1.5rem)] max-w-4xl -translate-x-1/2 rounded-full border border-[#06EBF7]/25 bg-[#06171a]/90 px-3 py-2 shadow-[0_20px_60px_rgba(0,0,0,0.35),0_0_24px_rgba(6,235,247,0.12)] backdrop-blur-xl">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <div class="flex min-w-0 items-center gap-2 px-2">
+      <span class="h-2 w-2 rounded-full bg-[#06EBF7] shadow-[0_0_12px_rgba(6,235,247,0.85)]"></span>
+      <p class="truncate font-label text-[10px] uppercase tracking-[0.24em] text-[#06EBF7]">Demo Mode · <span id="demoModePersonaLabel">Persona</span></p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="demoModeResetBtn" type="button" class="rounded-full border border-[#06EBF7]/25 bg-[#06EBF7]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#06EBF7] transition hover:border-[#06EBF7]/45 hover:bg-[#06EBF7]/15">Reset demo</button>
+      <button id="demoModeExitBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Exit demo</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const state = {
     user: null,
@@ -2238,6 +2373,7 @@ tailwind.config = {
     developerSessionBundle: null,
     developerImpersonationUserId: localStorage.getItem("autoknerd:developerImpersonationUserId") || '',
     developerLiveRefreshTimer: null,
+    weeklyTuneCountdownTimer: null,
     developerSessionInspector: {
       userId: '',
       userName: '',
@@ -2246,6 +2382,7 @@ tailwind.config = {
       summary: null,
       sessions: [],
     },
+    weeklyTuneDrafts: {},
     isCompleting: false,
     selectedChoice: null,
     selectedChoiceText: '',
@@ -2253,11 +2390,15 @@ tailwind.config = {
     developerRoleOverride: localStorage.getItem("autoknerd:roleOverride") || '',
     mockRoleOverride: localStorage.getItem("autoknerd:mockRoleOverride") || '',
     mockUserMode: localStorage.getItem("autoknerd:mockUserMode") === "1",
+    dealerDemoActive: localStorage.getItem("autoknerd:dealerDemoActive") === "1",
+    dealerDemoPersona: localStorage.getItem("autoknerd:dealerDemoPersona") || '',
     managerViewMode: localStorage.getItem("autoknerd:managerViewMode") || 'store',
     autoForgeReport: '',
     autoForgeMeta: null,
     pendingScreen: '',
     profileMode: 'self',
+    teamMemberProfileBundle: null,
+    managerSelectedTeamMemberBundle: null,
     internalToolsEnabled: localStorage.getItem("autoknerd:internalTools") === "1",
     sessionRemindersEnabled: localStorage.getItem("autoknerd:sessionReminders") === "1",
     shareAnonymousDataEnabled: localStorage.getItem("autoknerd:shareAnonymousData") === "1",
@@ -2293,8 +2434,46 @@ tailwind.config = {
     'Owner',
     'Trainer',
   ]);
+  const DEALER_DEMO_PERSONAS = [
+    {
+      role: 'Owner',
+      title: 'Owner Demo',
+      eyebrow: 'Across stores',
+      summary: 'Show ownership which store needs attention, how stores compare, and how weekly leadership tune steers the network.',
+      talkTrack: ['Which store needs attention?', 'What behavior should we tune this week?', 'Which teammate needs coaching?'],
+    },
+    {
+      role: 'General Manager',
+      title: 'General Manager Demo',
+      eyebrow: 'One-store rhythm',
+      summary: 'Show how a GM runs the day: completion, CX averages, biggest opportunity, tune, and teammate drill-down.',
+      talkTrack: ['What is the team struggling with today?', 'How does the GM steer training?', 'What does coaching look like?'],
+    },
+    {
+      role: 'Sales Manager',
+      title: 'Sales Manager Demo',
+      eyebrow: 'Department coaching',
+      summary: 'Show the department view for a manager who wants to guide the week without picking every learner lesson manually.',
+      talkTrack: ['Who needs a nudge?', 'What skill is weakest?', 'How does the tune stay soft?'],
+    },
+    {
+      role: 'Sales Consultant',
+      title: 'Sales Consultant Demo',
+      eyebrow: 'Learner view',
+      summary: 'Show what a salesperson sees when the app targets their weakest trait while still reflecting leadership tune.',
+      talkTrack: ['What is my mission today?', 'How does XP move?', 'What does practice feel like?'],
+    },
+    {
+      role: 'Service Writer',
+      title: 'Service Writer Demo',
+      eyebrow: 'Service lane view',
+      summary: 'Show service leaders and writers how the same coaching engine adapts to write-up, MPI, and pickup conversations.',
+      talkTrack: ['How does service training differ?', 'Where is trust leaking?', 'What does staff practice?'],
+    },
+  ];
   const bootScreen = document.getElementById("bootScreen");
   const homeScreen = document.getElementById("homeScreen");
+  const dealerDemoScreen = document.getElementById("dealerDemoScreen");
   const authScreen = document.getElementById("authScreen");
   const resetPasswordScreen = document.getElementById("resetPasswordScreen");
   const menuOverlay = document.getElementById("menuOverlay");
@@ -2302,6 +2481,9 @@ tailwind.config = {
   const sessionScreen = document.getElementById("sessionScreen");
   const endScreen = document.getElementById("endScreen");
   const profileScreen = document.getElementById("profileScreen");
+  const profileTeamSwitcherSection = document.getElementById("profileTeamSwitcherSection");
+  const profileTeamSwitcherLabel = document.getElementById("profileTeamSwitcherLabel");
+  const profileTeamSwitcherSelect = document.getElementById("profileTeamSwitcherSelect");
   const lessonLibraryScreen = document.getElementById("lessonLibraryScreen");
   const toolsHubScreen = document.getElementById("toolsHubScreen");
   const toolWorkspaceScreen = document.getElementById("toolWorkspaceScreen");
@@ -2429,6 +2611,13 @@ tailwind.config = {
   const menuMainPanel = document.getElementById("menuMainPanel");
   const developerPanel = document.getElementById("developerPanel");
   const openDeveloperPanelBtn = document.getElementById("openDeveloperPanelBtn");
+  const openDealerDemoBtn = document.getElementById("openDealerDemoBtn");
+  const dealerDemoBackBtn = document.getElementById("dealerDemoBackBtn");
+  const dealerDemoPersonaGrid = document.getElementById("dealerDemoPersonaGrid");
+  const demoModeBanner = document.getElementById("demoModeBanner");
+  const demoModePersonaLabel = document.getElementById("demoModePersonaLabel");
+  const demoModeResetBtn = document.getElementById("demoModeResetBtn");
+  const demoModeExitBtn = document.getElementById("demoModeExitBtn");
   const developerMenuSection = document.getElementById("developerMenuSection");
   const openDeveloperConsoleBtn = document.getElementById("openDeveloperConsoleBtn");
   const closeMenuBtn = document.getElementById("closeMenuBtn");
@@ -2513,6 +2702,25 @@ tailwind.config = {
   const developerSessionInspectorSummary = document.getElementById("developerSessionInspectorSummary");
   const developerSessionInspectorList = document.getElementById("developerSessionInspectorList");
   const managerStoreSelectorSelect = document.getElementById("managerStoreSelectorSelect");
+  const managerWeeklyTuneInput = document.getElementById("managerWeeklyTuneInput");
+  const managerWeeklyTuneSaveBtn = document.getElementById("managerWeeklyTuneSaveBtn");
+  const managerWeeklyTuneState = document.getElementById("managerWeeklyTuneState");
+  const managerWeeklyTunePreview = document.getElementById("managerWeeklyTunePreview");
+  const managerWeeklyTuneUpdatedAt = document.getElementById("managerWeeklyTuneUpdatedAt");
+  const managerWeeklyTuneCountdown = document.getElementById("managerWeeklyTuneCountdown");
+  const managerWeeklyTuneScopeLabel = document.getElementById("managerWeeklyTuneScopeLabel");
+  const managerSelectedTeamMemberPanel = document.getElementById("managerSelectedTeamMemberPanel");
+  const managerSelectedTeamMemberName = document.getElementById("managerSelectedTeamMemberName");
+  const managerSelectedTeamMemberRole = document.getElementById("managerSelectedTeamMemberRole");
+  const managerSelectedTeamMemberDealership = document.getElementById("managerSelectedTeamMemberDealership");
+  const managerSelectedTeamMemberStatus = document.getElementById("managerSelectedTeamMemberStatus");
+  const managerSelectedTeamMemberXp = document.getElementById("managerSelectedTeamMemberXp");
+  const managerSelectedTeamMemberLevel = document.getElementById("managerSelectedTeamMemberLevel");
+  const managerSelectedTeamMemberMomentum = document.getElementById("managerSelectedTeamMemberMomentum");
+  const managerSelectedTeamMemberWatchArea = document.getElementById("managerSelectedTeamMemberWatchArea");
+  const managerSelectedTeamMemberSummary = document.getElementById("managerSelectedTeamMemberSummary");
+  const managerSelectedTeamMemberRecent = document.getElementById("managerSelectedTeamMemberRecent");
+  const managerSelectedTeamMemberOpenBtn = document.getElementById("managerSelectedTeamMemberOpenBtn");
   const storeRequestRole = document.getElementById("storeRequestRole");
   const storeRequestCurrentStore = document.getElementById("storeRequestCurrentStore");
   const storeRequestName = document.getElementById("storeRequestName");
@@ -2622,6 +2830,13 @@ tailwind.config = {
     managerStoreSelectorTitle: document.getElementById("managerStoreSelectorTitle"),
     managerStoreSelectorCount: document.getElementById("managerStoreSelectorCount"),
     managerStoreSelectorSelect,
+    managerWeeklyTuneInput,
+    managerWeeklyTuneSaveBtn,
+    managerWeeklyTuneState,
+    managerWeeklyTunePreview,
+    managerWeeklyTuneUpdatedAt,
+    managerWeeklyTuneCountdown,
+    managerWeeklyTuneScopeLabel,
     managerMomentumSubtitle: document.getElementById("managerMomentumSubtitle"),
     managerMomentumSummary: document.getElementById("managerMomentumSummary"),
     managerMomentumLabels: document.getElementById("managerMomentumLabels"),
@@ -2816,6 +3031,7 @@ tailwind.config = {
     if (authScreen) authScreen.classList.add("hidden-screen");
     if (resetPasswordScreen) resetPasswordScreen.classList.add("hidden-screen");
     homeScreen.classList.add("hidden-screen");
+    if (dealerDemoScreen) dealerDemoScreen.classList.add("hidden-screen");
     aiOutputScreen.classList.add("hidden-screen");
     sessionScreen.classList.add("hidden-screen");
     endScreen.classList.add("hidden-screen");
@@ -2880,7 +3096,7 @@ tailwind.config = {
   async function refreshAutoForgeOutput({ reason = 'generate' } = {}) {
     if (!state.bundle?.user) return;
     const roleOverride = state.developerSessionActive ? (getDeveloperRoleOverride() || state.bundle.user.roleOverride || '') : '';
-    const mockRoleOverride = getMockRoleOverride() || (state.mockUserMode ? roleOverride : '');
+    const mockRoleOverride = getMockRoleOverride() || (isDealerDemoActive() ? state.dealerDemoPersona : (state.mockUserMode ? roleOverride : ''));
     const storeSelection = getManagerStoreSelection(state.bundle.user.userId);
     const loadingMessage = reason === 'refresh'
       ? 'Refreshing your AutoForge lesson plan...'
@@ -2898,7 +3114,7 @@ tailwind.config = {
           userId: state.bundle.user.userId,
           roleOverride,
           mockRoleOverride,
-          mockMode: state.mockUserMode || undefined,
+          mockMode: (state.mockUserMode || isDealerDemoActive()) || undefined,
           storeSelection,
         }),
       });
@@ -3227,6 +3443,25 @@ tailwind.config = {
     return roleLabel === 'Developer' || roleLabel === 'Admin';
   }
 
+  function isDemoSpecialistAccount(bundle) {
+    const roleLabel = formatRoleTitle(bundle?.user?.roleLabel || bundle?.user?.role);
+    return roleLabel === 'Demo Specialist' || Boolean(bundle?.user?.demoAccess);
+  }
+
+  function canOpenDealerDemo(bundle = state.bundle) {
+    const activeDeveloperBundle = getActiveDeveloperBundle();
+    return Boolean(
+      isDemoSpecialistAccount(bundle)
+      || isDemoSpecialistAccount(activeDeveloperBundle)
+      || isDeveloperOrAdminAccount(bundle)
+      || isDeveloperOrAdminAccount(activeDeveloperBundle)
+    );
+  }
+
+  function isDealerDemoActive() {
+    return Boolean(state.dealerDemoActive && state.dealerDemoPersona);
+  }
+
   function isDeveloperSession() {
     return Boolean(
       state.developerSessionActive ||
@@ -3336,10 +3571,10 @@ tailwind.config = {
   }
 
   function getActiveDeveloperBundle() {
-    if (state.developerSessionBundle?.user && isDeveloperAccount(state.developerSessionBundle)) {
+    if (state.developerSessionBundle?.user && isDeveloperOrAdminAccount(state.developerSessionBundle)) {
       return state.developerSessionBundle;
     }
-    if (state.bundle?.user && isDeveloperAccount(state.bundle)) {
+    if (state.bundle?.user && isDeveloperOrAdminAccount(state.bundle)) {
       return state.bundle;
     }
     return null;
@@ -3347,7 +3582,16 @@ tailwind.config = {
 
   async function ensureDeveloperSessionBundle() {
     const activeBundle = getActiveDeveloperBundle();
-    if (activeBundle) return activeBundle;
+    if (activeBundle) {
+      if (!state.developerSessionActive) {
+        setDeveloperSessionActive(true, activeBundle.user.userId);
+      }
+      if (!state.developerSessionUserId) {
+        setDeveloperSessionUserId(activeBundle.user.userId);
+      }
+      state.developerSessionBundle = activeBundle;
+      return activeBundle;
+    }
     const developerUserId = (
       state.developerSessionUserId ||
       String(localStorage.getItem("autoknerd:developerUserId") || '').trim() ||
@@ -3366,7 +3610,7 @@ tailwind.config = {
         headers: buildApiHeaders(),
       });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok || !payload.ok || !isDeveloperAccount(payload)) {
+      if (!response.ok || !payload.ok || !isDeveloperOrAdminAccount(payload)) {
         return restoreTemporaryDeveloperSession(developerUserId);
       }
       state.developerSessionBundle = payload;
@@ -3418,6 +3662,8 @@ tailwind.config = {
       summary: null,
       sessions: [],
     };
+    state.dealerDemoActive = false;
+    state.dealerDemoPersona = '';
     state.developerView = 'overview';
     state.developerDealershipRoster = {
       dealershipId: '',
@@ -3434,7 +3680,10 @@ tailwind.config = {
     localStorage.removeItem("autoknerd:developerImpersonationUserId");
     localStorage.removeItem("autoknerd:roleOverride");
     localStorage.removeItem("autoknerd:mockRoleOverride");
+    localStorage.removeItem("autoknerd:dealerDemoActive");
+    localStorage.removeItem("autoknerd:dealerDemoPersona");
     localStorage.removeItem("autoknerd:developerDealershipsLocalEntries");
+    renderDealerDemoBanner();
   }
 
   function saveAuthSession(token, userId) {
@@ -3478,7 +3727,7 @@ tailwind.config = {
 
   async function refreshDeveloperDashboard({ silent = false, allowSessionRestore = true } = {}) {
     const developerBundle = await ensureDeveloperSessionBundle();
-    if (!developerBundle?.user || !isDeveloperAccount(developerBundle)) return null;
+    if (!developerBundle?.user || !isDeveloperOrAdminAccount(developerBundle)) return null;
     if (!silent && developerLiveState) {
       developerLiveState.textContent = 'Refreshing';
     }
@@ -3617,6 +3866,33 @@ tailwind.config = {
     ].includes(normalized);
   }
 
+  function isDepartmentManagerRole(roleLabel) {
+    const normalized = normalizeRoleLabel(roleLabel);
+    return [
+      'manager',
+      'Sales Manager',
+      'Service Manager',
+      'Parts Manager',
+      'Finance Manager',
+    ].includes(normalized);
+  }
+
+  function canSetWeeklyTrainingTune(roleLabel) {
+    const normalized = normalizeRoleLabel(roleLabel);
+    return [
+      'manager',
+      'Sales Manager',
+      'Service Manager',
+      'Parts Manager',
+      'Finance Manager',
+      'General Manager',
+      'Owner',
+      'Trainer',
+      'Admin',
+      'Developer',
+    ].includes(normalized);
+  }
+
   function isFrontlineFooterRole(roleLabel) {
     const normalized = normalizeRoleLabel(roleLabel);
     return [
@@ -3650,9 +3926,11 @@ tailwind.config = {
     const isPersonal = currentMode === 'personal';
     const isLeadershipFooter = isStoreLeadershipRole(roleLabel);
     const isFrontlineFooter = isFrontlineFooterRole(roleLabel);
-    const activeBtnClass = 'border-[#CCFF00]/30 bg-[#CCFF00]/12 text-[#CCFF00] shadow-[0_0_18px_rgba(204,255,0,0.16)]';
     const inactiveBtnClass = 'border-white/10 bg-black/35 text-on-surface-variant';
     const buttonBase = 'flex-1 rounded-full px-4 py-3 text-center transition active:scale-95';
+    const toolsActiveBtnClass = 'border-[#c45bff]/65 bg-[#d16dff]/18 text-[#f3d2ff] shadow-[0_0_24px_rgba(196,91,255,0.42)]';
+    const storeActiveBtnClass = 'border-[#CCFF00]/30 bg-[#CCFF00]/12 text-[#CCFF00] shadow-[0_0_18px_rgba(204,255,0,0.16)]';
+    const selfActiveBtnClass = 'border-[#06EBF7]/35 bg-[#06EBF7]/12 text-[#8ef8ff] shadow-[0_0_18px_rgba(6,235,247,0.18)]';
     const isToolsActive = activeSurface === 'tools';
     const isProfileActive = activeSurface === 'profile';
     const shouldShowStoreActive = !isToolsActive && !isProfileActive && (isLeadershipFooter ? !isPersonal : true);
@@ -3661,9 +3939,9 @@ tailwind.config = {
       : isProfileActive;
     const showPersonalButton = isLeadershipFooter || isFrontlineFooter;
 
-    refs.managerFooterToolsBtn.className = `${buttonBase} ${isToolsActive ? activeBtnClass : inactiveBtnClass}`;
-    refs.managerFooterStoreBtn.className = `${buttonBase} ${shouldShowStoreActive ? activeBtnClass : inactiveBtnClass}`;
-    refs.managerFooterPersonalBtn.className = `${buttonBase} ${shouldShowPersonalActive ? activeBtnClass : inactiveBtnClass}`;
+    refs.managerFooterToolsBtn.className = `${buttonBase} ${isToolsActive ? toolsActiveBtnClass : inactiveBtnClass}`;
+    refs.managerFooterStoreBtn.className = `${buttonBase} ${shouldShowStoreActive ? storeActiveBtnClass : inactiveBtnClass}`;
+    refs.managerFooterPersonalBtn.className = `${buttonBase} ${shouldShowPersonalActive ? selfActiveBtnClass : inactiveBtnClass}`;
 
     refs.managerFooterToolsBtn.setAttribute('aria-pressed', String(isToolsActive));
     refs.managerFooterToolsBtn.setAttribute('aria-label', 'Open tools hub');
@@ -3683,14 +3961,14 @@ tailwind.config = {
         : (isPersonal ? 'Self view active' : 'Switch to self view')));
 
     refs.managerFooterToolsBtn.innerHTML = `
-      <span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] ${isToolsActive ? 'text-[#CCFF00]' : 'text-on-surface-variant'}">Tools</span>
+      <span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] ${isToolsActive ? 'text-[#f3d2ff]' : 'text-on-surface-variant'}">Tools</span>
     `;
     refs.managerFooterStoreBtn.innerHTML = isLeadershipFooter
       ? `<span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] ${shouldShowStoreActive ? 'text-[#CCFF00]' : 'text-on-surface-variant'}">Store</span>`
       : `<span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] ${shouldShowStoreActive ? 'text-[#CCFF00]' : 'text-on-surface-variant'}">Dashboard</span>`;
     refs.managerFooterPersonalBtn.classList.toggle('hidden-screen', !showPersonalButton);
     refs.managerFooterPersonalBtn.innerHTML = `
-      <span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] ${isFrontlineFooter ? (shouldShowPersonalActive ? 'text-[#CCFF00]' : 'text-on-surface-variant') : (shouldShowPersonalActive ? 'text-[#CCFF00]' : 'text-on-surface-variant')}">${isFrontlineFooter ? 'Stats' : 'Self'}</span>
+      <span class="block font-headline text-[10px] font-bold uppercase tracking-[0.28em] ${shouldShowPersonalActive ? 'text-[#8ef8ff]' : 'text-on-surface-variant'}">${isFrontlineFooter ? 'Stats' : 'Self'}</span>
     `;
   }
 
@@ -3727,11 +4005,136 @@ tailwind.config = {
     return stores.find((store) => String(store.dealershipId || '').trim() === normalized) || managerDashboard;
   }
 
-  function showProfile(mode = 'self', { replaceRoute = false } = {}) {
+  function unwrapWeeklyTune(tuneLike) {
+    if (!tuneLike) return null;
+    if (tuneLike.tune && typeof tuneLike.tune === 'object') {
+      return {
+        ...tuneLike.tune,
+        dealershipId: tuneLike.dealershipId || tuneLike.tune.dealershipId || null,
+        scopeType: tuneLike.scopeType || tuneLike.tune.scopeType || null,
+        departmentKey: tuneLike.departmentKey || tuneLike.tune.departmentKey || null,
+        scopeKey: tuneLike.scopeKey || tuneLike.tune.scopeKey || null,
+        scopeLabel: tuneLike.scopeLabel || tuneLike.tune.scopeLabel || null,
+      };
+    }
+    if (tuneLike.normalizedTheme || tuneLike.coachingDirection || tuneLike.leaderMessage || tuneLike.title || tuneLike.sourceText) {
+      return tuneLike;
+    }
+    return null;
+  }
+
+  function getWeeklyTuneCountdownText(tuneLike) {
+    const endTime = getWeeklyTuneExpiryMs(tuneLike);
+    if (!endTime) return 'No active countdown';
+    const now = Date.now();
+    const remaining = endTime - now;
+    if (remaining <= 0) return 'Tune expired';
+    const totalMinutes = Math.ceil(remaining / 60000);
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+    if (days > 0) {
+      return `Resets in ${days}d ${String(hours).padStart(2, '0')}h`;
+    }
+    if (hours > 0) {
+      return `Resets in ${hours}h ${String(minutes).padStart(2, '0')}m`;
+    }
+    return `Resets in ${Math.max(1, minutes)}m`;
+  }
+
+  function getWeeklyTuneExpiryMs(tuneLike) {
+    const tune = unwrapWeeklyTune(tuneLike);
+    const expiresAt = tune?.expiresAt ? new Date(tune.expiresAt).getTime() : null;
+    if (Number.isFinite(expiresAt)) return expiresAt;
+    const updatedAt = tune?.updatedAt ? new Date(tune.updatedAt).getTime() : null;
+    if (Number.isFinite(updatedAt)) return updatedAt + (7 * 24 * 60 * 60 * 1000);
+    return null;
+  }
+
+  function isWeeklyTuneExpired(tuneLike) {
+    const expiryMs = getWeeklyTuneExpiryMs(tuneLike);
+    return Number.isFinite(expiryMs) ? Date.now() >= expiryMs : false;
+  }
+
+  function getWeeklyTuneEditableDashboard({ roleLabel, user, selectedDashboard, managerDashboard, storeSummaries }) {
+    const normalizedRole = formatRoleTitle(roleLabel || user?.roleLabel || user?.role);
+    const departmentManagerTargetStoreId = String(user?.dealershipId || user?.selfDeclaredDealershipId || '').trim();
+    const defaultDealershipId = String(
+      departmentManagerTargetStoreId
+      || selectedDashboard?.dealershipId
+      || managerDashboard?.dealershipId
+      || storeSummaries?.[0]?.dealershipId
+      || 'independent'
+    ).trim();
+    const defaultDealershipName = String(
+      user?.dealershipName
+      || selectedDashboard?.dealershipName
+      || managerDashboard?.dealershipName
+      || storeSummaries?.[0]?.dealershipName
+      || 'Current dealership'
+    ).trim();
+    const defaultScopeLabel = String(
+      user?.dealershipName
+        ? `${user.dealershipName} team`
+        : (selectedDashboard?.scopeLabel || managerDashboard?.scopeLabel || storeSummaries?.[0]?.scopeLabel || defaultDealershipName)
+    ).trim();
+
+    if (isDepartmentManagerRole(normalizedRole)) {
+      return {
+        dealershipId: defaultDealershipId,
+        dealershipName: defaultDealershipName,
+        scopeLabel: defaultScopeLabel,
+        weeklyTrainingTune: managerDashboard?.weeklyTrainingTune || selectedDashboard?.weeklyTrainingTune || null,
+      };
+    }
+
+    if (defaultDealershipId) {
+      return {
+        dealershipId: defaultDealershipId,
+        dealershipName: defaultDealershipName,
+        scopeLabel: selectedDashboard?.scopeLabel || managerDashboard?.scopeLabel || defaultScopeLabel,
+        weeklyTrainingTune: selectedDashboard?.weeklyTrainingTune || managerDashboard?.weeklyTrainingTune || null,
+      };
+    }
+
+    return null;
+  }
+
+  function getSelectedManagerDashboardForUser(userLike = state.bundle?.user, managerDashboard = state.bundle?.managerDashboard || null) {
+    if (!managerDashboard) return null;
+    const userId = String(userLike?.userId || userLike?.id || '').trim();
+    const storeSelection = userId ? getManagerStoreSelection(userId) : 'all';
+    return getSelectedManagerDashboardView(managerDashboard, storeSelection) || managerDashboard;
+  }
+
+  function stopWeeklyTuneCountdownRefresh() {
+    if (state.weeklyTuneCountdownTimer) {
+      clearInterval(state.weeklyTuneCountdownTimer);
+      state.weeklyTuneCountdownTimer = null;
+    }
+  }
+
+  function startWeeklyTuneCountdownRefresh() {
+    if (state.weeklyTuneCountdownTimer) return;
+    state.weeklyTuneCountdownTimer = window.setInterval(() => {
+      if (!state.bundle?.managerDashboard || refs.managerDashboardPanel?.classList.contains('hidden-screen')) {
+        stopWeeklyTuneCountdownRefresh();
+        return;
+      }
+      renderManagerDashboard(state.bundle);
+    }, 60000);
+  }
+
+  function showProfile(mode = 'self', { replaceRoute = false, bundle = null } = {}) {
     state.profileMode = mode;
     hideAllScreens();
     if (mode === 'self' && state.bundle) {
       renderProfile(state.bundle);
+    } else if (mode === 'team') {
+      const nextBundle = bundle || state.teamMemberProfileBundle || state.managerSelectedTeamMemberBundle || null;
+      if (nextBundle) {
+        renderProfile(nextBundle);
+      }
     }
     profileScreen.classList.remove("hidden-screen");
     if (mode === 'self' && state.bundle?.user) {
@@ -3742,7 +4145,14 @@ tailwind.config = {
         renderManagerModeFooter(state.managerViewMode, roleLabel, 'profile');
       }
     }
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.requestAnimationFrame(() => {
+      if (mode === 'team') {
+        const target = profileTeamSwitcherSection || refs.profileAvatar?.closest('section') || profileScreen;
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   }
 
   function openProfileMenu() {
@@ -3831,19 +4241,151 @@ tailwind.config = {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function renderManagerSelectedTeamMemberPanel() {
+    if (!managerSelectedTeamMemberPanel || !managerSelectedTeamMemberName || !managerSelectedTeamMemberRole || !managerSelectedTeamMemberDealership || !managerSelectedTeamMemberStatus || !managerSelectedTeamMemberXp || !managerSelectedTeamMemberLevel || !managerSelectedTeamMemberMomentum || !managerSelectedTeamMemberWatchArea || !managerSelectedTeamMemberSummary || !managerSelectedTeamMemberRecent) {
+      return;
+    }
+    const bundle = state.managerSelectedTeamMemberBundle?.user ? state.managerSelectedTeamMemberBundle : null;
+    const user = bundle?.user || null;
+    const active = Boolean(user);
+    managerSelectedTeamMemberPanel.classList.toggle('hidden-screen', !active);
+    if (!active) {
+      managerSelectedTeamMemberName.textContent = 'Choose a teammate';
+      managerSelectedTeamMemberRole.textContent = 'Tap any card below';
+      managerSelectedTeamMemberDealership.textContent = 'No teammate selected yet';
+      managerSelectedTeamMemberStatus.textContent = 'Tap a teammate to see the full card.';
+      managerSelectedTeamMemberXp.textContent = '--';
+      managerSelectedTeamMemberLevel.textContent = '--';
+      managerSelectedTeamMemberMomentum.textContent = '--%';
+      managerSelectedTeamMemberWatchArea.textContent = '--';
+      managerSelectedTeamMemberSummary.textContent = 'Their sessions and CX details will appear here.';
+      managerSelectedTeamMemberRecent.innerHTML = '';
+      if (managerSelectedTeamMemberOpenBtn) {
+        managerSelectedTeamMemberOpenBtn.disabled = true;
+      }
+      return;
+    }
+
+    const level = user.level?.level || 1;
+    const momentum = Math.max(0, Math.round(Number(user.momentumScore ?? bundle?.momentumScore ?? 0)));
+    const recentSessions = Array.isArray(bundle?.recentSessions) ? bundle.recentSessions : [];
+    const recentSessionsHtml = recentSessions.length
+      ? recentSessions.slice(0, 3).map((session) => {
+          const score = Math.max(0, Math.round(Number(session.score || 0)));
+          const timestamp = session.timestamp ? new Date(session.timestamp) : null;
+          const dateLabel = timestamp && !Number.isNaN(timestamp.getTime())
+            ? timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            : 'Recent';
+          return `
+            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-headline text-sm font-bold text-on-surface">${escapeHtml(session.title || session.lessonTitle || 'Session')}</p>
+                  <p class="mt-1 text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">${escapeHtml(dateLabel)}</p>
+                </div>
+                <div class="text-right">
+                  <p class="font-headline text-base font-bold text-on-surface">${score}</p>
+                  <p class="text-[10px] uppercase tracking-[0.22em] text-on-surface-variant">Score</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')
+      : '<div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-on-surface-variant">No recent sessions available.</div>';
+
+    managerSelectedTeamMemberName.textContent = user.name || 'Selected teammate';
+    managerSelectedTeamMemberRole.textContent = formatRoleTitle(user.roleLabel || user.role || 'Team Member');
+    managerSelectedTeamMemberDealership.textContent = user.dealershipName || user.storeName || 'Assigned team';
+    managerSelectedTeamMemberStatus.textContent = `Last active: ${user.lastActive || 'Recently'}`;
+    managerSelectedTeamMemberXp.textContent = formatXp(user.xp || 0);
+    managerSelectedTeamMemberLevel.textContent = getLevelLabel(level);
+    managerSelectedTeamMemberMomentum.textContent = `${momentum}%`;
+    managerSelectedTeamMemberWatchArea.textContent = traitLabel(user.focusTrait || user.watchArea || 'trust');
+    managerSelectedTeamMemberSummary.textContent = user.lastLesson
+      ? `${user.name || 'This teammate'} last trained on ${user.lastLesson}.`
+      : `This teammate is at level ${level} with ${momentum}% momentum.`;
+    managerSelectedTeamMemberRecent.innerHTML = recentSessionsHtml;
+    if (managerSelectedTeamMemberOpenBtn) {
+      managerSelectedTeamMemberOpenBtn.disabled = false;
+    }
+  }
+
   function findTeamMemberProfile(memberId) {
-    const teamMembers = state.bundle?.managerDashboard?.teamMembers || [];
-    return teamMembers.find((member) => String(member.id || member.userId || '') === String(memberId || '')) || null;
+    const dashboard = state.bundle?.managerDashboard || {};
+    const storeSelection = state.bundle?.user?.userId ? getManagerStoreSelection(state.bundle.user.userId) : 'all';
+    const selectedDashboard = getSelectedManagerDashboardView(dashboard, storeSelection) || dashboard;
+    const stores = Array.isArray(dashboard.stores) ? dashboard.stores : [];
+    const candidateSets = [
+      selectedDashboard?.teamMembers,
+      dashboard.teamMembers,
+      ...stores.map((store) => store?.teamMembers),
+    ].filter(Array.isArray);
+    const normalizedId = String(memberId || '').trim();
+    const seen = new Set();
+    const candidates = candidateSets.flatMap((members) => members).filter((member) => {
+      const key = String(member?.id || member?.userId || '').trim();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    return candidates.find((member) => String(member.id || member.userId || '').trim() === normalizedId) || null;
+  }
+
+  function resolveTeamMemberProfileBundle(member, memberId) {
+    const dashboard = state.bundle?.managerDashboard || {};
+    const storeSelection = state.bundle?.user?.userId ? getManagerStoreSelection(state.bundle.user.userId) : 'all';
+    const selectedDashboard = getSelectedManagerDashboardView(dashboard, storeSelection) || dashboard;
+    const stores = Array.isArray(dashboard.stores) ? dashboard.stores : [];
+    const normalizedId = String(memberId || member?.id || member?.userId || '').trim();
+    const searchSets = [
+      selectedDashboard?.teamMembers,
+      selectedDashboard?.teamMonitor,
+      dashboard.teamMembers,
+      dashboard.teamMonitor,
+      ...stores.flatMap((store) => [store?.teamMembers, store?.teamMonitor]),
+    ].filter(Array.isArray);
+    const seen = new Set();
+    const candidates = searchSets.flatMap((items) => items).filter((item) => {
+      const key = String(item?.id || item?.userId || '').trim();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    const detailedRecord = candidates.find((item) => String(item.id || item.userId || '').trim() === normalizedId) || null;
+    const resolvedUser = {
+      ...(member || {}),
+      ...(detailedRecord || {}),
+    };
+    const recentSessions = Array.isArray(detailedRecord?.recentSessions)
+      ? detailedRecord.recentSessions
+      : Array.isArray(member?.recentSessions)
+        ? member.recentSessions
+        : [];
+    const momentumSeries = Array.isArray(detailedRecord?.momentumSeries)
+      ? detailedRecord.momentumSeries
+      : Array.isArray(member?.momentumSeries)
+        ? member.momentumSeries
+        : [];
+    return {
+      user: resolvedUser,
+      recentSessions,
+      momentumSeries,
+    };
   }
 
   function showTeamMemberProfile(member) {
     if (!member) return;
+    const bundle = resolveTeamMemberProfileBundle(member, member.id || member.userId);
     state.profileMode = 'team';
-    renderProfile({
-      user: member,
-      recentSessions: Array.isArray(member.recentSessions) ? member.recentSessions : [],
-      momentumSeries: Array.isArray(member.momentumSeries) ? member.momentumSeries : [],
-    });
+    state.teamMemberProfileBundle = bundle;
+    state.managerSelectedTeamMemberBundle = bundle;
+    if (refs.managerDashboardPanel && !refs.managerDashboardPanel.classList.contains('hidden-screen')) {
+      renderManagerDashboard(state.bundle);
+      window.requestAnimationFrame(() => {
+        managerSelectedTeamMemberPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      return;
+    }
     showProfile('team');
   }
 
@@ -4067,8 +4609,9 @@ tailwind.config = {
   function updateInternalToolsVisibility() {
     const enabled = hasDeveloperAccess() || isDeveloperConsoleVisible();
     const showDeveloperTrigger = canOpenDeveloperTools();
+    const showMenuTrigger = showDeveloperTrigger || canOpenDealerDemo();
     const showDeveloperMenuBtn = showDeveloperTrigger || isDeveloperConsoleVisible();
-    if (homeMenuBtn) homeMenuBtn.classList.toggle('hidden-screen', !showDeveloperTrigger);
+    if (homeMenuBtn) homeMenuBtn.classList.toggle('hidden-screen', !showMenuTrigger);
     if (developerMenuBtn) developerMenuBtn.classList.toggle('hidden-screen', !showDeveloperMenuBtn);
     syncDeveloperProfileAvatar(state.developerSessionBundle?.user?.avatarUrl || state.bundle?.user?.avatarUrl || '');
     if (openDeveloperPanelBtn) openDeveloperPanelBtn.classList.toggle('hidden-screen', !enabled);
@@ -4078,6 +4621,86 @@ tailwind.config = {
     if (mockPersonaSection) mockPersonaSection.classList.toggle('hidden-screen', !enabled || !state.mockUserMode);
     if (developerPanel) developerPanel.classList.toggle('hidden-screen', !enabled || developerPanel.classList.contains('hidden-screen'));
     if (developerImpersonationBanner) developerImpersonationBanner.classList.toggle('hidden-screen', !state.developerImpersonationUserId);
+    if (openDealerDemoBtn) openDealerDemoBtn.classList.toggle('hidden-screen', !canOpenDealerDemo());
+    renderDealerDemoBanner();
+  }
+
+  function renderDealerDemoBanner() {
+    const active = isDealerDemoActive();
+    if (demoModeBanner) demoModeBanner.classList.toggle('hidden-screen', !active);
+    if (demoModePersonaLabel) demoModePersonaLabel.textContent = active ? `${state.dealerDemoPersona} persona` : 'Persona';
+  }
+
+  function renderDealerDemoLauncher() {
+    if (!dealerDemoPersonaGrid) return;
+    dealerDemoPersonaGrid.innerHTML = DEALER_DEMO_PERSONAS.map((persona) => {
+      const active = isDealerDemoActive() && state.dealerDemoPersona === persona.role;
+      return `
+        <button type="button" data-demo-persona="${escapeHtml(persona.role)}" class="group rounded-[1.5rem] border ${active ? 'border-[#06EBF7]/55 bg-[#06EBF7]/12' : 'border-white/10 bg-white/5 hover:border-[#06EBF7]/35 hover:bg-[#06EBF7]/10'} p-5 text-left transition shadow-[0_20px_50px_rgba(0,0,0,0.28)]">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="font-label text-[10px] uppercase tracking-[0.26em] text-[#06EBF7]">${escapeHtml(persona.eyebrow)}</p>
+              <h2 class="mt-2 font-headline text-2xl font-black text-on-surface">${escapeHtml(persona.title)}</h2>
+            </div>
+            <span class="material-symbols-outlined rounded-full border border-white/10 bg-black/20 p-3 text-on-surface-variant transition group-hover:text-[#06EBF7]">play_arrow</span>
+          </div>
+          <p class="mt-4 text-sm leading-relaxed text-on-surface-variant">${escapeHtml(persona.summary)}</p>
+          <div class="mt-5 space-y-2">
+            ${(persona.talkTrack || []).map((item) => `<p class="text-[11px] uppercase tracking-[0.18em] text-on-surface-variant">- ${escapeHtml(item)}</p>`).join('')}
+          </div>
+        </button>
+      `;
+    }).join('');
+
+    dealerDemoPersonaGrid.querySelectorAll('[data-demo-persona]').forEach((button) => {
+      button.addEventListener('click', () => {
+        startDealerDemo(String(button.getAttribute('data-demo-persona') || '').trim());
+      });
+    });
+  }
+
+  function showDealerDemoLauncher() {
+    if (!canOpenDealerDemo()) return;
+    closeMenu();
+    hideAllScreens();
+    renderDealerDemoLauncher();
+    renderDealerDemoBanner();
+    if (dealerDemoScreen) dealerDemoScreen.classList.remove('hidden-screen');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function startDealerDemo(personaRole) {
+    const persona = DEALER_DEMO_PERSONAS.find((item) => item.role === personaRole);
+    if (!persona) return;
+    state.dealerDemoActive = true;
+    state.dealerDemoPersona = persona.role;
+    localStorage.setItem("autoknerd:dealerDemoActive", "1");
+    localStorage.setItem("autoknerd:dealerDemoPersona", persona.role);
+    state.managerViewMode = 'store';
+    localStorage.setItem("autoknerd:managerViewMode", 'store');
+    state.managerSelectedTeamMemberBundle = null;
+    state.teamMemberProfileBundle = null;
+    renderDealerDemoBanner();
+    await loadBootstrap();
+  }
+
+  async function resetDealerDemo() {
+    if (!isDealerDemoActive()) return;
+    state.managerSelectedTeamMemberBundle = null;
+    state.teamMemberProfileBundle = null;
+    state.weeklyTuneDrafts = {};
+    await loadBootstrap();
+  }
+
+  async function exitDealerDemo() {
+    state.dealerDemoActive = false;
+    state.dealerDemoPersona = '';
+    localStorage.removeItem("autoknerd:dealerDemoActive");
+    localStorage.removeItem("autoknerd:dealerDemoPersona");
+    state.managerSelectedTeamMemberBundle = null;
+    state.teamMemberProfileBundle = null;
+    renderDealerDemoBanner();
+    await loadBootstrap();
   }
 
   function updateSettingsControls() {
@@ -4335,6 +4958,7 @@ tailwind.config = {
 
   async function syncToolHubPreferences() {
     if (!state.bundle?.user) return;
+    if (isDealerDemoActive()) return;
     const userId = state.bundle.user.userId;
     try {
       const response = await fetch('/api/user/update', {
@@ -5829,6 +6453,10 @@ tailwind.config = {
 
   async function saveProfileSettings() {
     if (!state.bundle?.user) return;
+    if (isDealerDemoActive()) {
+      if (settingsSaveState) settingsSaveState.textContent = 'Demo mode does not update live profiles.';
+      return;
+    }
     const firstName = String(settingsFirstNameInput?.value || '').trim();
     const lastName = String(settingsLastNameInput?.value || '').trim();
     const avatarUrl = String(settingsAvatarInput?.value || '').trim();
@@ -5890,6 +6518,87 @@ tailwind.config = {
       if (settingsSaveBtn) {
         settingsSaveBtn.disabled = false;
         settingsSaveBtn.textContent = 'Save profile';
+      }
+    }
+  }
+
+  async function saveWeeklyTrainingTune() {
+    if (!state.bundle?.user) return;
+    const roleLabel = formatRoleTitle(state.bundle.user.roleLabel || state.bundle.user.role);
+    const managerDashboard = state.bundle.managerDashboard || {};
+    const storeSummaries = Array.isArray(managerDashboard.stores) && managerDashboard.stores.length
+      ? managerDashboard.stores
+      : [managerDashboard].filter((item) => item && item.dealershipId);
+    const storeSelection = getManagerStoreSelection(state.bundle.user.userId);
+    const selectedDashboard = getSelectedManagerDashboardView(managerDashboard, storeSelection) || managerDashboard;
+    const selectedWeeklyTune = unwrapWeeklyTune(selectedDashboard.weeklyTrainingTune || managerDashboard.weeklyTrainingTune || null);
+    const editableDashboard = getWeeklyTuneEditableDashboard({
+      roleLabel,
+      user: state.bundle.user,
+      selectedDashboard,
+      managerDashboard,
+      storeSummaries,
+    });
+    const defaultDepartmentStoreId = String(editableDashboard?.dealershipId || 'independent').trim();
+    const scopeLabel = editableDashboard?.scopeLabel || editableDashboard?.dealershipName || 'Current scope';
+    const draftKey = `${state.bundle.user.userId || 'user'}:${editableDashboard?.dealershipId || defaultDepartmentStoreId}:${selectedWeeklyTune?.scopeKey || selectedWeeklyTune?.scopeType || 'weekly-tune'}`;
+    const sourceText = String(managerWeeklyTuneInput?.value || '').trim();
+    const targetDealershipId = editableDashboard?.dealershipId || defaultDepartmentStoreId;
+    const targetDealershipName = editableDashboard?.dealershipName || state.bundle.user.dealershipName || selectedDashboard.dealershipName || managerDashboard.dealershipName || 'Current dealership';
+
+    if (managerWeeklyTuneSaveBtn) {
+      managerWeeklyTuneSaveBtn.disabled = true;
+      managerWeeklyTuneSaveBtn.textContent = 'Saving...';
+    }
+    if (managerWeeklyTuneState) {
+      managerWeeklyTuneState.textContent = 'Saving weekly tune...';
+    }
+
+    try {
+      const response = await fetch('/api/weekly-tune/update', {
+        method: 'POST',
+        headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({
+          userId: state.bundle.user.userId,
+          roleOverride: getDeveloperRoleOverride() || undefined,
+          mockMode: (state.mockUserMode || isDealerDemoActive()) || undefined,
+          mockRoleOverride: getMockRoleOverride() || (isDealerDemoActive() ? state.dealerDemoPersona : undefined),
+          dealershipId: targetDealershipId,
+          dealershipName: targetDealershipName || scopeLabel,
+          sourceText,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message || 'Could not save the weekly tune.');
+      }
+
+      state.bundle = payload.bundle || state.bundle;
+      state.user = payload.user || state.bundle.user;
+      if (state.bundle?.user?.userId) {
+        localStorage.setItem("autoknerd:userId", state.bundle.user.userId);
+      }
+      delete state.weeklyTuneDrafts[draftKey];
+      renderHome(state.bundle);
+      renderProfile(state.bundle);
+      renderSettings(state.bundle);
+      renderHistory(state.bundle);
+      renderLessonLibrary(state.bundle);
+      renderToolsHub(state.bundle);
+      if (state.bundle.managerDashboard) {
+        renderManagerDashboard(state.bundle);
+      }
+      if (managerWeeklyTuneState) {
+        managerWeeklyTuneState.textContent = sourceText ? 'Saved just now' : 'Weekly tune cleared';
+      }
+    } catch (error) {
+      if (managerWeeklyTuneState) {
+        managerWeeklyTuneState.textContent = error instanceof Error ? error.message : 'Could not save the weekly tune.';
+      }
+    } finally {
+      if (managerWeeklyTuneSaveBtn) {
+        managerWeeklyTuneSaveBtn.disabled = false;
+        managerWeeklyTuneSaveBtn.textContent = 'Save weekly tune';
       }
     }
   }
@@ -6660,10 +7369,14 @@ tailwind.config = {
     const showManagerDashboard = isManagerDashboard && managerViewMode === 'store';
     const showPersonalHome = !isManagerDashboard || managerViewMode === 'personal';
     const useFrontlineFooter = showPersonalHome && isFrontlineFooterRole(roleLabel);
+    if (!showManagerDashboard) {
+      stopWeeklyTuneCountdownRefresh();
+    }
+    homeScreen.classList.toggle("manager-dashboard-host", showManagerDashboard);
     if (refs.coachHomePanel) refs.coachHomePanel.classList.toggle("hidden-screen", !showPersonalHome);
     if (refs.managerDashboardPanel) refs.managerDashboardPanel.classList.toggle("hidden-screen", !showManagerDashboard);
     if (refs.homeManagerToggleBtn) {
-      const showHomeToggle = isManagerDashboard && !useStoreLeadershipFooter && managerViewMode !== 'personal';
+      const showHomeToggle = isManagerDashboard && managerViewMode === 'personal';
       refs.homeManagerToggleBtn.classList.toggle("hidden", !showHomeToggle);
       if (showHomeToggle) renderManagerModeSwitch(refs.homeManagerToggleBtn, 'personal');
     }
@@ -6678,7 +7391,11 @@ tailwind.config = {
       if (showFooter) renderManagerModeFooter(managerViewMode, roleLabel, 'home');
     }
     if (showManagerDashboard) {
-      renderManagerDashboard(bundle);
+      try {
+        renderManagerDashboard(bundle);
+      } catch (error) {
+        console.error('[manager-dashboard] render failed', error);
+      }
       return;
     }
     const { user, focus, insight, roleProfile } = bundle;
@@ -6798,6 +7515,30 @@ tailwind.config = {
     const storeNameLabel = isAggregateView
       ? (managerDashboard.scopeLabel || 'All Stores')
       : (selectedDashboard.dealershipName || selectedDashboard.scopeLabel || 'Selected Store');
+    const editableTuneDashboard = getWeeklyTuneEditableDashboard({
+      roleLabel,
+      user,
+      selectedDashboard,
+      managerDashboard,
+      storeSummaries,
+    });
+    const selectedWeeklyTune = unwrapWeeklyTune(
+      (selectedDashboard.weeklyTrainingTune
+      || managerDashboard.weeklyTrainingTune
+      || editableTuneDashboard?.weeklyTrainingTune
+      || null)
+    );
+    const selectedWeeklyTuneExpired = isWeeklyTuneExpired(selectedWeeklyTune);
+    const activeWeeklyTune = selectedWeeklyTune && !selectedWeeklyTuneExpired ? selectedWeeklyTune : null;
+    const weeklyTuneScopeLabelText = activeWeeklyTune?.scopeLabel
+      || editableTuneDashboard?.scopeLabel
+      || storeNameLabel
+      || 'Current scope';
+    const weeklyTuneDraftKey = `${user.userId || 'user'}:${editableTuneDashboard?.dealershipId || selectedDashboard.dealershipId || 'all'}:${activeWeeklyTune?.scopeKey || activeWeeklyTune?.scopeType || 'weekly-tune'}`;
+    const weeklyTuneDraftValue = Object.prototype.hasOwnProperty.call(state.weeklyTuneDrafts || {}, weeklyTuneDraftKey)
+      ? String(state.weeklyTuneDrafts[weeklyTuneDraftKey] || '')
+      : String(activeWeeklyTune?.sourceText || '');
+    const canEditWeeklyTune = Boolean(canSetWeeklyTrainingTune(roleLabel) && editableTuneDashboard && editableTuneDashboard.dealershipId);
 
     if (refs.managerDashboardTitle) {
       refs.managerDashboardTitle.textContent = roleLabel.toUpperCase();
@@ -6875,6 +7616,53 @@ tailwind.config = {
     }
     if (refs.managerOpportunityBody) {
       refs.managerOpportunityBody.textContent = selectedDashboard.biggestOpportunity?.body || managerDashboard.biggestOpportunity?.body || "Coaching guidance will load once the dashboard data is ready.";
+    }
+    if (refs.managerWeeklyTuneScopeLabel) {
+      refs.managerWeeklyTuneScopeLabel.textContent = weeklyTuneScopeLabelText;
+    }
+    if (refs.managerWeeklyTunePreview) {
+      refs.managerWeeklyTunePreview.textContent = activeWeeklyTune
+        ? `${activeWeeklyTune.normalizedTheme || activeWeeklyTune.leaderMessage || activeWeeklyTune.coachingDirection || 'Weekly tune active.'}${activeWeeklyTune.focusTrait ? ` Focus bias: ${activeWeeklyTune.focusTrait}.` : ''}`
+        : (selectedWeeklyTuneExpired
+          ? 'This weekly tune has expired. Add a new one to start a fresh week.'
+          : (canEditWeeklyTune
+            ? 'No weekly tune is set yet. Add one to softly steer this store or department.'
+            : 'This tune is scoped from the selected store or department.'));
+    }
+    if (refs.managerWeeklyTuneUpdatedAt) {
+      refs.managerWeeklyTuneUpdatedAt.textContent = activeWeeklyTune?.updatedAt
+        ? `Last saved ${new Date(activeWeeklyTune.updatedAt).toLocaleString()}`
+        : selectedWeeklyTuneExpired
+          ? 'Tune expired'
+          : 'Not saved yet';
+    }
+    if (refs.managerWeeklyTuneCountdown) {
+      refs.managerWeeklyTuneCountdown.textContent = selectedWeeklyTune
+        ? getWeeklyTuneCountdownText(selectedWeeklyTune)
+        : 'No active countdown';
+    }
+    if (refs.managerWeeklyTuneInput) {
+      refs.managerWeeklyTuneInput.value = weeklyTuneDraftValue;
+      refs.managerWeeklyTuneInput.disabled = !canEditWeeklyTune;
+      refs.managerWeeklyTuneInput.readOnly = !canEditWeeklyTune;
+      refs.managerWeeklyTuneInput.placeholder = canEditWeeklyTune
+        ? 'I would like my staff to train more on how to smile.'
+        : 'This tune follows your store or department scope.';
+    }
+    if (refs.managerWeeklyTuneSaveBtn) {
+      refs.managerWeeklyTuneSaveBtn.disabled = !canEditWeeklyTune;
+      refs.managerWeeklyTuneSaveBtn.classList.toggle('opacity-50', !canEditWeeklyTune);
+      refs.managerWeeklyTuneSaveBtn.classList.toggle('cursor-not-allowed', !canEditWeeklyTune);
+    }
+    if (!refs.managerDashboardPanel?.classList.contains('hidden-screen') && activeWeeklyTune) {
+      startWeeklyTuneCountdownRefresh();
+    } else {
+      stopWeeklyTuneCountdownRefresh();
+    }
+    if (refs.managerWeeklyTuneState) {
+      refs.managerWeeklyTuneState.textContent = canEditWeeklyTune
+        ? 'Replace anytime. New tune resets the 7-day clock.'
+        : 'Scoped to your assigned store and department';
     }
     const departmentAverageScores = selectedDashboard.departmentAverageScores || managerDashboard.departmentAverageScores || null;
     const mockMomentumRole = user.roleLabel || user.role || roleLabel;
@@ -7037,13 +7825,17 @@ tailwind.config = {
       refs.managerTeamMonitorList.querySelectorAll('[data-team-member-id]').forEach((button) => {
         button.addEventListener('click', () => {
           const memberId = String(button.getAttribute('data-team-member-id') || '').trim();
-          const member = teamMembers.find((item) => String(item.id || item.userId || '') === memberId);
+          const member = findTeamMemberProfile(memberId)
+            || teamMembers.find((item) => String(item.id || item.userId || '') === memberId)
+            || teamMonitor.find((item) => String(item.id || item.userId || '') === memberId);
           if (member) {
             showTeamMemberProfile(member);
           }
         });
       });
     }
+
+    renderManagerSelectedTeamMemberPanel();
 
     setBrowserTabTitle();
   }
@@ -7675,7 +8467,7 @@ tailwind.config = {
   function renderDeveloperConsole(bundle, dashboard = null) {
     const developerBundle = state.developerSessionBundle?.user
       ? state.developerSessionBundle
-      : (bundle?.user && isDeveloperAccount(bundle) ? bundle : null);
+      : (bundle?.user && isDeveloperOrAdminAccount(bundle) ? bundle : null);
     if (!developerBundle?.user) return;
     const roleLabel = formatRoleTitle(developerBundle.user.roleLabel || developerBundle.user.role || 'Developer');
     const liveDashboard = dashboard || state.developerDashboard || null;
@@ -7940,7 +8732,56 @@ tailwind.config = {
       if (refs.profileHeaderAvatar) refs.profileHeaderAvatar.src = avatarSrc;
     }
 
+    renderProfileTeamSwitcher(bundle);
+
     setBrowserTabTitle();
+  }
+
+  function renderProfileTeamSwitcher(bundle) {
+    if (!profileTeamSwitcherSection || !profileTeamSwitcherLabel || !profileTeamSwitcherSelect) return;
+    const managerDashboard = state.bundle?.managerDashboard || null;
+    const selectedDashboard = getSelectedManagerDashboardForUser(state.bundle?.user, managerDashboard);
+    const members = Array.isArray(selectedDashboard?.teamMembers) ? selectedDashboard.teamMembers : [];
+    const isTeamProfile = state.profileMode === 'team' && members.length > 0;
+    const currentUserId = String(bundle?.user?.userId || '').trim();
+
+    profileTeamSwitcherSection.classList.toggle('hidden-screen', !isTeamProfile);
+    if (!isTeamProfile) {
+      profileTeamSwitcherSelect.innerHTML = '';
+      profileTeamSwitcherLabel.textContent = 'Choose a teammate to load their full profile.';
+      return;
+    }
+
+    const seen = new Set();
+    const options = members.filter((member) => {
+      const key = String(member.id || member.userId || '').trim();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    profileTeamSwitcherLabel.textContent = `${options.length} teammate${options.length === 1 ? '' : 's'} available in this scope.`;
+    profileTeamSwitcherSelect.innerHTML = options.map((member) => {
+      const value = String(member.id || member.userId || '').trim();
+      const label = `${member.name || 'Teammate'} · ${formatRoleTitle(member.roleLabel || member.role || 'Team Member')}`;
+      return `<option value="${escapeHtml(value)}" ${value === currentUserId ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+    }).join('');
+
+    profileTeamSwitcherSelect.onchange = () => {
+      const memberId = String(profileTeamSwitcherSelect.value || '').trim();
+      const selectedMember = options.find((member) => String(member.id || member.userId || '').trim() === memberId)
+        || findTeamMemberProfile(memberId)
+        || null;
+      if (!selectedMember) return;
+      const nextBundle = resolveTeamMemberProfileBundle(selectedMember, memberId);
+      state.teamMemberProfileBundle = nextBundle;
+      state.managerSelectedTeamMemberBundle = nextBundle;
+      renderProfile(nextBundle);
+      window.requestAnimationFrame(() => {
+        const target = refs.profileAvatar?.closest('section') || profileScreen;
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    };
   }
 
   function renderEndScreen(result, updatedUser, previousUser) {
@@ -8148,6 +8989,8 @@ tailwind.config = {
     const impersonationUserId = String(state.developerImpersonationUserId || localStorage.getItem("autoknerd:developerImpersonationUserId") || '').trim();
     const roleOverride = impersonationUserId ? '' : getDeveloperRoleOverride();
     const mockRoleOverride = getMockRoleOverride() || roleOverride;
+    const demoActive = isDealerDemoActive();
+    const demoPersonaRole = demoActive ? state.dealerDemoPersona : '';
     const controller = new AbortController();
     const bootstrapTimeout = window.setTimeout(() => controller.abort(new Error('BOOTSTRAP_TIMEOUT')), 12000);
     try {
@@ -8156,8 +8999,11 @@ tailwind.config = {
       if (userId) {
         query.set('userId', userId);
       }
-      if (roleOverride) query.set('roleOverride', roleOverride);
-      if (state.mockUserMode) {
+      if (roleOverride && !demoActive) query.set('roleOverride', roleOverride);
+      if (demoActive) {
+        query.set('mockMode', '1');
+        query.set('mockRoleOverride', demoPersonaRole);
+      } else if (state.mockUserMode) {
         query.set('mockMode', '1');
         if (mockRoleOverride) query.set('mockRoleOverride', mockRoleOverride);
       }
@@ -8173,32 +9019,42 @@ tailwind.config = {
       if (!payload.ok) {
         throw new Error(payload.message || 'Unable to load app data.');
       }
-      saveAuthSession(token, payload.user.userId);
+      if (!demoActive) {
+        saveAuthSession(token, payload.user.userId);
+      }
       if (payload.user?.roleLabel === 'Developer' || isDeveloperAccount(payload)) {
         setDeveloperSessionActive(true, payload.user.userId);
         state.developerSessionBundle = payload;
       }
-      if (payload.mockMode || payload.user?.mockMode) {
+      if (!demoActive && (payload.mockMode || payload.user?.mockMode)) {
         setMockUserMode(true);
       } else if (payload.user.roleOverride) {
         setDeveloperRoleOverride(payload.user.roleOverride);
       } else if (roleOverride) {
         setDeveloperRoleOverride('');
       }
-      const restoredActiveSession = payload.activeSession || readPersistedActiveSession(payload.user?.userId) || null;
+      if (demoActive) {
+        payload.demoMode = true;
+        payload.demoPersonaRole = demoPersonaRole;
+        if (payload.user) {
+          payload.user.demoMode = true;
+          payload.user.demoPersonaRole = demoPersonaRole;
+        }
+      }
+      const restoredActiveSession = demoActive ? null : (payload.activeSession || readPersistedActiveSession(payload.user?.userId) || null);
       state.bundle = {
         ...payload,
         activeSession: restoredActiveSession,
       };
       state.user = payload.user;
       state.session = restoredActiveSession;
-      if (restoredActiveSession?.sessionId && payload.user?.userId) {
+      if (restoredActiveSession?.sessionId && payload.user?.userId && !demoActive) {
         persistActiveSession(restoredActiveSession, payload.user.userId);
-      } else if (payload.user?.userId) {
+      } else if (payload.user?.userId && !demoActive) {
         clearPersistedActiveSession(payload.user.userId);
       }
-      state.mockUserMode = Boolean(payload.mockMode || payload.user?.mockMode || state.mockUserMode);
-      if (state.mockUserMode && mockRoleOverride && !getMockRoleOverride()) {
+      state.mockUserMode = demoActive ? state.mockUserMode : Boolean(payload.mockMode || payload.user?.mockMode || state.mockUserMode);
+      if (!demoActive && state.mockUserMode && mockRoleOverride && !getMockRoleOverride()) {
         setMockRoleOverride(mockRoleOverride);
       }
       hydrateToolHubState(state.bundle);
@@ -8222,6 +9078,10 @@ tailwind.config = {
         renderAIOutput(state.bundle, null);
         void refreshAutoForgeOutput({ reason: 'open' });
         return payload;
+      }
+      if (!demoActive && isDemoSpecialistAccount(state.bundle)) {
+        showDealerDemoLauncher();
+        return state.bundle;
       }
       showHome({ replaceRoute: true });
       return state.bundle;
@@ -8308,6 +9168,10 @@ tailwind.config = {
       saveAuthSession(payload.token, payload.bundle?.user?.userId || '');
       clearDeveloperImpersonation();
       setDeveloperRoleOverride('');
+      state.dealerDemoActive = false;
+      state.dealerDemoPersona = '';
+      localStorage.removeItem("autoknerd:dealerDemoActive");
+      localStorage.removeItem("autoknerd:dealerDemoPersona");
       setAuthCodeFieldError(false);
       if (isDeveloperAccount(payload.bundle)) {
         state.developerSessionBundle = payload.bundle;
@@ -8585,7 +9449,7 @@ tailwind.config = {
     startSessionBtn.innerHTML = '<span>LAUNCHING...</span><span class="material-symbols-outlined animate-pulse">hourglass_top</span>';
     try {
       const roleOverride = state.developerSessionActive ? (getDeveloperRoleOverride() || undefined) : undefined;
-      const mockRoleOverride = getMockRoleOverride() || (state.mockUserMode ? roleOverride : undefined);
+      const mockRoleOverride = getMockRoleOverride() || (isDealerDemoActive() ? state.dealerDemoPersona : (state.mockUserMode ? roleOverride : undefined));
       const response = await fetch('/api/session/start', {
         method: 'POST',
         headers: buildApiHeaders({ 'Content-Type': 'application/json' }),
@@ -8593,7 +9457,7 @@ tailwind.config = {
           userId: state.bundle.user.userId,
           roleOverride,
           mockRoleOverride,
-          mockMode: state.mockUserMode || undefined,
+          mockMode: (state.mockUserMode || isDealerDemoActive()) || undefined,
           lessonCategory: freshUp ? undefined : selectedLessonCategory || undefined,
           freshUp: freshUp || undefined,
         }),
@@ -8602,7 +9466,9 @@ tailwind.config = {
       if (!payload.ok) throw new Error(payload.message || 'Unable to start session.');
       state.session = payload.session || payload.mission || payload;
       state.bundle.activeSession = state.session;
-      persistActiveSession(state.session, state.bundle.user.userId);
+      if (!isDealerDemoActive()) {
+        persistActiveSession(state.session, state.bundle.user.userId);
+      }
       renderSession(state.bundle, state.session);
       renderLessonLibrary(state.bundle);
       renderHome(state.bundle);
@@ -8658,8 +9524,8 @@ tailwind.config = {
           sessionId: state.session.sessionId,
           userId: state.bundle.user.userId,
           roleOverride: getDeveloperRoleOverride() || undefined,
-          mockRoleOverride: getMockRoleOverride() || (state.mockUserMode ? getDeveloperRoleOverride() || undefined : undefined),
-          mockMode: state.mockUserMode || undefined,
+          mockRoleOverride: getMockRoleOverride() || (isDealerDemoActive() ? state.dealerDemoPersona : (state.mockUserMode ? getDeveloperRoleOverride() || undefined : undefined)),
+          mockMode: (state.mockUserMode || isDealerDemoActive()) || undefined,
           answer,
           selectedChoice: state.selectedChoice,
           selectedChoiceText: state.selectedChoiceText,
@@ -8672,7 +9538,9 @@ tailwind.config = {
       if (payload.stage === 'continue') {
         state.session = payload.session || state.session;
         state.bundle.activeSession = state.session;
-        persistActiveSession(state.session, state.bundle.user.userId);
+        if (!isDealerDemoActive()) {
+          persistActiveSession(state.session, state.bundle.user.userId);
+        }
         renderSession(state.bundle, state.session);
         renderLessonLibrary(state.bundle);
         renderHome(state.bundle);
@@ -8692,7 +9560,9 @@ tailwind.config = {
       state.user = payload.updatedUser;
       renderHome(state.bundle);
       renderProfile(state.bundle);
-      clearPersistedActiveSession(state.bundle.user.userId);
+      if (!isDealerDemoActive()) {
+        clearPersistedActiveSession(state.bundle.user.userId);
+      }
       state.bundle.activeSession = null;
       state.session = null;
       renderLessonLibrary(state.bundle);
@@ -8898,6 +9768,16 @@ tailwind.config = {
     closeMenu();
     showLessonLibrary();
   });
+  if (openDealerDemoBtn) openDealerDemoBtn.addEventListener("click", showDealerDemoLauncher);
+  if (dealerDemoBackBtn) dealerDemoBackBtn.addEventListener("click", () => {
+    showHome({ replaceRoute: true });
+  });
+  if (demoModeResetBtn) demoModeResetBtn.addEventListener("click", () => {
+    void resetDealerDemo();
+  });
+  if (demoModeExitBtn) demoModeExitBtn.addEventListener("click", () => {
+    void exitDealerDemo();
+  });
   if (refs.toolsHubProfileBtn) refs.toolsHubProfileBtn.addEventListener("click", openProfileMenu);
   if (openDeveloperPanelBtn) openDeveloperPanelBtn.addEventListener("click", openDeveloperPanel);
   if (openDeveloperConsoleBtn) openDeveloperConsoleBtn.addEventListener("click", () => {
@@ -8980,6 +9860,36 @@ tailwind.config = {
   if (settingsSaveBtn) settingsSaveBtn.addEventListener("click", () => {
     void saveProfileSettings();
   });
+  if (managerWeeklyTuneInput) {
+    managerWeeklyTuneInput.addEventListener("input", () => {
+      if (!state.bundle?.user) return;
+      const managerDashboard = state.bundle.managerDashboard || {};
+      const storeSummaries = Array.isArray(managerDashboard.stores) && managerDashboard.stores.length
+        ? managerDashboard.stores
+        : [managerDashboard].filter((item) => item && item.dealershipId);
+      const storeSelection = getManagerStoreSelection(state.bundle.user.userId);
+      const selectedDashboard = getSelectedManagerDashboardView(managerDashboard, storeSelection) || managerDashboard;
+      const selectedWeeklyTune = unwrapWeeklyTune(selectedDashboard.weeklyTrainingTune || managerDashboard.weeklyTrainingTune || null);
+      const editableDashboard = getWeeklyTuneEditableDashboard({
+        roleLabel: state.bundle.user.roleLabel || state.bundle.user.role,
+        user: state.bundle.user,
+        selectedDashboard,
+        managerDashboard,
+        storeSummaries,
+      });
+      if (!editableDashboard || !editableDashboard.dealershipId || editableDashboard.dealershipId === 'all') return;
+      const draftKey = `${state.bundle.user.userId || 'user'}:${editableDashboard.dealershipId}:${selectedWeeklyTune?.scopeKey || selectedWeeklyTune?.scopeType || 'weekly-tune'}`;
+      state.weeklyTuneDrafts[draftKey] = managerWeeklyTuneInput.value;
+      if (managerWeeklyTuneState) {
+        managerWeeklyTuneState.textContent = 'Draft updated';
+      }
+    });
+  }
+  if (managerWeeklyTuneSaveBtn) {
+    managerWeeklyTuneSaveBtn.addEventListener("click", () => {
+      void saveWeeklyTrainingTune();
+    });
+  }
   if (clearDeveloperRoleBtn) clearDeveloperRoleBtn.addEventListener("click", async () => {
     setDeveloperRoleOverride('');
     closeMenu();
@@ -8995,6 +9905,12 @@ tailwind.config = {
     saveAuthSession(getAuthToken(), developerUserId);
     closeMenu();
     await loadBootstrap();
+  });
+  if (managerSelectedTeamMemberOpenBtn) managerSelectedTeamMemberOpenBtn.addEventListener("click", () => {
+    const bundle = state.managerSelectedTeamMemberBundle || state.teamMemberProfileBundle || null;
+    if (bundle?.user) {
+      showProfile('team', { bundle });
+    }
   });
   if (toggleMockUserBtn) toggleMockUserBtn.addEventListener("click", toggleMockUserMode);
   if (lessonResumeBtn) lessonResumeBtn.addEventListener("click", () => {
