@@ -24,6 +24,7 @@ const MAX_CX_AGGRESSIVENESS = 60;
 const MIN_CX_AGGRESSIVENESS = 5;
 const DEFAULT_CX_AGGRESSIVENESS = 25;
 const MIN_CORE_SESSIONS_FOR_FRESH_UP = 3;
+const WEEKLY_TUNE_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
 const TRAIT_LABELS = {
   empathy: 'Empathy',
@@ -208,6 +209,12 @@ const ROLE_LESSON_CATEGORIES = {
     'Operations - Financial Acumen',
     'Operations - Process Improvement',
   ],
+  'Demo Specialist': [
+    'Leadership - Team Motivation',
+    'Leadership - Conflict Resolution',
+    'Operations - Process Improvement',
+    'Management - Coaching',
+  ],
   Admin: [
     'Leadership - Team Motivation',
     'Leadership - Conflict Resolution',
@@ -364,6 +371,7 @@ const ROLE_SCOPE_ORDER = [
 const MAX_SCOPE_BY_ROLE = {
   Developer: 'owner_and_under',
   Admin: 'owner_and_under',
+  'Demo Specialist': 'owner_and_under',
   Trainer: 'general_manager_and_under',
   Owner: 'general_manager_and_under',
   'General Manager': 'manager_and_under',
@@ -417,6 +425,9 @@ const activeSessions = new Map();
 const authSessions = new Map();
 const developerDashboardCache = new Map();
 const DEVELOPER_DASHBOARD_CACHE_TTL_MS = 60000;
+const DEMO_SPECIALIST_USER_ID = 'demo-autoknerd';
+const DEMO_SPECIALIST_IDENTIFIER = 'demo autoknerd';
+const DEMO_SPECIALIST_PASSWORD = 'Sprocket1!';
 let firebaseDb = null;
 
 function clamp(value, min = 0, max = 100) {
@@ -429,6 +440,16 @@ function normalizeEmail(value) {
 
 function normalizeLookupValue(value) {
   return String(value || '').trim();
+}
+
+function isDemoSpecialistUserId(userId) {
+  return String(userId || '').trim() === DEMO_SPECIALIST_USER_ID;
+}
+
+function isDemoSpecialistLogin(identifier, password) {
+  const normalizedIdentifier = String(identifier || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  return normalizedIdentifier === DEMO_SPECIALIST_IDENTIFIER
+    && String(password || '') === DEMO_SPECIALIST_PASSWORD;
 }
 
 function createAuthSession(userId) {
@@ -855,7 +876,7 @@ function buildLessonLibrary(roleLabel, roleType, trait, currentCategory = null) 
   });
 }
 
-function buildMissionFocus(trait, role, lessonCategory) {
+function buildMissionFocus(trait, role, lessonCategory, weeklyTune = null) {
   const map = {
     empathy: {
       title: 'Lead Qualification',
@@ -891,12 +912,23 @@ function buildMissionFocus(trait, role, lessonCategory) {
 
   const categoryProfile = getLessonCategoryProfile(lessonCategory);
   const resolved = categoryProfile || map[trait] || map.trust;
+  const tuneDirection = String(weeklyTune?.coachingDirection || weeklyTune?.leaderMessage || '').trim();
+  const tuneTheme = String(weeklyTune?.normalizedTheme || weeklyTune?.title || '').trim();
+  const tuneLine = tuneDirection || tuneTheme ? ` Weekly tune: ${tuneDirection || tuneTheme}.` : '';
   return {
     phaseTitle: `${normalizeRoleLabel(role)} Phase III`,
     title: resolved.title,
     lessonTitle: resolved.title,
-    description: categoryProfile ? resolved.description : resolved.mission,
-    microFocus: categoryProfile ? resolved.microFocus : resolved.description,
+    description: `${categoryProfile ? resolved.description : resolved.mission}${tuneLine}`,
+    microFocus: `${categoryProfile ? resolved.microFocus : resolved.description}${tuneLine}`,
+    weeklyTune: weeklyTune ? {
+      title: tuneTheme || null,
+      coachingDirection: tuneDirection || tuneTheme || null,
+      focusTrait: weeklyTune.focusTrait || null,
+      scopeLabel: weeklyTune.scopeLabel || null,
+      scopeType: weeklyTune.scopeType || null,
+      departmentKey: weeklyTune.departmentKey || null,
+    } : null,
   };
 }
 
@@ -950,6 +982,7 @@ function normalizeDeveloperRoleOverride(role) {
     'Trainer',
     'Admin',
     'Developer',
+    'Demo Specialist',
   ]);
   return allowed.has(normalized) ? normalized : null;
 }
@@ -1090,6 +1123,227 @@ function getRoleProfile(role) {
     allowedEnrollmentRoles: maxEnrollmentScope ? getAllowedEnrollmentRolesForScope(maxEnrollmentScope) : [],
     enrollmentScopeLabel: maxEnrollmentScope ? getEnrollmentScopeLabel(maxEnrollmentScope) : null,
     enrollmentScopeDescription: maxEnrollmentScope ? getEnrollmentScopeDescription(maxEnrollmentScope) : null,
+  };
+}
+
+function canSetWeeklyTrainingTune(roleLabel) {
+  const normalized = normalizeRoleLabel(roleLabel);
+  return [
+    'manager',
+    'Sales Manager',
+    'Service Manager',
+    'Parts Manager',
+    'Finance Manager',
+    'General Manager',
+    'Owner',
+    'Trainer',
+    'Admin',
+    'Developer',
+  ].includes(normalized);
+}
+
+function getWeeklyTuneDepartmentLabel(roleType) {
+  switch (String(roleType || '').trim().toLowerCase()) {
+    case 'service':
+      return 'Service';
+    case 'parts':
+      return 'Parts';
+    case 'fi':
+      return 'F&I';
+    case 'sales':
+    default:
+      return 'Sales';
+  }
+}
+
+function getWeeklyTrainingTuneScope(roleLabel, roleType, dealershipId, dealershipName = '') {
+  const normalizedRole = normalizeRoleLabel(roleLabel);
+  const resolvedRoleType = resolveAisRoleType(normalizedRole || roleLabel || roleType || 'sales');
+  const resolvedDealershipId = String(dealershipId || '').trim() || 'independent';
+  const isDepartmentScope = [
+    'manager',
+    'Sales Manager',
+    'Service Manager',
+    'Parts Manager',
+    'Finance Manager',
+  ].includes(normalizedRole);
+  const scopeType = isDepartmentScope ? 'department' : 'dealer';
+  const departmentKey = isDepartmentScope ? resolvedRoleType : 'dealer';
+  const scopeKey = scopeType === 'dealer' ? 'dealer' : `department-${departmentKey}`;
+  const scopeLabel = scopeType === 'dealer'
+    ? `${String(dealershipName || 'Current dealership').trim() || 'Current dealership'} storewide`
+    : `${getWeeklyTuneDepartmentLabel(departmentKey)} team`;
+
+  return {
+    dealershipId: resolvedDealershipId,
+    scopeType,
+    departmentKey,
+    scopeKey,
+    scopeLabel,
+  };
+}
+
+function getWeeklyTrainingTuneDocRef(dealershipId, scopeKey) {
+  if (!firebaseDb) return null;
+  const resolvedDealershipId = String(dealershipId || '').trim();
+  const resolvedScopeKey = String(scopeKey || '').trim();
+  if (!resolvedDealershipId || !resolvedScopeKey) return null;
+  return firebaseDb.collection('dealerships').doc(resolvedDealershipId).collection('weeklyLeadershipTunes').doc(resolvedScopeKey);
+}
+
+function getWeeklyTrainingTuneExpiryIso(updatedAt = null) {
+  const updatedDate = toDate(updatedAt) || new Date();
+  if (Number.isNaN(updatedDate.getTime())) return null;
+  return new Date(updatedDate.getTime() + WEEKLY_TUNE_DURATION_MS).toISOString();
+}
+
+function isWeeklyTrainingTuneExpired(data) {
+  if (!data) return false;
+  const expiryDate = toDate(data.expiresAt) || toDate(data.updatedAt);
+  if (!expiryDate) return false;
+  const expiryMs = data.expiresAt
+    ? expiryDate.getTime()
+    : expiryDate.getTime() + WEEKLY_TUNE_DURATION_MS;
+  return Date.now() >= expiryMs;
+}
+
+function inferWeeklyTrainingTuneFallback(sourceText, scope, roleProfile = null) {
+  const text = String(sourceText || '').trim();
+  const lower = text.toLowerCase();
+  const keywordMap = [
+    { trait: 'relationship', patterns: [/smile/, /warm/, /welcome/, /rapport/, /friendly/, /connect/, /relationship/, /approachability/] },
+    { trait: 'listening', patterns: [/listen/, /hear/, /understand/, /ask/, /question/, /discover/, /clarify/] },
+    { trait: 'trust', patterns: [/trust/, /confidence/, /calm/, /reassure/, /reassuring/, /transparent/, /honest/] },
+    { trait: 'followUp', patterns: [/follow[\s-]?up/, /follow through/, /next step/, /timeline/, /check in/, /update/] },
+    { trait: 'closing', patterns: [/close/, /closing/, /ask for/, /decision/, /commit/, /commitment/, /sign/] },
+    { trait: 'empathy', patterns: [/empathy/, /care/, /kind/, /patient/, /support/, /feel heard/] },
+  ];
+  const matchedTrait = keywordMap.find((entry) => entry.patterns.some((pattern) => pattern.test(lower)))?.trait
+    || (roleProfile?.roleType === 'service' ? 'listening' : 'trust');
+  const fallbackTitle = text
+    ? text.split(/\s+/).slice(0, 5).join(' ')
+    : `${getWeeklyTuneDepartmentLabel(scope?.departmentKey || roleProfile?.roleType || 'sales')} coaching`;
+  const normalizedTheme = text
+    ? `${text.replace(/\s+/g, ' ').trim()}`
+    : `${getWeeklyTuneDepartmentLabel(scope?.departmentKey || roleProfile?.roleType || 'sales')} training emphasis`;
+  const coachingDirection = text
+    ? `Keep the weekly training centered on ${text.replace(/\s+/g, ' ').trim().toLowerCase()}.`
+    : `Keep the weekly training centered on ${getWeeklyTuneDepartmentLabel(scope?.departmentKey || roleProfile?.roleType || 'sales').toLowerCase()} fundamentals.`;
+  const lessonBias = matchedTrait === 'relationship'
+    ? 'Warm openings, rapport, and visible friendliness.'
+    : matchedTrait === 'listening'
+      ? 'Slower discovery, better questions, and stronger reflection.'
+      : matchedTrait === 'trust'
+        ? 'Calm, reassuring delivery with clearer confidence.'
+        : matchedTrait === 'followUp'
+          ? 'Tighter next steps, follow-through, and timeline clarity.'
+          : matchedTrait === 'closing'
+            ? 'Cleaner asks, clearer decisions, and stronger close behavior.'
+            : 'More supportive, human coaching behavior.';
+
+  return {
+    title: fallbackTitle,
+    normalizedTheme,
+    focusTrait: matchedTrait,
+    lessonBias,
+    coachingDirection,
+    leaderMessage: coachingDirection,
+    sourceText: text,
+  };
+}
+
+async function normalizeWeeklyTrainingTuneOutput({ sourceText, scope, roleProfile = null }) {
+  const fallback = inferWeeklyTrainingTuneFallback(sourceText, scope, roleProfile);
+  if (!String(sourceText || '').trim()) {
+    return fallback;
+  }
+
+  const prompt = [
+    'You are Sprocket, AutoKnerd\'s dealership coaching assistant.',
+    'Normalize a manager coaching request into a short weekly training theme.',
+    'The result will bias session generation softly, but the learner\'s weakest trait must still drive the core session.',
+    `Role: ${roleProfile?.roleLabel || 'Manager'}. Department: ${getWeeklyTuneDepartmentLabel(scope?.departmentKey || roleProfile?.roleType || 'sales')}.`,
+    `Original request: ${sourceText}`,
+    'Return JSON only with:',
+    '{',
+    '  "title": "short title",',
+    '  "normalizedTheme": "one plain-English sentence describing the weekly coaching theme",',
+    '  "focusTrait": "empathy | listening | trust | followUp | closing | relationship",',
+    '  "lessonBias": "short phrase describing the desired practice flavor",',
+    '  "coachingDirection": "one short sentence telling the session generator how to softly bias the lesson",',
+    '  "leaderMessage": "one short sentence the leader can read back to the team"',
+    '}',
+    'Rules:',
+    '- Keep it practical, dealership-native, and supportive.',
+    '- Do not make it a hard override.',
+    '- Keep the theme short and concrete.',
+  ].filter(Boolean).join('\n');
+
+  const raw = await callGemini(prompt, JSON.stringify(fallback));
+  const parsed = extractJson(raw);
+  const output = parsed && typeof parsed === 'object' ? parsed : {};
+  const focusTrait = ['empathy', 'listening', 'trust', 'followUp', 'closing', 'relationship'].includes(String(output.focusTrait || '').trim())
+    ? String(output.focusTrait).trim()
+    : fallback.focusTrait;
+
+  return {
+    title: sanitizeBrandAgnosticText(output.title || fallback.title),
+    normalizedTheme: sanitizeBrandAgnosticText(output.normalizedTheme || fallback.normalizedTheme),
+    focusTrait,
+    lessonBias: sanitizeBrandAgnosticText(output.lessonBias || fallback.lessonBias),
+    coachingDirection: sanitizeBrandAgnosticText(output.coachingDirection || fallback.coachingDirection),
+    leaderMessage: sanitizeBrandAgnosticText(output.leaderMessage || fallback.leaderMessage),
+    sourceText: fallback.sourceText,
+  };
+}
+
+async function fetchWeeklyTrainingTune({ dealershipId, roleProfile, scope = null, dealershipName = '' }) {
+  if (!firebaseDb) return null;
+  const resolvedScope = scope || getWeeklyTrainingTuneScope(roleProfile?.roleLabel, roleProfile?.roleType, dealershipId, dealershipName);
+  const docRef = getWeeklyTrainingTuneDocRef(resolvedScope.dealershipId, resolvedScope.scopeKey);
+  if (!docRef) return null;
+  const snap = await docRef.get().catch(() => null);
+  if (!snap?.exists) {
+    return {
+      ...resolvedScope,
+      dealershipId: resolvedScope.dealershipId,
+      tune: null,
+    };
+  }
+
+  const data = snap.data() || {};
+  if (isWeeklyTrainingTuneExpired(data)) {
+    return {
+      ...resolvedScope,
+      dealershipId: resolvedScope.dealershipId,
+      tune: null,
+    };
+  }
+  const updatedAt = toIso(data.updatedAt) || null;
+  const expiresAt = toIso(data.expiresAt) || getWeeklyTrainingTuneExpiryIso(updatedAt);
+  return {
+    ...resolvedScope,
+    dealershipId: String(data.dealershipId || resolvedScope.dealershipId || '').trim(),
+    scopeType: String(data.scopeType || resolvedScope.scopeType || 'dealer').trim(),
+    departmentKey: String(data.departmentKey || resolvedScope.departmentKey || 'dealer').trim(),
+    scopeKey: String(data.scopeKey || resolvedScope.scopeKey || 'dealer').trim(),
+    scopeLabel: String(data.scopeLabel || resolvedScope.scopeLabel || '').trim(),
+    tune: {
+      title: sanitizeBrandAgnosticText(data.title || ''),
+      normalizedTheme: sanitizeBrandAgnosticText(data.normalizedTheme || data.theme || data.summary || ''),
+      focusTrait: ['empathy', 'listening', 'trust', 'followUp', 'closing', 'relationship'].includes(String(data.focusTrait || '').trim())
+        ? String(data.focusTrait).trim()
+        : null,
+      lessonBias: sanitizeBrandAgnosticText(data.lessonBias || ''),
+      coachingDirection: sanitizeBrandAgnosticText(data.coachingDirection || data.leaderMessage || ''),
+      leaderMessage: sanitizeBrandAgnosticText(data.leaderMessage || data.coachingDirection || ''),
+      sourceText: sanitizeBrandAgnosticText(data.sourceText || data.rawText || ''),
+      updatedAt,
+      expiresAt,
+      updatedByUserId: String(data.updatedByUserId || '').trim() || null,
+      updatedByName: String(data.updatedByName || '').trim() || null,
+      updatedByRole: String(data.updatedByRole || '').trim() || null,
+    },
   };
 }
 
@@ -1426,6 +1680,20 @@ const MOCK_ROLE_PRESETS = {
       relationship: 82,
     },
   },
+  'Demo Specialist': {
+    name: 'Demo AutoKnerd',
+    role: 'Demo Specialist',
+    xp: 0,
+    freshUpMeter: 0,
+    stats: {
+      empathy: 78,
+      listening: 78,
+      trust: 78,
+      followUp: 78,
+      closing: 78,
+      relationship: 78,
+    },
+  },
 };
 
 function getMockRolePreset(roleLabel) {
@@ -1495,6 +1763,7 @@ function buildMockMomentumSeries(roleLabel, roleType, focusTrait) {
     'General Manager': [57, 24, 82, 18, 95, 68],
     Owner: [68, 31, 88, 22, 98, 77],
     Trainer: [79, 44, 92, 37, 99, 71],
+    'Demo Specialist': [76, 34, 89, 29, 96, 73],
     sales: [8, 94, 15, 86, 22, 100],
     service: [88, 14, 91, 24, 77, 48],
     parts: [73, 11, 68, 19, 95, 27],
@@ -1540,11 +1809,13 @@ function buildMockManagerStoreSummary({
   biggestOpportunity,
   todayFocus,
   scopeLabel,
+  weeklyTrainingTune = null,
 }) {
   return {
     dealershipId,
     dealershipName,
     scopeLabel: scopeLabel || dealershipName,
+    weeklyTrainingTune,
     storePerformance,
     trendLabel,
     biggestOpportunity,
@@ -1571,6 +1842,27 @@ function buildMockManagerStoreSummary({
 }
 
 function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userData }) {
+  const isDealerScope = ['Owner', 'General Manager'].includes(roleProfile.roleLabel);
+  const weeklyTrainingTune = {
+    dealershipId: userData?.dealershipId || 'mock-dealership',
+    scopeType: isDealerScope ? 'dealer' : 'department',
+    departmentKey: isDealerScope ? 'dealer' : roleProfile.roleType,
+    scopeKey: isDealerScope ? 'dealer' : `department-${roleProfile.roleType}`,
+    scopeLabel: isDealerScope
+      ? `${userData?.dealershipName || 'Mock Dealership'} storewide`
+      : `${getWeeklyTuneDepartmentLabel(roleProfile.roleType)} team`,
+    tune: {
+      title: 'Warm openings',
+      normalizedTheme: 'Lead with a warmer opening and a more human first impression.',
+      focusTrait: 'relationship',
+      lessonBias: 'Warm first impressions and visible friendliness.',
+      coachingDirection: 'Keep the weekly training centered on warm openings and a friendlier first impression.',
+      leaderMessage: 'Train for warmer openings and a more visible smile.',
+      sourceText: 'Warm openings',
+      updatedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + WEEKLY_TUNE_DURATION_MS).toISOString(),
+    },
+  };
   if (['Owner', 'General Manager'].includes(roleProfile.roleLabel)) {
     const sharedTodayFocus = buildManagerTodayFocus(roleProfile, focusTrait, `${MOCK_USER_ID}:today-focus`);
     const storeOne = buildMockManagerStoreSummary({
@@ -1685,6 +1977,7 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
         body: 'Use a tighter coaching plan to steady the team before the next cycle.',
       },
       todayFocus: sharedTodayFocus,
+      weeklyTrainingTune,
     });
 
     const storeTwo = buildMockManagerStoreSummary({
@@ -1797,6 +2090,7 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
         body: 'A steadier follow-up cadence will keep this store from leaking opportunities.',
       },
       todayFocus: buildManagerTodayFocus(roleProfile, 'trust', `${MOCK_USER_ID}:store-2-focus`),
+      weeklyTrainingTune,
     });
 
     const storeThree = buildMockManagerStoreSummary({
@@ -1909,6 +2203,7 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
         body: 'The lane is healthy. Keep the team moving with tighter end-of-visit follow-up.',
       },
       todayFocus: buildManagerTodayFocus(roleProfile, 'followUp', `${MOCK_USER_ID}:store-3-focus`),
+      weeklyTrainingTune,
     });
 
     const storeSummaries = [storeOne, storeTwo, storeThree];
@@ -1946,6 +2241,7 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
       stores: storeSummaries,
       mode: 'multi-store',
       scopeLabel: 'All stores',
+      weeklyTrainingTune,
     };
   }
 
@@ -2061,6 +2357,7 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
     },
     todayFocus,
     autoForgeFocus: `This week's focus: ${TRAIT_LABELS[focusTrait] || focusTrait} across team`,
+    weeklyTrainingTune,
     departmentAverageScores,
     departmentMomentum,
     momentumSeries,
@@ -2108,10 +2405,30 @@ function buildMockUserBundle(roleOverride = null) {
   const streak = calculateStreak(recentTimestamps);
   const momentumScore = Math.max(0, Math.min(100, Math.round(Math.max(averageSkill, userData.freshUpMeter / 1.25))));
   const momentumSeries = buildMockMomentumSeries(roleProfile.roleLabel, roleProfile.roleType, focusTrait);
-  const lessonCategory = pickRoleLessonCategory(roleProfile.roleLabel, roleProfile.roleType, focusTrait, `${MOCK_USER_ID}:${dateKey(new Date())}`);
+  const weeklyTrainingTune = {
+    dealershipId: userData.dealershipId,
+    scopeType: ['Owner', 'General Manager'].includes(roleProfile.roleLabel) ? 'dealer' : 'department',
+    departmentKey: ['Owner', 'General Manager'].includes(roleProfile.roleLabel) ? 'dealer' : roleProfile.roleType,
+    scopeKey: ['Owner', 'General Manager'].includes(roleProfile.roleLabel) ? 'dealer' : `department-${roleProfile.roleType}`,
+    scopeLabel: ['Owner', 'General Manager'].includes(roleProfile.roleLabel)
+      ? `${userData.dealershipName} storewide`
+      : `${getWeeklyTuneDepartmentLabel(roleProfile.roleType)} team`,
+    tune: {
+      title: 'Warm openings',
+      normalizedTheme: 'Train for a friendlier first impression.',
+      focusTrait: 'relationship',
+      lessonBias: 'Warm first impressions and visible friendliness.',
+      coachingDirection: 'Keep the weekly training centered on warm openings and a friendlier first impression.',
+      leaderMessage: 'Train for warmer openings and a more visible smile.',
+      sourceText: 'Warm openings',
+      updatedAt: makeMockIsoDate(0, 12, 0),
+      expiresAt: new Date(Date.now() + WEEKLY_TUNE_DURATION_MS).toISOString(),
+    },
+  };
+  const lessonCategory = pickRoleLessonCategory(roleProfile.roleLabel, roleProfile.roleType, focusTrait, `${MOCK_USER_ID}:${dateKey(new Date())}:${weeklyTrainingTune.tune.focusTrait}`);
   const lessonProfile = getLessonCategoryProfile(lessonCategory);
   const lessonLibrary = buildLessonLibrary(roleProfile.roleLabel, roleProfile.roleType, focusTrait, lessonCategory);
-  const focus = buildMissionFocus(focusTrait, roleProfile.roleLabel, lessonCategory);
+  const focus = buildMissionFocus(focusTrait, roleProfile.roleLabel, lessonCategory, weeklyTrainingTune.tune);
   const freshUpExperience = getFreshUpExperience(roleProfile.roleLabel, roleProfile.roleType);
   const managerDashboard = isManagerDashboardRole(roleProfile.roleLabel)
     ? buildMockManagerDashboard({
@@ -2239,6 +2556,7 @@ function buildMockUserBundle(roleOverride = null) {
     momentumSeries,
     managerDashboard,
     developerDashboard,
+    weeklyTrainingTune,
   };
 }
 
@@ -2248,7 +2566,7 @@ function inferAutoForgeDepartment(roleLabel) {
   if (role === 'Parts Consultant' || role === 'Parts Manager') return 'Parts';
   if (role === 'Finance Manager') return 'F&I';
   if (role === 'Sales Consultant' || role === 'BDC' || role === 'Sales Manager' || role === 'manager') return 'Sales';
-  if (role === 'General Manager' || role === 'Owner' || role === 'Trainer' || role === 'Admin' || role === 'Developer') {
+  if (role === 'General Manager' || role === 'Owner' || role === 'Trainer' || role === 'Demo Specialist' || role === 'Admin' || role === 'Developer') {
     return 'Storewide Leadership';
   }
   return 'Storewide';
@@ -3724,7 +4042,7 @@ function summarizeRatings(ratings) {
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
 
-function buildStartFallback({ user, focus, insight, roleType, targetUserTurns, lessonCategory, lessonProfile }) {
+function buildStartFallback({ user, focus, insight, roleType, targetUserTurns, lessonCategory, lessonProfile, weeklyTune = null }) {
   const role = normalizeRoleLabel(user.role || 'Sales Consultant');
   const roleTheme = getRoleTheme(roleType);
   const customerName = 'Customer';
@@ -3743,22 +4061,27 @@ function buildStartFallback({ user, focus, insight, roleType, targetUserTurns, l
   };
   const focusLine = focus.microFocus || `Focus: ${focus.title} -> keep the customer calm and moving`;
   const lessonLine = lessonCategory || lessonProfile?.title || 'Product Knowledge';
+  const tuneLine = weeklyTune?.coachingDirection || weeklyTune?.leaderMessage || '';
+  const tunedCoachLine = tuneLine
+    ? `${coachByRole[roleType] || 'Keep the tone calm, human, and customer-first.'} Weekly tune: ${tuneLine}.`
+    : (coachByRole[roleType] || 'Keep the tone calm, human, and customer-first.');
+  const tunedFocusLine = tuneLine ? `${focusLine} Weekly tune: ${tuneLine}` : focusLine;
   return {
     title: `${role} ${lessonLine}`,
     lessonCategory: lessonCategory || null,
     lessonTitle: lessonProfile?.title || lessonLine,
-    description: `${role} customer scenario focused on ${lessonLine.toLowerCase()}.`,
-    coachLine: coachByRole[roleType] || 'Keep the tone calm, human, and customer-first.',
+    description: `${role} customer scenario focused on ${lessonLine.toLowerCase()}.${tuneLine ? ` Weekly tune: ${tuneLine}.` : ''}`,
+    coachLine: tunedCoachLine,
     customerOpening: openingByRole[roleType] || 'I need a little more clarity before I move on this.',
-    focus: focusLine,
+    focus: tunedFocusLine,
     trustLabel: 'Good',
     targetUserTurns: clamp(Math.round(Number(targetUserTurns || 5)), 3, 8),
     customerName,
-    scenarioSummary: `${roleTheme.customScenario} Lesson type: ${lessonLine}. Focused on ${customerConcern}.`,
+    scenarioSummary: `${roleTheme.customScenario} Lesson type: ${lessonLine}. Focused on ${customerConcern}.${tuneLine ? ` Weekly tune: ${tuneLine}.` : ''}`,
     customerConcern,
     insight,
     choices: buildDefaultChoices({
-      focusLine,
+      focusLine: tunedFocusLine,
       customerConcern,
       roleType,
       turnIndex: 1,
@@ -4033,6 +4356,7 @@ async function buildManagerDashboardData({ currentUserId, userData, roleProfile,
       dealershipId: '',
       dealershipName: resolveDealershipNameForUser(userData, fallbackDealershipNameMap, 'Current dealership'),
       scopeLabel: 'Current store',
+      weeklyTrainingTune: null,
     });
 
     return {
@@ -4044,6 +4368,21 @@ async function buildManagerDashboardData({ currentUserId, userData, roleProfile,
       scopeLabel: emptySummary.scopeLabel || 'Current scope',
     };
   }
+
+  const fetchTuneForStore = async (dealershipId, dealershipName) => {
+    const scope = getWeeklyTrainingTuneScope(roleProfile.roleLabel, roleProfile.roleType, dealershipId, dealershipName);
+    const tuneContext = await fetchWeeklyTrainingTune({
+      dealershipId,
+      roleProfile,
+      scope,
+      dealershipName,
+    }).catch(() => null);
+    return tuneContext;
+  };
+
+  const aggregateTune = dealershipIds.length === 1
+    ? await fetchTuneForStore(dealershipIds[0], resolveDealershipNameForUser(userData, await fetchDealershipNameMap(dealershipIds), dealershipIds[0] || 'Current dealership', dealershipIds))
+    : null;
 
   const userDocs = await fetchUsersByDealershipScope({
     dealershipIds,
@@ -4112,6 +4451,7 @@ async function buildManagerDashboardData({ currentUserId, userData, roleProfile,
       ? 'All Stores'
       : resolveDealershipNameForUser(userData, dealershipNameMap, dealershipIds[0] || 'Current dealership', dealershipIds),
     scopeLabel: dealershipIds.length > 1 ? 'All stores' : 'Current store',
+    weeklyTrainingTune: aggregateTune,
   });
 
   const shouldUseMultiStore = ['Owner', 'General Manager'].includes(roleProfile.roleLabel) && dealershipIds.length > 1;
@@ -4130,6 +4470,7 @@ async function buildManagerDashboardData({ currentUserId, userData, roleProfile,
         dealershipId,
         dealershipName,
         scopeLabel: dealershipName,
+        weeklyTrainingTune: await fetchTuneForStore(dealershipId, dealershipName),
       });
       storeSummaries.push(storeSummary);
     }
@@ -4665,6 +5006,7 @@ async function buildManagerDashboardSummary({
   dealershipId = '',
   dealershipName = '',
   scopeLabel = '',
+  weeklyTrainingTune = null,
 }) {
   const topMonitorCandidates = Array.isArray(monitorCandidates) ? monitorCandidates : [];
   const teamMonitor = [];
@@ -4751,6 +5093,7 @@ async function buildManagerDashboardSummary({
     dealershipId,
     dealershipName,
     scopeLabel: scopeLabel || dealershipName || 'Current scope',
+    weeklyTrainingTune,
     storePerformance: storePerformance || departmentMomentum,
     trendLabel: `${trendDelta >= 0 ? '+' : ''}${trendDelta}% Trend`,
     biggestOpportunity: {
@@ -4936,10 +5279,28 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
   const freshUpMeter = clampScore(userData.freshUpMeter || 0);
   const freshUpAvailable = userData.freshUpAvailable === true;
   const momentumScore = Math.max(0, Math.min(100, Math.round(Math.max(averageSkill, freshUpMeter / 1.25))));
-  const lessonCategory = pickRoleLessonCategory(roleProfile.roleLabel || effectiveRole, roleType, focusTrait, `${userDoc.id}:${dateKey(new Date())}`);
+  const weeklyTrainingScope = getWeeklyTrainingTuneScope(
+    roleProfile.roleLabel || effectiveRole,
+    roleType,
+    nextDealershipId || userData.dealershipId || userData.selfDeclaredDealershipId || 'independent',
+    resolvedDealershipName
+  );
+  const weeklyTrainingTuneBundle = await fetchWeeklyTrainingTune({
+    dealershipId: weeklyTrainingScope.dealershipId,
+    roleProfile,
+    scope: weeklyTrainingScope,
+    dealershipName: resolvedDealershipName,
+  }).catch(() => null);
+  const weeklyTrainingTune = weeklyTrainingTuneBundle?.tune || null;
+  const lessonCategory = pickRoleLessonCategory(
+    roleProfile.roleLabel || effectiveRole,
+    roleType,
+    focusTrait,
+    `${userDoc.id}:${dateKey(new Date())}:${weeklyTrainingTune?.focusTrait || weeklyTrainingTune?.title || 'baseline'}`
+  );
   const lessonProfile = getLessonCategoryProfile(lessonCategory);
   const lessonLibrary = buildLessonLibrary(roleProfile.roleLabel || effectiveRole, roleType, focusTrait, lessonCategory);
-  const focus = buildMissionFocus(focusTrait, roleProfile.roleLabel || 'Sales Consultant', lessonCategory);
+  const focus = buildMissionFocus(focusTrait, roleProfile.roleLabel || 'Sales Consultant', lessonCategory, weeklyTrainingTuneBundle?.tune || null);
   const freshUpExperience = getFreshUpExperience(roleProfile.roleLabel || effectiveRole, roleType);
   const insightFallback = momentumScore >= 85
     ? 'You are building strong momentum. Keep the same pace and protect the trust you already built.'
@@ -5012,6 +5373,8 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
       visibilityScope: roleProfile.visibilityScope,
       lessonCategory,
       roleOverride: overrideRole,
+      weeklyTrainingTune,
+      weeklyTrainingTuneScope: weeklyTrainingScope,
     },
     recentSessions: recentLogsToUse.slice(0, 3),
     badges,
@@ -5026,6 +5389,8 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
     lessonLibrary,
     managerDashboard,
     developerDashboard,
+    weeklyTrainingTune,
+    weeklyTrainingTuneScope: weeklyTrainingScope,
   };
 }
 
@@ -5161,6 +5526,7 @@ async function generateStartSession(bundle, lessonCategoryOverride = null, optio
   const roleProfile = bundle.roleProfile || getRoleProfile(user.role);
   const roleType = roleProfile.roleType;
   const roleTheme = getRoleTheme(roleType);
+  const weeklyTrainingTune = bundle.weeklyTrainingTune?.tune || bundle.weeklyTrainingTune || null;
   const sessionKey = `${user.userId || 'user'}:${dateKey(new Date())}`;
   const lessonCategory = bundle.lessonCategory || lessonCategoryOverride || pickRoleLessonCategory(roleProfile.roleLabel || user.role, roleType, user.focusTrait, sessionKey);
   const lessonProfile = bundle.lessonProfile || getLessonCategoryProfile(lessonCategory);
@@ -5169,12 +5535,18 @@ async function generateStartSession(bundle, lessonCategoryOverride = null, optio
   const weakest = TRAIT_LABELS[user.focusTrait] || user.focusTrait;
   const targetRange = getRoleExchangeTarget(roleType);
   const targetUserTurns = randomInt(targetRange.min, targetRange.max);
+  const weeklyTuneDirection = String(weeklyTrainingTune?.coachingDirection || weeklyTrainingTune?.leaderMessage || '').trim();
+  const weeklyTuneTheme = String(weeklyTrainingTune?.normalizedTheme || weeklyTrainingTune?.title || '').trim();
+  const weeklyTuneLine = weeklyTuneDirection || weeklyTuneTheme
+    ? `Weekly tune: ${weeklyTuneDirection || weeklyTuneTheme}.`
+    : '';
 
   const prompt = [
     'You are Sprocket, AutoKnerd\'s dealership coaching assistant.',
     `Create a realistic customer scenario for a ${roleProfile.roleLabel} that lasts ${targetUserTurns} user turns.`,
     `Current level: ${level.level}. XP: ${user.xp}. Streak: ${user.streak}. Momentum: ${user.momentumScore}.`,
     `Weakest skill: ${weakest}. Strongest skill: ${strongest}.`,
+    weeklyTuneLine ? `Weekly leadership tune: ${weeklyTuneDirection || weeklyTuneTheme}.` : null,
     `Role tone: ${roleTheme.tone}. Customer mindset: ${roleTheme.customerMindset}. Language: ${roleTheme.languageStyle}.`,
     `Role interaction label: ${roleTheme.interactionLabel}.`,
     `Lesson category: ${lessonCategory}.`,
@@ -5185,6 +5557,7 @@ async function generateStartSession(bundle, lessonCategoryOverride = null, optio
     `Today's focus: ${focus.title}. Micro focus: ${focus.microFocus}.`,
     `Sprocket insight: ${insight}.`,
     `Recommended session length: ${targetRange.min}-${targetRange.max} user turns.`,
+    weeklyTuneLine ? `The weekly tune should softly influence the opening, scenario flavor, and coaching line, but do not replace the weakest-skill target.` : null,
     'Do not mention any automotive manufacturer name, model name, trim name, or branded parts name.',
     'Use generic terms like the manufacturer, the vehicle, the truck, the SUV, OEM part, or manufacturer part.',
     'Return JSON only with:',
@@ -5218,6 +5591,7 @@ async function generateStartSession(bundle, lessonCategoryOverride = null, optio
     targetUserTurns,
     lessonCategory,
     lessonProfile,
+    weeklyTune: weeklyTrainingTune,
   });
   const raw = await callGemini(prompt, JSON.stringify(fallback));
   const parsed = extractJson(raw);
@@ -5353,6 +5727,7 @@ function serializeActiveSession(session) {
     choices: Array.isArray(session.choices) ? session.choices : [],
     messages: Array.isArray(session.messages) ? session.messages : [],
     startedAt: session.startedAt || null,
+    weeklyTrainingTune: session.weeklyTrainingTune || null,
   };
 }
 
@@ -5423,6 +5798,10 @@ async function handleBootstrap(req, res, url) {
         return sendJson(res, 403, { ok: false, message: 'Developer or Admin access required.' });
       }
     }
+    if (isDemoSpecialistUserId(userId) && !isTruthyFlag(mockMode)) {
+      const bundle = buildDemoSpecialistBundle();
+      return sendJson(res, 200, { ok: true, ...bundle, activeSession: null });
+    }
     const bundle = await withTimeout(
       fetchUserBundle(userId, roleOverride, mockMode, mockRoleOverride),
       8000,
@@ -5456,6 +5835,15 @@ async function handleAuthSignIn(req, res) {
     const requestedTemporaryDeveloperLogin = isTemporaryDeveloperLogin && isTruthyFlag(body.temporaryDeveloperLogin);
     if (!identifier) {
       return sendJson(res, 400, { ok: false, message: 'Email or staff ID is required.' });
+    }
+    if (isDemoSpecialistLogin(identifier, code)) {
+      const bundle = buildDemoSpecialistBundle();
+      const token = createAuthSession(bundle.user.userId);
+      return sendJson(res, 200, {
+        ok: true,
+        token,
+        bundle,
+      });
     }
     if (requestedTemporaryDeveloperLogin && !isLocalDevelopmentRequest(req)) {
       return sendJson(res, 403, { ok: false, message: 'Temporary developer login is disabled here.' });
@@ -5606,6 +5994,68 @@ async function buildTemporaryDeveloperBundle({ userId = 'developer-session', moc
     developerDashboard,
     roleProfile,
     insight: 'Developer access is ready. Use the console to inspect live dealership data.',
+    weeklyTrainingTune: null,
+  };
+}
+
+function buildDemoSpecialistBundle() {
+  const roleProfile = getRoleProfile('Demo Specialist');
+  const stats = normalizeStats({
+    empathy: { score: 78 },
+    listening: { score: 78 },
+    trust: { score: 78 },
+    followUp: { score: 78 },
+    closing: { score: 78 },
+    relationship: { score: 78 },
+  });
+  const focusTrait = 'trust';
+  const xp = 0;
+  const level = calculateLevel(xp);
+  const dealershipId = 'autoknerd-demo-lab';
+  const lessonCategory = pickRoleLessonCategory('Demo Specialist', roleProfile.roleType, focusTrait, `${DEMO_SPECIALIST_USER_ID}:${dateKey(new Date())}`);
+  const lessonProfile = getLessonCategoryProfile(lessonCategory);
+  const lessonLibrary = buildLessonLibrary('Demo Specialist', roleProfile.roleType, focusTrait, lessonCategory);
+  const focus = buildMissionFocus(focusTrait, 'Demo Specialist', lessonCategory);
+
+  return {
+    user: {
+      userId: DEMO_SPECIALIST_USER_ID,
+      name: 'Demo AutoKnerd',
+      email: '',
+      role: 'Demo Specialist',
+      sourceRole: 'Demo Specialist',
+      roleLabel: 'Demo Specialist',
+      dealershipId,
+      dealershipIds: [dealershipId],
+      selfDeclaredDealershipId: dealershipId,
+      dealershipName: 'AutoKnerd Demo Lab',
+      stats,
+      xp,
+      level,
+      streak: 0,
+      momentumScore: 0,
+      focusTrait,
+      strongTrait: 'relationship',
+      freshUpMeter: 0,
+      freshUpAvailable: false,
+      freshUpCoreSessionsSinceLast: 0,
+      roleType: roleProfile.roleType,
+      roleScope: roleProfile.maxEnrollmentScope,
+      visibilityScope: roleProfile.visibilityScope,
+      lessonCategory,
+      demoAccess: true,
+    },
+    recentSessions: [],
+    badges: [],
+    focus,
+    lessonProfile,
+    lessonLibrary,
+    freshUpExperience: getFreshUpExperience('Demo Specialist', roleProfile.roleType),
+    managerDashboard: null,
+    developerDashboard: null,
+    roleProfile,
+    insight: 'Launch a dealer-facing demo to show Owner, GM, Sales Consultant, or Service Writer experiences with mock data only.',
+    weeklyTrainingTune: null,
   };
 }
 
@@ -6639,6 +7089,7 @@ async function handleStartSession(req, res) {
       runningRatings: startingRatings,
       turnXpTotal: 0,
       responseModeCounts: { multiple_choice: 0, verbatim: 0 },
+      weeklyTrainingTune: bundle.weeklyTrainingTune || null,
     });
     const sessionPayload = serializeActiveSession(activeSessions.get(sessionId));
     if (!bundle.mockMode) {
@@ -6672,6 +7123,7 @@ async function handleStartSession(req, res) {
           runningRatings: startingRatings,
           responseModeCounts: { multiple_choice: 0, verbatim: 0 },
           messages,
+          weeklyTrainingTune: bundle.weeklyTrainingTune || null,
           session: sessionPayload,
         }, { includeCreatedAt: true });
       } catch (sessionError) {
@@ -6757,6 +7209,144 @@ async function handleUpdateUserProfile(req, res) {
   } catch (error) {
     console.error('[update-user-profile] failed', error);
     return sendJson(res, 500, { ok: false, message: 'Unable to update profile.' });
+  }
+}
+
+async function handleWeeklyTrainingTuneUpdate(req, res) {
+  try {
+    const body = await readBody(req);
+    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    const token = getRequestToken(req, url, body);
+    const authSession = getAuthSession(token);
+    if (!authSession?.userId) {
+      return sendJson(res, 401, { ok: false, authRequired: true, message: 'Sign in required.' });
+    }
+
+    const bundle = await fetchUserBundle(
+      authSession.userId,
+      body.roleOverride,
+      body.mockMode,
+      body.mockRoleOverride
+    );
+    if (!bundle?.user) {
+      return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
+    }
+
+    const roleLabel = normalizeRoleLabel(bundle.user.roleLabel || bundle.user.role);
+    if (!canSetWeeklyTrainingTune(roleLabel)) {
+      return sendJson(res, 403, { ok: false, message: 'Manager access required.' });
+    }
+
+    const dealershipId = String(body.dealershipId || bundle.user.dealershipId || bundle.user.selfDeclaredDealershipId || '').trim() || 'independent';
+    const dealershipName = String(body.dealershipName || bundle.user.dealershipName || bundle.user.storeName || bundle.user.companyName || '').trim();
+    const scope = getWeeklyTrainingTuneScope(roleLabel, bundle.roleProfile?.roleType || bundle.user.roleType, dealershipId, dealershipName);
+    const sourceText = String(body.sourceText || body.tuneText || body.text || body.weeklyTune || '').trim();
+    const mockMode = isTruthyFlag(body.mockMode);
+
+    if (!sourceText) {
+      if (!mockMode && firebaseDb) {
+        const docRef = getWeeklyTrainingTuneDocRef(scope.dealershipId, scope.scopeKey);
+        if (docRef) {
+          await docRef.delete().catch(() => null);
+        }
+      }
+      const refreshedBundle = mockMode
+        ? {
+            ...bundle,
+            weeklyTrainingTune: null,
+            managerDashboard: bundle.managerDashboard
+              ? {
+                  ...bundle.managerDashboard,
+                  weeklyTrainingTune: null,
+                }
+              : null,
+          }
+        : await fetchUserBundle(authSession.userId, body.roleOverride, body.mockMode, body.mockRoleOverride);
+      return sendJson(res, 200, {
+        ok: true,
+        cleared: true,
+        weeklyTrainingTune: null,
+        bundle: refreshedBundle || bundle,
+      });
+    }
+
+    const normalized = await normalizeWeeklyTrainingTuneOutput({
+      sourceText,
+      scope,
+      roleProfile: bundle.roleProfile,
+    });
+    const nextTune = {
+      dealershipId: scope.dealershipId,
+      scopeType: scope.scopeType,
+      departmentKey: scope.departmentKey,
+      scopeKey: scope.scopeKey,
+      scopeLabel: scope.scopeLabel,
+      sourceText,
+      rawText: sourceText,
+      ...normalized,
+      updatedByUserId: bundle.user.userId,
+      updatedByName: bundle.user.name || '',
+      updatedByRole: roleLabel,
+      updatedAt: new Date().toISOString(),
+      expiresAt: getWeeklyTrainingTuneExpiryIso(new Date()),
+      active: true,
+    };
+
+    if (!mockMode && firebaseDb) {
+      const docRef = getWeeklyTrainingTuneDocRef(scope.dealershipId, scope.scopeKey);
+      if (!docRef) {
+        return sendJson(res, 500, { ok: false, message: 'Unable to save the weekly tune.' });
+      }
+      await docRef.set({
+        dealershipId: nextTune.dealershipId,
+        scopeType: nextTune.scopeType,
+        departmentKey: nextTune.departmentKey,
+        scopeKey: nextTune.scopeKey,
+        scopeLabel: nextTune.scopeLabel,
+        sourceText: nextTune.sourceText,
+        rawText: nextTune.rawText,
+        title: nextTune.title,
+        normalizedTheme: nextTune.normalizedTheme,
+        focusTrait: nextTune.focusTrait,
+        lessonBias: nextTune.lessonBias,
+        coachingDirection: nextTune.coachingDirection,
+        leaderMessage: nextTune.leaderMessage,
+        updatedByUserId: nextTune.updatedByUserId,
+        updatedByName: nextTune.updatedByName,
+        updatedByRole: nextTune.updatedByRole,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        expiresAt: nextTune.expiresAt,
+        active: true,
+      }, { merge: true });
+    }
+
+    const refreshedBundle = mockMode
+      ? {
+          ...bundle,
+          weeklyTrainingTune: {
+            ...scope,
+            tune: nextTune,
+          },
+          managerDashboard: bundle.managerDashboard
+            ? {
+                ...bundle.managerDashboard,
+                weeklyTrainingTune: {
+                  ...scope,
+                  tune: nextTune,
+                },
+              }
+            : null,
+        }
+      : await fetchUserBundle(authSession.userId, body.roleOverride, body.mockMode, body.mockRoleOverride);
+
+    return sendJson(res, 200, {
+      ok: true,
+      weeklyTrainingTune: nextTune,
+      bundle: refreshedBundle || bundle,
+    });
+  } catch (error) {
+    console.error('[weekly-training-tune-update] failed', error);
+    return sendJson(res, 500, { ok: false, message: 'Unable to save the weekly tune.' });
   }
 }
 
@@ -7236,6 +7826,10 @@ async function routeRequest(req, res) {
 
   if (req.method === 'POST' && url.pathname === '/api/user/update') {
     return handleUpdateUserProfile(req, res);
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/weekly-tune/update') {
+    return handleWeeklyTrainingTuneUpdate(req, res);
   }
 
   if (req.method === 'POST' && url.pathname === '/api/session/start') {
