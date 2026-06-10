@@ -2307,12 +2307,18 @@ tailwind.config = {
 
 <div id="dealerDemoScreen" class="screen hidden-screen">
   <header class="fixed top-0 left-0 right-0 z-20 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-[0_0_20px_rgba(204,255,0,0.12)]">
-    <div class="flex items-center justify-between px-6 py-5">
+    <div class="flex items-center justify-between gap-3 px-6 py-5">
       <button id="dealerDemoBackBtn" type="button" class="flex items-center gap-3 text-on-surface-variant transition hover:text-on-surface">
         <span class="material-symbols-outlined">arrow_back</span>
         <span class="font-label text-xs font-bold uppercase tracking-[0.24em] text-[#CCFF00]">Dashboard</span>
       </button>
-      <p class="font-label text-xs font-bold uppercase tracking-[0.28em] text-[#06EBF7]">Dealer Demo</p>
+      <div class="flex items-center gap-3 md:gap-4">
+        <p class="hidden sm:block font-label text-xs font-bold uppercase tracking-[0.28em] text-[#06EBF7]">Dealer Demo</p>
+        <a href="https://calendar.app.google/JEqSARn8hvjPtvUy9" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-full bg-[#CCFF00] px-4 py-2 font-label text-xs font-bold uppercase tracking-[0.18em] text-black transition hover:bg-[#d8ff33] shadow-[0_0_20px_rgba(204,255,0,0.35)]">
+          <span class="material-symbols-outlined text-base">event</span>
+          <span>Book a Meeting</span>
+        </a>
+      </div>
     </div>
   </header>
   <main class="flex-grow pt-28 pb-32 px-4 md:px-8 max-w-6xl mx-auto space-y-8">
@@ -2328,6 +2334,21 @@ tailwind.config = {
       <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]">Demo safety</p>
       <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">Demo mode uses mock personas, mock stores, and local-only tune previews. It is safe to click around during a live dealer meeting.</p>
     </section>
+    <footer class="rounded-[2rem] border border-[#CCFF00]/25 bg-[#CCFF00]/[0.06] p-6 md:p-8 text-center shadow-[0_0_30px_rgba(204,255,0,0.08)]">
+      <p class="font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Ready to talk?</p>
+      <h3 class="mt-2 font-headline text-2xl md:text-3xl font-black text-on-surface">Let's get AutoKnerd in your store.</h3>
+      <p class="mt-2 text-sm text-on-surface-variant">Book a walkthrough or reach out directly — we'll tailor it to your team.</p>
+      <div class="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <a href="https://calendar.app.google/JEqSARn8hvjPtvUy9" target="_blank" rel="noopener noreferrer" class="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-[#CCFF00] px-6 py-3 font-label text-sm font-bold uppercase tracking-[0.18em] text-black transition hover:bg-[#d8ff33] shadow-[0_0_24px_rgba(204,255,0,0.4)]">
+          <span class="material-symbols-outlined text-lg">event</span>
+          <span>Book a Meeting</span>
+        </a>
+        <a href="mailto:Sprocket@autoknerd.com" class="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-[#CCFF00]/40 px-6 py-3 font-label text-sm font-bold uppercase tracking-[0.18em] text-[#CCFF00] transition hover:bg-[#CCFF00]/10">
+          <span class="material-symbols-outlined text-lg">mail</span>
+          <span class="normal-case tracking-normal">Sprocket@autoknerd.com</span>
+        </a>
+      </div>
+    </footer>
   </main>
 </div>
 
