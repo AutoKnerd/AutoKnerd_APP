@@ -120,6 +120,17 @@ tailwind.config = {
     #demoModePersonaSwitcher.demo-roles-collapsed { display: none; }
   }
 
+  /* Hide the hamburger menu + profile avatar while a demo persona is active.
+     Only applied when body has .demo-ui, so the main app is unaffected. */
+  body.demo-ui #homeMenuBtn,
+  body.demo-ui #managerMenuBtn,
+  body.demo-ui #aiOutputMenuBtn,
+  body.demo-ui #openProfileBtn,
+  body.demo-ui #managerOpenProfileBtn,
+  body.demo-ui #aiOutputProfileBtn {
+    display: none !important;
+  }
+
   .session-choice.selected {
     border-color: rgba(204, 255, 0, 0.7);
     background: rgba(255, 255, 255, 0.06);
@@ -4701,6 +4712,10 @@ tailwind.config = {
 
   function renderDealerDemoBanner() {
     const active = isDealerDemoActive();
+    // Hide the app's hamburger + profile avatar chrome while a demo persona is active.
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.classList.toggle('demo-ui', active);
+    }
     if (demoModeBanner) demoModeBanner.classList.toggle('hidden-screen', !active);
     if (demoModePersonaLabel) demoModePersonaLabel.textContent = active ? `${state.dealerDemoPersona} persona` : 'Persona';
     if (!demoModePersonaSwitcher) return;
