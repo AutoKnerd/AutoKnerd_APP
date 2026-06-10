@@ -2405,6 +2405,7 @@ tailwind.config = {
     dealerDemoActive: localStorage.getItem("autoknerd:dealerDemoActive") === "1",
     dealerDemoPersona: localStorage.getItem("autoknerd:dealerDemoPersona") || '',
     demoPersonaSwitching: false,
+    publicDemo: false,
     managerViewMode: localStorage.getItem("autoknerd:managerViewMode") || 'store',
     autoForgeReport: '',
     autoForgeMeta: null,
@@ -3247,6 +3248,7 @@ tailwind.config = {
       renderManagerModeFooter(state.managerViewMode, formatRoleTitle(state.bundle.user.roleLabel || state.bundle.user.role), 'home');
       if (refs.managerModeFooter) refs.managerModeFooter.classList.remove("hidden-screen");
     }
+    renderDealerDemoBanner();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -3295,6 +3297,21 @@ tailwind.config = {
   function isResetPasswordRoute() {
     const url = new URL(window.location.href);
     return url.pathname === '/reset-password' || url.searchParams.get('mode') === 'resetPassword';
+  }
+
+  // Public, no-login demo. Shareable link: /demo (optionally /demo?persona=owner).
+  function isPublicDemoRoute() {
+    const url = new URL(window.location.href);
+    return url.pathname === '/demo' || url.searchParams.get('demo') === '1';
+  }
+
+  function getPublicDemoPersonaFromLocation() {
+    const url = new URL(window.location.href);
+    const raw = String(url.searchParams.get('persona') || '').trim().toLowerCase();
+    if (!raw) return '';
+    const match = DEALER_DEMO_PERSONAS.find((p) => p.role.toLowerCase() === raw
+      || p.role.toLowerCase().replace(/[^a-z]/g, '') === raw.replace(/[^a-z]/g, ''));
+    return match ? match.role : '';
   }
 
   function getResetPasswordCodeFromLocation() {
@@ -3463,6 +3480,7 @@ tailwind.config = {
   }
 
   function canOpenDealerDemo(bundle = state.bundle) {
+    if (state.publicDemo) return true;
     const activeDeveloperBundle = getActiveDeveloperBundle();
     return Boolean(
       isDemoSpecialistAccount(bundle)
@@ -4702,6 +4720,8 @@ tailwind.config = {
     hideAllScreens();
     renderDealerDemoLauncher();
     renderDealerDemoBanner();
+    // Public visitors have no dashboard to go "back" to — hide the back button.
+    if (dealerDemoBackBtn) dealerDemoBackBtn.classList.toggle('hidden-screen', Boolean(state.publicDemo));
     if (dealerDemoScreen) dealerDemoScreen.classList.remove('hidden-screen');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -4719,6 +4739,13 @@ tailwind.config = {
     localStorage.setItem("autoknerd:managerViewMode", 'store');
     state.managerSelectedTeamMemberBundle = null;
     state.teamMemberProfileBundle = null;
+    // Keep the public demo URL in sync with the active persona so refresh/share reflects it.
+    if (state.publicDemo && window.history?.replaceState) {
+      const url = new URL(window.location.href);
+      if (url.pathname !== '/demo') url.pathname = '/demo';
+      url.searchParams.set('persona', persona.role.toLowerCase().replace(/[^a-z]/g, ''));
+      window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    }
     renderDealerDemoBanner();
     await loadBootstrap();
     state.demoPersonaSwitching = false;
@@ -4740,6 +4767,14 @@ tailwind.config = {
     localStorage.removeItem("autoknerd:dealerDemoPersona");
     state.managerSelectedTeamMemberBundle = null;
     state.teamMemberProfileBundle = null;
+    // In the public demo, "Exit" returns to the persona picker (no login). Strip any
+    // deep-linked persona from the URL so re-detection lands on the picker, not the same role.
+    if (state.publicDemo && window.history?.replaceState) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('persona');
+      if (url.pathname !== '/demo') url.pathname = '/demo';
+      window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    }
     renderDealerDemoBanner();
     await loadBootstrap();
   }
@@ -9015,8 +9050,25 @@ tailwind.config = {
       }, 120);
       return null;
     }
+    // Public, no-login demo: drop straight into the persona picker (or a deep-linked persona).
+    if (isPublicDemoRoute() && !getAuthToken()) {
+      state.publicDemo = true;
+      if (!isDealerDemoActive()) {
+        const persona = getPublicDemoPersonaFromLocation();
+        if (persona) {
+          state.dealerDemoActive = true;
+          state.dealerDemoPersona = persona;
+          state.managerViewMode = 'store';
+        } else {
+          clearTimeout(bootFallbackTimer);
+          if (bootScreen) bootScreen.classList.add("hidden-screen");
+          showDealerDemoLauncher();
+          return null;
+        }
+      }
+    }
     const token = getAuthToken();
-    if (!token) {
+    if (!token && !state.publicDemo) {
       clearTimeout(bootFallbackTimer);
       if (bootScreen) bootScreen.classList.add("hidden-screen");
       showAuth('Sign in to continue');

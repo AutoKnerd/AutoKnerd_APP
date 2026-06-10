@@ -7683,7 +7683,7 @@ async function handleCompleteSession(req, res) {
 async function routeRequest(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
 
-  if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/reset-password')) {
+  if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/reset-password' || url.pathname === '/demo')) {
     return serveIndex(res);
   }
 
