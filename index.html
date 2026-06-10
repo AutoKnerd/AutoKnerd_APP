@@ -104,6 +104,17 @@ tailwind.config = {
     display: none !important;
   }
 
+  #demoModePersonaSwitcher::-webkit-scrollbar { display: none; }
+
+  .demo-persona-btn {
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+  }
+
+  .demo-persona-btn.is-switching {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+
   .session-choice.selected {
     border-color: rgba(204, 255, 0, 0.7);
     background: rgba(255, 255, 255, 0.06);
@@ -2320,15 +2331,16 @@ tailwind.config = {
   </main>
 </div>
 
-<div id="demoModeBanner" class="hidden-screen fixed left-1/2 top-3 z-[70] w-[calc(100%-1.5rem)] max-w-4xl -translate-x-1/2 rounded-full border border-[#06EBF7]/25 bg-[#06171a]/90 px-3 py-2 shadow-[0_20px_60px_rgba(0,0,0,0.35),0_0_24px_rgba(6,235,247,0.12)] backdrop-blur-xl">
-  <div class="flex flex-wrap items-center justify-between gap-2">
-    <div class="flex min-w-0 items-center gap-2 px-2">
-      <span class="h-2 w-2 rounded-full bg-[#06EBF7] shadow-[0_0_12px_rgba(6,235,247,0.85)]"></span>
-      <p class="truncate font-label text-[10px] uppercase tracking-[0.24em] text-[#06EBF7]">Demo Mode · <span id="demoModePersonaLabel">Persona</span></p>
+<div id="demoModeBanner" class="hidden-screen fixed left-1/2 top-3 z-[70] w-[calc(100%-1.5rem)] max-w-4xl -translate-x-1/2 rounded-2xl border border-[#06EBF7]/25 bg-[#06171a]/90 px-3 py-2.5 shadow-[0_20px_60px_rgba(0,0,0,0.35),0_0_24px_rgba(6,235,247,0.12)] backdrop-blur-xl">
+  <div class="flex items-center gap-3">
+    <div class="flex shrink-0 items-center gap-2 pl-1">
+      <span class="h-2 w-2 shrink-0 rounded-full bg-[#06EBF7] shadow-[0_0_12px_rgba(6,235,247,0.85)]"></span>
+      <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#06EBF7] whitespace-nowrap">Demo</p>
     </div>
-    <div class="flex items-center gap-2">
-      <button id="demoModeResetBtn" type="button" class="rounded-full border border-[#06EBF7]/25 bg-[#06EBF7]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#06EBF7] transition hover:border-[#06EBF7]/45 hover:bg-[#06EBF7]/15">Reset demo</button>
-      <button id="demoModeExitBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface">Exit demo</button>
+    <div id="demoModePersonaSwitcher" class="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;"></div>
+    <div class="flex shrink-0 items-center gap-2">
+      <button id="demoModeResetBtn" type="button" class="rounded-full border border-[#06EBF7]/25 bg-[#06EBF7]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#06EBF7] transition hover:border-[#06EBF7]/45 hover:bg-[#06EBF7]/15 whitespace-nowrap">Reset</button>
+      <button id="demoModeExitBtn" type="button" class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant transition hover:border-white/20 hover:bg-white/10 hover:text-on-surface whitespace-nowrap">Exit</button>
     </div>
   </div>
 </div>
@@ -2392,6 +2404,7 @@ tailwind.config = {
     mockUserMode: localStorage.getItem("autoknerd:mockUserMode") === "1",
     dealerDemoActive: localStorage.getItem("autoknerd:dealerDemoActive") === "1",
     dealerDemoPersona: localStorage.getItem("autoknerd:dealerDemoPersona") || '',
+    demoPersonaSwitching: false,
     managerViewMode: localStorage.getItem("autoknerd:managerViewMode") || 'store',
     autoForgeReport: '',
     autoForgeMeta: null,
@@ -2616,6 +2629,7 @@ tailwind.config = {
   const dealerDemoPersonaGrid = document.getElementById("dealerDemoPersonaGrid");
   const demoModeBanner = document.getElementById("demoModeBanner");
   const demoModePersonaLabel = document.getElementById("demoModePersonaLabel");
+  const demoModePersonaSwitcher = document.getElementById("demoModePersonaSwitcher");
   const demoModeResetBtn = document.getElementById("demoModeResetBtn");
   const demoModeExitBtn = document.getElementById("demoModeExitBtn");
   const developerMenuSection = document.getElementById("developerMenuSection");
@@ -4625,10 +4639,33 @@ tailwind.config = {
     renderDealerDemoBanner();
   }
 
+  const DEMO_PERSONA_SHORT_NAMES = {
+    'Owner': 'Owner',
+    'General Manager': 'GM',
+    'Sales Manager': 'Sales Mgr',
+    'Sales Consultant': 'Consultant',
+    'Service Writer': 'Service',
+  };
+
   function renderDealerDemoBanner() {
     const active = isDealerDemoActive();
     if (demoModeBanner) demoModeBanner.classList.toggle('hidden-screen', !active);
     if (demoModePersonaLabel) demoModePersonaLabel.textContent = active ? `${state.dealerDemoPersona} persona` : 'Persona';
+    if (!demoModePersonaSwitcher) return;
+    demoModePersonaSwitcher.innerHTML = DEALER_DEMO_PERSONAS.map((p) => {
+      const isCurrent = active && state.dealerDemoPersona === p.role;
+      const isSwitching = state.demoPersonaSwitching && state.dealerDemoPersona === p.role;
+      const shortName = DEMO_PERSONA_SHORT_NAMES[p.role] || p.role;
+      const activeClasses = 'border-[#06EBF7]/55 bg-[#06EBF7]/20 text-[#06EBF7] cursor-default';
+      const inactiveClasses = 'border-white/10 bg-white/5 text-on-surface-variant hover:border-[#06EBF7]/35 hover:text-[#06EBF7] hover:bg-[#06EBF7]/10 cursor-pointer';
+      return `<button type="button" data-demo-switch-persona="${escapeHtml(p.role)}" class="demo-persona-btn rounded-full border ${isCurrent ? activeClasses : inactiveClasses}${isSwitching ? ' is-switching' : ''} px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] whitespace-nowrap">${escapeHtml(shortName)}</button>`;
+    }).join('');
+    demoModePersonaSwitcher.querySelectorAll('[data-demo-switch-persona]').forEach((btn) => {
+      const role = String(btn.getAttribute('data-demo-switch-persona') || '').trim();
+      if (role && role !== state.dealerDemoPersona) {
+        btn.addEventListener('click', () => startDealerDemo(role));
+      }
+    });
   }
 
   function renderDealerDemoLauncher() {
@@ -4672,8 +4709,10 @@ tailwind.config = {
   async function startDealerDemo(personaRole) {
     const persona = DEALER_DEMO_PERSONAS.find((item) => item.role === personaRole);
     if (!persona) return;
+    const isSwitch = isDealerDemoActive() && state.dealerDemoPersona !== personaRole;
     state.dealerDemoActive = true;
     state.dealerDemoPersona = persona.role;
+    state.demoPersonaSwitching = isSwitch;
     localStorage.setItem("autoknerd:dealerDemoActive", "1");
     localStorage.setItem("autoknerd:dealerDemoPersona", persona.role);
     state.managerViewMode = 'store';
@@ -4682,6 +4721,8 @@ tailwind.config = {
     state.teamMemberProfileBundle = null;
     renderDealerDemoBanner();
     await loadBootstrap();
+    state.demoPersonaSwitching = false;
+    renderDealerDemoBanner();
   }
 
   async function resetDealerDemo() {
@@ -8981,11 +9022,13 @@ tailwind.config = {
       showAuth('Sign in to continue');
       return null;
     }
-    if (bootScreen) bootScreen.classList.remove("hidden-screen");
-    updateBootState({
-      connection: 'Pulling live data',
-      status: 'Loading your dashboard',
-    });
+    if (!state.demoPersonaSwitching) {
+      if (bootScreen) bootScreen.classList.remove("hidden-screen");
+      updateBootState({
+        connection: 'Pulling live data',
+        status: 'Loading your dashboard',
+      });
+    }
     const impersonationUserId = String(state.developerImpersonationUserId || localStorage.getItem("autoknerd:developerImpersonationUserId") || '').trim();
     const roleOverride = impersonationUserId ? '' : getDeveloperRoleOverride();
     const mockRoleOverride = getMockRoleOverride() || roleOverride;

@@ -1794,6 +1794,79 @@ function offsetMockMomentumSeries(series, deltas) {
   }));
 }
 
+function buildMockTeamMember(spec) {
+  const {
+    id,
+    name,
+    role,
+    roleType = resolveAisRoleType(role),
+    xp = 5200,
+    streak = 5,
+    momentumScore = 55,
+    focusTrait = 'closing',
+    strongTrait = 'empathy',
+    freshUpMeter = 45,
+    freshUpAvailable = true,
+    stats = {},
+    recentSessions = [],
+    topSkill = 'Empathy',
+    watchArea = 'Closing',
+    lastActive = '1h ago',
+    dealershipName = '',
+  } = spec;
+  const statSeed = {
+    empathy: { score: stats.empathy ?? 70, lastUpdated: makeMockIsoDate(0, 10, 0) },
+    listening: { score: stats.listening ?? 70, lastUpdated: makeMockIsoDate(1, 12, 0) },
+    trust: { score: stats.trust ?? 70, lastUpdated: makeMockIsoDate(0, 11, 0) },
+    followUp: { score: stats.followUp ?? 55, lastUpdated: makeMockIsoDate(2, 9, 0) },
+    closing: { score: stats.closing ?? 55, lastUpdated: makeMockIsoDate(1, 15, 0) },
+    relationship: { score: stats.relationship ?? 70, lastUpdated: makeMockIsoDate(3, 8, 0) },
+  };
+  const member = {
+    id,
+    userId: id,
+    name,
+    role,
+    roleLabel: role,
+    roleType,
+    avatarUrl: '',
+    xp,
+    level: calculateLevel(xp),
+    streak,
+    momentumScore,
+    focusTrait,
+    strongTrait,
+    freshUpMeter,
+    freshUpAvailable,
+    momentumSeries: buildMockMomentumSeries(role, roleType, focusTrait),
+    stats: normalizeStats(statSeed),
+    recentSessions: recentSessions.length ? recentSessions : [
+      { title: 'Coaching Rep', timestamp: makeMockIsoDate(0, 14, 0), duration: 12, score: Math.min(100, Math.round(momentumScore + 20)) },
+      { title: 'Skill Drill', timestamp: makeMockIsoDate(2, 11, 0), duration: 9, score: Math.min(100, Math.round(momentumScore)) },
+    ],
+    topSkill,
+    watchArea,
+    lastActive,
+  };
+  if (dealershipName) member.dealershipName = dealershipName;
+  return member;
+}
+
+function teamMonitorFromMembers(members) {
+  return (Array.isArray(members) ? members : []).map((m) => ({
+    id: m.id,
+    userId: m.userId || m.id,
+    name: m.name,
+    role: m.role,
+    // teamMonitor cards expect a plain numeric level; calculateLevel() returns an object.
+    level: (m.level && typeof m.level === 'object') ? m.level.level : m.level,
+    topSkill: m.topSkill,
+    watchArea: m.watchArea,
+    lastActive: m.lastActive,
+    ...(m.dealershipName ? { dealershipName: m.dealershipName } : {}),
+  }));
+}
+
 function buildMockManagerStoreSummary({
   dealershipId,
   dealershipName,
@@ -1865,6 +1938,43 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
   };
   if (['Owner', 'General Manager'].includes(roleProfile.roleLabel)) {
     const sharedTodayFocus = buildManagerTodayFocus(roleProfile, focusTrait, `${MOCK_USER_ID}:today-focus`);
+    const storeOneTeam = [
+      buildMockTeamMember({
+        id: 'mock-owner-store-1-mgr', name: 'Marcus Hale', role: 'Sales Manager',
+        xp: 9120, streak: 12, momentumScore: 78, focusTrait: 'followUp', strongTrait: 'trust',
+        freshUpMeter: 64, topSkill: 'Trust', watchArea: 'Follow-Up', lastActive: '9m ago',
+        stats: { empathy: 82, listening: 79, trust: 88, followUp: 61, closing: 74, relationship: 80 },
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-1-team-1', name: 'Nadia Brooks', role: 'Sales Consultant',
+        xp: 6840, streak: 8, momentumScore: 61, focusTrait: 'closing', strongTrait: 'empathy',
+        freshUpMeter: 48, topSkill: 'Empathy', watchArea: 'Closing', lastActive: '18m ago',
+        stats: { empathy: 91, listening: 66, trust: 74, followUp: 53, closing: 49, relationship: 72 },
+        recentSessions: [
+          { title: 'High-Stress Resolution', timestamp: makeMockIsoDate(0, 14, 45), duration: 14, score: 82 },
+          { title: 'Product Inquiry', timestamp: makeMockIsoDate(1, 11, 15), duration: 8, score: 61 },
+          { title: 'Closing Demo', timestamp: makeMockIsoDate(3, 13, 0), duration: 45, score: 94 },
+        ],
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-1-team-2', name: 'Eli Mercer', role: 'Service Writer',
+        xp: 5420, streak: 6, momentumScore: 44, focusTrait: 'pacing', strongTrait: 'trust',
+        freshUpMeter: 37, freshUpAvailable: false, topSkill: 'Trust', watchArea: 'Pacing', lastActive: '2h ago',
+        stats: { empathy: 58, listening: 87, trust: 81, followUp: 46, closing: 33, relationship: 69 },
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-1-fi', name: 'Priya Nair', role: 'Finance Manager',
+        xp: 7260, streak: 7, momentumScore: 63, focusTrait: 'trust', strongTrait: 'closing',
+        freshUpMeter: 52, topSkill: 'Closing', watchArea: 'Trust', lastActive: '37m ago',
+        stats: { empathy: 64, listening: 71, trust: 58, followUp: 67, closing: 84, relationship: 66 },
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-1-parts', name: 'Devon Cole', role: 'Parts Consultant',
+        xp: 4310, streak: 4, momentumScore: 49, focusTrait: 'followUp', strongTrait: 'listening',
+        freshUpMeter: 33, topSkill: 'Listening', watchArea: 'Follow-Up', lastActive: '3h ago',
+        stats: { empathy: 60, listening: 82, trust: 70, followUp: 44, closing: 51, relationship: 63 },
+      }),
+    ];
     const storeOne = buildMockManagerStoreSummary({
       dealershipId: 'mock-store-1',
       dealershipName: 'Northline Toyota',
@@ -1882,96 +1992,8 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
       },
       departmentMomentum: 71,
       momentumSeries: offsetMockMomentumSeries(buildMockMomentumSeries('Owner', 'leadership', 'closing'), [4, -6, 8, -5, 11, -3]),
-      teamMonitor: [
-        {
-          id: 'mock-owner-store-1-team-1',
-          name: 'Nadia Brooks',
-          role: 'Sales Consultant',
-          level: 14,
-          topSkill: 'Empathy',
-          watchArea: 'Closing',
-          lastActive: '18m ago',
-        },
-        {
-          id: 'mock-owner-store-1-team-2',
-          name: 'Eli Mercer',
-          role: 'Service Writer',
-          level: 11,
-          topSkill: 'Trust',
-          watchArea: 'Pacing',
-          lastActive: '2h ago',
-        },
-      ],
-      teamMembers: [
-        {
-          id: 'mock-owner-store-1-team-1',
-          userId: 'mock-owner-store-1-team-1',
-          name: 'Nadia Brooks',
-          role: 'Sales Consultant',
-          roleLabel: 'Sales Consultant',
-          roleType: 'sales',
-          avatarUrl: '',
-          xp: 6840,
-          level: calculateLevel(6840),
-          streak: 8,
-          momentumScore: 61,
-          focusTrait: 'closing',
-          strongTrait: 'empathy',
-          freshUpMeter: 48,
-          freshUpAvailable: true,
-          momentumSeries: buildMockMomentumSeries('Sales Consultant', 'sales', 'closing'),
-          stats: normalizeStats({
-            empathy: { score: 91, lastUpdated: makeMockIsoDate(0, 10, 0) },
-            listening: { score: 66, lastUpdated: makeMockIsoDate(1, 14, 20) },
-            trust: { score: 74, lastUpdated: makeMockIsoDate(0, 11, 5) },
-            followUp: { score: 53, lastUpdated: makeMockIsoDate(2, 9, 0) },
-            closing: { score: 49, lastUpdated: makeMockIsoDate(1, 15, 45) },
-            relationship: { score: 72, lastUpdated: makeMockIsoDate(3, 8, 30) },
-          }),
-          recentSessions: [
-            { title: 'High-Stress Resolution', timestamp: makeMockIsoDate(0, 14, 45), duration: 14, score: 82 },
-            { title: 'Product Inquiry', timestamp: makeMockIsoDate(1, 11, 15), duration: 8, score: 61 },
-            { title: 'Closing Demo', timestamp: makeMockIsoDate(3, 13, 0), duration: 45, score: 94 },
-          ],
-          topSkill: 'Empathy',
-          watchArea: 'Closing',
-          lastActive: '18m ago',
-        },
-        {
-          id: 'mock-owner-store-1-team-2',
-          userId: 'mock-owner-store-1-team-2',
-          name: 'Eli Mercer',
-          role: 'Service Writer',
-          roleLabel: 'Service Writer',
-          roleType: 'service',
-          avatarUrl: '',
-          xp: 5420,
-          level: calculateLevel(5420),
-          streak: 6,
-          momentumScore: 44,
-          focusTrait: 'pacing',
-          strongTrait: 'trust',
-          freshUpMeter: 37,
-          freshUpAvailable: false,
-          momentumSeries: buildMockMomentumSeries('Service Writer', 'service', 'pacing'),
-          stats: normalizeStats({
-            empathy: { score: 58, lastUpdated: makeMockIsoDate(0, 9, 40) },
-            listening: { score: 87, lastUpdated: makeMockIsoDate(1, 13, 0) },
-            trust: { score: 81, lastUpdated: makeMockIsoDate(0, 12, 10) },
-            followUp: { score: 46, lastUpdated: makeMockIsoDate(2, 10, 30) },
-            closing: { score: 33, lastUpdated: makeMockIsoDate(1, 16, 5) },
-            relationship: { score: 69, lastUpdated: makeMockIsoDate(3, 8, 50) },
-          }),
-          recentSessions: [
-            { title: 'High-Stress Resolution', timestamp: makeMockIsoDate(0, 15, 20), duration: 12, score: 76 },
-            { title: 'Product Inquiry', timestamp: makeMockIsoDate(2, 10, 5), duration: 10, score: 58 },
-            { title: 'Closing Demo', timestamp: makeMockIsoDate(4, 13, 40), duration: 31, score: 71 },
-          ],
-          topSkill: 'Trust',
-          watchArea: 'Pacing',
-          lastActive: '2h ago',
-        },
-      ],
+      teamMonitor: teamMonitorFromMembers(storeOneTeam),
+      teamMembers: storeOneTeam,
       biggestOpportunity: {
         title: 'Closing and follow-up are all over the map this week.',
         body: 'Use a tighter coaching plan to steady the team before the next cycle.',
@@ -1980,6 +2002,52 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
       weeklyTrainingTune,
     });
 
+    const storeTwoTeam = [
+      buildMockTeamMember({
+        id: 'mock-owner-store-2-mgr', name: 'Dana Whitfield', role: 'Sales Manager',
+        xp: 8650, streak: 9, momentumScore: 72, focusTrait: 'closing', strongTrait: 'relationship',
+        freshUpMeter: 58, topSkill: 'Relationship', watchArea: 'Closing', lastActive: '21m ago',
+        stats: { empathy: 80, listening: 74, trust: 77, followUp: 63, closing: 66, relationship: 85 },
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-2-team-1', name: 'Maya Chen', role: 'Sales Consultant',
+        xp: 6120, streak: 5, momentumScore: 58, focusTrait: 'trust', strongTrait: 'listening',
+        freshUpMeter: 41, topSkill: 'Listening', watchArea: 'Follow-Up', lastActive: '42m ago',
+        stats: { empathy: 76, listening: 68, trust: 61, followUp: 44, closing: 53, relationship: 66 },
+        recentSessions: [
+          { title: 'Trade Walkthrough', timestamp: makeMockIsoDate(0, 16, 10), duration: 17, score: 68 },
+          { title: 'Objection Recovery', timestamp: makeMockIsoDate(1, 13, 45), duration: 11, score: 57 },
+        ],
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-2-team-2', name: 'Jose Ramirez', role: 'BDC', roleType: 'sales',
+        xp: 4780, streak: 4, momentumScore: 51, focusTrait: 'closing', strongTrait: 'listening',
+        freshUpMeter: 33, freshUpAvailable: false, topSkill: 'Listening', watchArea: 'Closing', lastActive: '4h ago',
+        stats: { empathy: 63, listening: 83, trust: 58, followUp: 47, closing: 46, relationship: 54 },
+        recentSessions: [
+          { title: 'Inbound Lead', timestamp: makeMockIsoDate(0, 17, 5), duration: 6, score: 73 },
+          { title: 'Lost Lead Recovery', timestamp: makeMockIsoDate(2, 12, 20), duration: 9, score: 49 },
+        ],
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-2-fi', name: 'Karen Liu', role: 'Finance Manager',
+        xp: 6980, streak: 6, momentumScore: 60, focusTrait: 'empathy', strongTrait: 'closing',
+        freshUpMeter: 47, topSkill: 'Closing', watchArea: 'Empathy', lastActive: '1h ago',
+        stats: { empathy: 55, listening: 70, trust: 72, followUp: 64, closing: 81, relationship: 63 },
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-2-parts-mgr', name: 'Tariq Bell', role: 'Parts Manager',
+        xp: 7540, streak: 8, momentumScore: 66, focusTrait: 'followUp', strongTrait: 'trust',
+        freshUpMeter: 51, topSkill: 'Trust', watchArea: 'Follow-Up', lastActive: '55m ago',
+        stats: { empathy: 67, listening: 78, trust: 82, followUp: 49, closing: 58, relationship: 71 },
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-2-parts', name: 'Sam Ortega', role: 'Parts Consultant',
+        xp: 4060, streak: 3, momentumScore: 47, focusTrait: 'closing', strongTrait: 'listening',
+        freshUpMeter: 29, freshUpAvailable: false, topSkill: 'Listening', watchArea: 'Closing', lastActive: '5h ago',
+        stats: { empathy: 59, listening: 80, trust: 66, followUp: 52, closing: 43, relationship: 60 },
+      }),
+    ];
     const storeTwo = buildMockManagerStoreSummary({
       dealershipId: 'mock-store-2',
       dealershipName: 'Valley Ford',
@@ -1997,94 +2065,8 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
       },
       departmentMomentum: 60,
       momentumSeries: offsetMockMomentumSeries(buildMockMomentumSeries('Owner', 'leadership', 'trust'), [-7, 4, -2, 8, -6, 12]),
-      teamMonitor: [
-        {
-          id: 'mock-owner-store-2-team-1',
-          name: 'Maya Chen',
-          role: 'Sales Consultant',
-          level: 12,
-          topSkill: 'Trust',
-          watchArea: 'Follow-Up',
-          lastActive: '42m ago',
-        },
-        {
-          id: 'mock-owner-store-2-team-2',
-          name: 'Jose Ramirez',
-          role: 'BDC',
-          level: 9,
-          topSkill: 'Listening',
-          watchArea: 'Closing',
-          lastActive: '4h ago',
-        },
-      ],
-      teamMembers: [
-        {
-          id: 'mock-owner-store-2-team-1',
-          userId: 'mock-owner-store-2-team-1',
-          name: 'Maya Chen',
-          role: 'Sales Consultant',
-          roleLabel: 'Sales Consultant',
-          roleType: 'sales',
-          avatarUrl: '',
-          xp: 6120,
-          level: calculateLevel(6120),
-          streak: 5,
-          momentumScore: 58,
-          focusTrait: 'trust',
-          strongTrait: 'listening',
-          freshUpMeter: 41,
-          freshUpAvailable: true,
-          momentumSeries: buildMockMomentumSeries('Sales Consultant', 'sales', 'trust'),
-          stats: normalizeStats({
-            empathy: { score: 76, lastUpdated: makeMockIsoDate(0, 8, 20) },
-            listening: { score: 68, lastUpdated: makeMockIsoDate(1, 10, 10) },
-            trust: { score: 61, lastUpdated: makeMockIsoDate(0, 9, 5) },
-            followUp: { score: 44, lastUpdated: makeMockIsoDate(2, 7, 0) },
-            closing: { score: 53, lastUpdated: makeMockIsoDate(1, 11, 15) },
-            relationship: { score: 66, lastUpdated: makeMockIsoDate(3, 6, 30) },
-          }),
-          recentSessions: [
-            { title: 'Trade Walkthrough', timestamp: makeMockIsoDate(0, 16, 10), duration: 17, score: 68 },
-            { title: 'Objection Recovery', timestamp: makeMockIsoDate(1, 13, 45), duration: 11, score: 57 },
-          ],
-          topSkill: 'Listening',
-          watchArea: 'Follow-Up',
-          lastActive: '42m ago',
-        },
-        {
-          id: 'mock-owner-store-2-team-2',
-          userId: 'mock-owner-store-2-team-2',
-          name: 'Jose Ramirez',
-          role: 'BDC',
-          roleLabel: 'BDC',
-          roleType: 'sales',
-          avatarUrl: '',
-          xp: 4780,
-          level: calculateLevel(4780),
-          streak: 4,
-          momentumScore: 51,
-          focusTrait: 'closing',
-          strongTrait: 'listening',
-          freshUpMeter: 33,
-          freshUpAvailable: false,
-          momentumSeries: buildMockMomentumSeries('BDC', 'sales', 'closing'),
-          stats: normalizeStats({
-            empathy: { score: 63, lastUpdated: makeMockIsoDate(0, 7, 5) },
-            listening: { score: 83, lastUpdated: makeMockIsoDate(1, 9, 20) },
-            trust: { score: 58, lastUpdated: makeMockIsoDate(0, 8, 10) },
-            followUp: { score: 47, lastUpdated: makeMockIsoDate(2, 6, 40) },
-            closing: { score: 46, lastUpdated: makeMockIsoDate(1, 10, 25) },
-            relationship: { score: 54, lastUpdated: makeMockIsoDate(3, 7, 15) },
-          }),
-          recentSessions: [
-            { title: 'Inbound Lead', timestamp: makeMockIsoDate(0, 17, 5), duration: 6, score: 73 },
-            { title: 'Lost Lead Recovery', timestamp: makeMockIsoDate(2, 12, 20), duration: 9, score: 49 },
-          ],
-          topSkill: 'Listening',
-          watchArea: 'Closing',
-          lastActive: '4h ago',
-        },
-      ],
+      teamMonitor: teamMonitorFromMembers(storeTwoTeam),
+      teamMembers: storeTwoTeam,
       biggestOpportunity: {
         title: 'Trust is solid, but follow-up is slipping at the edges.',
         body: 'A steadier follow-up cadence will keep this store from leaking opportunities.',
@@ -2093,6 +2075,46 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
       weeklyTrainingTune,
     });
 
+    const storeThreeTeam = [
+      buildMockTeamMember({
+        id: 'mock-owner-store-3-team-1', name: 'Priya Shah', role: 'Service Manager',
+        xp: 7420, streak: 10, momentumScore: 77, focusTrait: 'closing', strongTrait: 'trust',
+        freshUpMeter: 66, topSkill: 'Trust', watchArea: 'Closing', lastActive: '12m ago',
+        stats: { empathy: 72, listening: 88, trust: 86, followUp: 74, closing: 68, relationship: 79 },
+        recentSessions: [
+          { title: 'Service Handoff', timestamp: makeMockIsoDate(0, 14, 15), duration: 16, score: 88 },
+          { title: 'Rush Repair', timestamp: makeMockIsoDate(1, 11, 30), duration: 13, score: 77 },
+        ],
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-3-team-2', name: 'Theo Grant', role: 'Service Writer',
+        xp: 6310, streak: 7, momentumScore: 68, focusTrait: 'pacing', strongTrait: 'listening',
+        freshUpMeter: 55, topSkill: 'Listening', watchArea: 'Pacing', lastActive: '1h ago',
+        stats: { empathy: 66, listening: 81, trust: 75, followUp: 72, closing: 60, relationship: 76 },
+        recentSessions: [
+          { title: 'MPI Review', timestamp: makeMockIsoDate(0, 13, 10), duration: 11, score: 84 },
+          { title: 'Pickup Delay', timestamp: makeMockIsoDate(2, 9, 5), duration: 9, score: 65 },
+        ],
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-3-fi', name: 'Glenn Park', role: 'Finance Manager',
+        xp: 7110, streak: 6, momentumScore: 64, focusTrait: 'listening', strongTrait: 'closing',
+        freshUpMeter: 49, topSkill: 'Closing', watchArea: 'Listening', lastActive: '48m ago',
+        stats: { empathy: 62, listening: 57, trust: 74, followUp: 70, closing: 83, relationship: 68 },
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-3-parts-mgr', name: 'Rosa Alvarez', role: 'Parts Manager',
+        xp: 7980, streak: 9, momentumScore: 73, focusTrait: 'closing', strongTrait: 'trust',
+        freshUpMeter: 60, topSkill: 'Trust', watchArea: 'Closing', lastActive: '26m ago',
+        stats: { empathy: 70, listening: 83, trust: 85, followUp: 76, closing: 59, relationship: 78 },
+      }),
+      buildMockTeamMember({
+        id: 'mock-owner-store-3-parts', name: 'Mia Donovan', role: 'Parts Consultant',
+        xp: 4520, streak: 5, momentumScore: 52, focusTrait: 'followUp', strongTrait: 'listening',
+        freshUpMeter: 36, topSkill: 'Listening', watchArea: 'Follow-Up', lastActive: '2h ago',
+        stats: { empathy: 64, listening: 84, trust: 72, followUp: 48, closing: 55, relationship: 67 },
+      }),
+    ];
     const storeThree = buildMockManagerStoreSummary({
       dealershipId: 'mock-store-3',
       dealershipName: 'Summit Service Center',
@@ -2110,94 +2132,8 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
       },
       departmentMomentum: 79,
       momentumSeries: offsetMockMomentumSeries(buildMockMomentumSeries('Owner', 'leadership', 'followUp'), [8, -2, 9, -4, 10, 6]),
-      teamMonitor: [
-        {
-          id: 'mock-owner-store-3-team-1',
-          name: 'Priya Shah',
-          role: 'Service Manager',
-          level: 15,
-          topSkill: 'Trust',
-          watchArea: 'Closing',
-          lastActive: '12m ago',
-        },
-        {
-          id: 'mock-owner-store-3-team-2',
-          name: 'Theo Grant',
-          role: 'Service Writer',
-          level: 13,
-          topSkill: 'Listening',
-          watchArea: 'Pacing',
-          lastActive: '1h ago',
-        },
-      ],
-      teamMembers: [
-        {
-          id: 'mock-owner-store-3-team-1',
-          userId: 'mock-owner-store-3-team-1',
-          name: 'Priya Shah',
-          role: 'Service Manager',
-          roleLabel: 'Service Manager',
-          roleType: 'service',
-          avatarUrl: '',
-          xp: 7420,
-          level: calculateLevel(7420),
-          streak: 10,
-          momentumScore: 77,
-          focusTrait: 'closing',
-          strongTrait: 'trust',
-          freshUpMeter: 66,
-          freshUpAvailable: true,
-          momentumSeries: buildMockMomentumSeries('Service Manager', 'service', 'closing'),
-          stats: normalizeStats({
-            empathy: { score: 72, lastUpdated: makeMockIsoDate(0, 9, 20) },
-            listening: { score: 88, lastUpdated: makeMockIsoDate(1, 12, 35) },
-            trust: { score: 86, lastUpdated: makeMockIsoDate(0, 10, 15) },
-            followUp: { score: 74, lastUpdated: makeMockIsoDate(2, 9, 45) },
-            closing: { score: 68, lastUpdated: makeMockIsoDate(1, 15, 10) },
-            relationship: { score: 79, lastUpdated: makeMockIsoDate(3, 7, 55) },
-          }),
-          recentSessions: [
-            { title: 'Service Handoff', timestamp: makeMockIsoDate(0, 14, 15), duration: 16, score: 88 },
-            { title: 'Rush Repair', timestamp: makeMockIsoDate(1, 11, 30), duration: 13, score: 77 },
-          ],
-          topSkill: 'Trust',
-          watchArea: 'Closing',
-          lastActive: '12m ago',
-        },
-        {
-          id: 'mock-owner-store-3-team-2',
-          userId: 'mock-owner-store-3-team-2',
-          name: 'Theo Grant',
-          role: 'Service Writer',
-          roleLabel: 'Service Writer',
-          roleType: 'service',
-          avatarUrl: '',
-          xp: 6310,
-          level: calculateLevel(6310),
-          streak: 7,
-          momentumScore: 68,
-          focusTrait: 'pacing',
-          strongTrait: 'listening',
-          freshUpMeter: 55,
-          freshUpAvailable: true,
-          momentumSeries: buildMockMomentumSeries('Service Writer', 'service', 'pacing'),
-          stats: normalizeStats({
-            empathy: { score: 66, lastUpdated: makeMockIsoDate(0, 8, 55) },
-            listening: { score: 81, lastUpdated: makeMockIsoDate(1, 11, 25) },
-            trust: { score: 75, lastUpdated: makeMockIsoDate(0, 9, 40) },
-            followUp: { score: 72, lastUpdated: makeMockIsoDate(2, 8, 15) },
-            closing: { score: 60, lastUpdated: makeMockIsoDate(1, 14, 30) },
-            relationship: { score: 76, lastUpdated: makeMockIsoDate(3, 7, 20) },
-          }),
-          recentSessions: [
-            { title: 'MPI Review', timestamp: makeMockIsoDate(0, 13, 10), duration: 11, score: 84 },
-            { title: 'Pickup Delay', timestamp: makeMockIsoDate(2, 9, 5), duration: 9, score: 65 },
-          ],
-          topSkill: 'Listening',
-          watchArea: 'Pacing',
-          lastActive: '1h ago',
-        },
-      ],
+      teamMonitor: teamMonitorFromMembers(storeThreeTeam),
+      teamMembers: storeThreeTeam,
       biggestOpportunity: {
         title: 'Follow-up and closing are the only things holding the floor back.',
         body: 'The lane is healthy. Keep the team moving with tighter end-of-visit follow-up.',
@@ -2217,12 +2153,15 @@ function buildMockManagerDashboard({ roleProfile, focusTrait, recentLogs, userDa
     };
     const aggregateMomentum = Math.round(storeSummaries.reduce((sum, store) => sum + Number(store.departmentMomentum || 0), 0) / storeSummaries.length);
     const aggregatePerformance = Math.round(storeSummaries.reduce((sum, store) => sum + Number(store.storePerformance || 0), 0) / storeSummaries.length);
-    const aggregateTeamMonitor = [
-      storeSummaries[0].teamMonitor?.[0],
-      storeSummaries[1].teamMonitor?.[0],
-      storeSummaries[2].teamMonitor?.[0],
-    ].filter(Boolean).slice(0, 2);
-    const aggregateTeamMembers = storeSummaries.flatMap((store) => store.teamMembers || []).slice(0, 2);
+    // Network-wide roster: every teammate across stores, tagged with their store
+    // so Owner/GM "All Stores" view gives oversight of the whole team — managers included.
+    const aggregateTeamMembers = storeSummaries.flatMap((store) =>
+      (store.teamMembers || []).map((member) => ({
+        ...member,
+        dealershipName: member.dealershipName || store.dealershipName,
+      }))
+    );
+    const aggregateTeamMonitor = teamMonitorFromMembers(aggregateTeamMembers);
 
     return {
       storePerformance: aggregatePerformance,
