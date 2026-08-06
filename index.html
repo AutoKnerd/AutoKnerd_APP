@@ -506,6 +506,10 @@ tailwind.config = {
       <button id="authSubmitBtn" type="button" class="w-full rounded-full bg-[#CCFF00] px-5 py-4 font-headline text-sm font-bold uppercase tracking-[0.18em] text-black transition hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(204,255,0,0.25)] active:scale-95">
         Continue
       </button>
+      <a id="authDemoBtn" href="/demo" class="flex w-full items-center justify-center gap-2 rounded-full border border-[#06EBF7]/30 bg-[#06EBF7]/10 px-5 py-4 font-headline text-sm font-bold uppercase tracking-[0.18em] text-[#06EBF7] transition hover:border-[#06EBF7]/50 hover:bg-[#06EBF7]/15 hover:shadow-[0_0_20px_rgba(6,235,247,0.2)] active:scale-95">
+        <span class="material-symbols-outlined text-base leading-none">play_circle</span>
+        <span>View Demo</span>
+      </a>
       <div class="flex flex-col gap-2 text-xs uppercase tracking-[0.24em] sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <p id="authStatusText" class="min-w-0 flex-1 text-on-surface-variant">Waiting for your account</p>
         <a
@@ -2340,20 +2344,20 @@ tailwind.config = {
   <main class="flex-grow pt-28 pb-32 px-4 md:px-8 max-w-6xl mx-auto space-y-8">
     <section class="relative overflow-hidden rounded-[2rem] border border-[#06EBF7]/20 bg-[radial-gradient(circle_at_top_left,rgba(6,235,247,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-6 md:p-8 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
       <div class="relative z-10 max-w-3xl">
-        <p class="font-label text-xs uppercase tracking-[0.3em] text-[#06EBF7]">AutoKnerd sales walkthrough</p>
-        <h1 class="mt-3 font-headline text-4xl md:text-6xl font-black leading-tight text-on-surface">Choose the story you want the dealer to see.</h1>
-        <p class="mt-4 text-base md:text-lg text-on-surface-variant leading-relaxed">Every card launches a mock-data-only experience. No live dealership records are changed, and weekly tune saves stay inside the demo.</p>
+        <p class="font-label text-xs uppercase tracking-[0.3em] text-[#06EBF7]">Interactive demo</p>
+        <h1 class="mt-3 font-headline text-4xl md:text-6xl font-black leading-tight text-on-surface">See AutoKnerd from your seat.</h1>
+        <p class="mt-4 text-base md:text-lg text-on-surface-variant leading-relaxed">Pick the role you play at the store and step into a live, clickable version of the app. Everything runs on sample data, so open anything you want — nothing here changes a real store.</p>
       </div>
     </section>
     <section id="dealerDemoPersonaGrid" class="grid gap-4 md:grid-cols-2"></section>
     <section class="rounded-3xl border border-[#CCFF00]/15 bg-black/25 p-5">
-      <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]">Demo safety</p>
-      <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">Demo mode uses mock personas, mock stores, and local-only tune previews. It is safe to click around during a live dealer meeting.</p>
+      <p class="font-label text-[10px] uppercase tracking-[0.24em] text-[#CCFF00]">Explore freely</p>
+      <p class="mt-2 text-sm leading-relaxed text-on-surface-variant">Every persona, store, and number on the other side is sample data. Click into anything, change a setting, run a full session — none of it touches a live store.</p>
     </section>
     <footer class="rounded-[2rem] border border-[#CCFF00]/25 bg-[#CCFF00]/[0.06] p-6 md:p-8 text-center shadow-[0_0_30px_rgba(204,255,0,0.08)]">
-      <p class="font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Ready to talk?</p>
+      <p class="font-label text-[10px] uppercase tracking-[0.28em] text-[#CCFF00]">Like what you see?</p>
       <h3 class="mt-2 font-headline text-2xl md:text-3xl font-black text-on-surface">Let's get AutoKnerd in your store.</h3>
-      <p class="mt-2 text-sm text-on-surface-variant">Book a walkthrough or reach out directly — we'll tailor it to your team.</p>
+      <p class="mt-2 text-sm text-on-surface-variant">Book a walkthrough or email us directly — we'll set it up around your team.</p>
       <div class="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
         <a href="https://calendar.app.google/JEqSARn8hvjPtvUy9" target="_blank" rel="noopener noreferrer" class="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-[#CCFF00] px-6 py-3 font-label text-sm font-bold uppercase tracking-[0.18em] text-black transition hover:bg-[#d8ff33] shadow-[0_0_24px_rgba(204,255,0,0.4)]">
           <span class="material-symbols-outlined text-lg">event</span>
@@ -2380,6 +2384,11 @@ tailwind.config = {
     </button>
     <div id="demoModePersonaSwitcher" class="demo-roles-collapsed order-last w-full flex flex-wrap items-center gap-1.5 sm:order-2 sm:w-auto sm:min-w-0 sm:flex-1 sm:flex-nowrap sm:overflow-x-auto" style="scrollbar-width:none;-webkit-overflow-scrolling:touch;"></div>
     <div class="order-3 ml-auto flex shrink-0 items-center gap-2">
+      <button id="demoModeExitBtn" type="button" class="hidden-screen inline-flex items-center gap-1.5 rounded-full border border-[#06EBF7]/30 bg-[#06EBF7]/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#06EBF7] transition hover:border-[#06EBF7]/50 hover:bg-[#06EBF7]/15 whitespace-nowrap">
+        <span class="material-symbols-outlined text-sm leading-none">logout</span>
+        <span class="hidden sm:inline">Exit Demo</span>
+        <span class="sm:hidden">Exit</span>
+      </button>
       <a href="https://calendar.app.google/JEqSARn8hvjPtvUy9" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 rounded-full bg-[#CCFF00] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-black transition hover:bg-[#d8ff33] shadow-[0_0_16px_rgba(204,255,0,0.35)] whitespace-nowrap">
         <span class="material-symbols-outlined text-sm leading-none">event</span>
         <span class="hidden sm:inline">Book a Meeting</span>
@@ -2496,37 +2505,37 @@ tailwind.config = {
     {
       role: 'Owner',
       title: 'Owner Demo',
-      eyebrow: 'Across stores',
-      summary: 'Show ownership which store needs attention, how stores compare, and how weekly leadership tune steers the network.',
-      talkTrack: ['Which store needs attention?', 'What behavior should we tune this week?', 'Which teammate needs coaching?'],
+      eyebrow: 'Across your stores',
+      summary: 'See every rooftop at a glance: which store needs you today, how they stack up against each other, and how one weekly adjustment steers coaching across the whole group.',
+      talkTrack: ['Which store needs me today?', 'What should we coach this week?', 'Who is ready to level up?'],
     },
     {
       role: 'General Manager',
       title: 'General Manager Demo',
-      eyebrow: 'One-store rhythm',
-      summary: 'Show how a GM runs the day: completion, CX averages, biggest opportunity, tune, and teammate drill-down.',
-      talkTrack: ['What is the team struggling with today?', 'How does the GM steer training?', 'What does coaching look like?'],
+      eyebrow: 'Your store, day to day',
+      summary: "Run your store's day from one screen — who is practicing, where CX is trending, your biggest opportunity this week, and a drill-down into any teammate.",
+      talkTrack: ['Where is my team stuck today?', 'How do I steer the week?', 'Who needs a one-on-one?'],
     },
     {
       role: 'Sales Manager',
       title: 'Sales Manager Demo',
-      eyebrow: 'Department coaching',
-      summary: 'Show the department view for a manager who wants to guide the week without picking every learner lesson manually.',
-      talkTrack: ['Who needs a nudge?', 'What skill is weakest?', 'How does the tune stay soft?'],
+      eyebrow: 'Coach your department',
+      summary: "Guide the week without building a single lesson plan. See who needs a nudge and let the app handle each rep's coaching for you.",
+      talkTrack: ['Who needs a nudge?', 'Which skill is slipping?', 'How light can I keep it?'],
     },
     {
       role: 'Sales Consultant',
       title: 'Sales Consultant Demo',
-      eyebrow: 'Learner view',
-      summary: 'Show what a salesperson sees when the app targets their weakest trait while still reflecting leadership tune.',
-      talkTrack: ['What is my mission today?', 'How does XP move?', 'What does practice feel like?'],
+      eyebrow: "A rep's day",
+      summary: 'Step into what your salespeople see: a daily mission aimed at their weakest skill, XP that keeps them coming back, and practice that feels like the floor, not a classroom.',
+      talkTrack: ['What is my mission today?', 'How do I earn XP?', 'What does practice feel like?'],
     },
     {
       role: 'Service Writer',
       title: 'Service Writer Demo',
-      eyebrow: 'Service lane view',
-      summary: 'Show service leaders and writers how the same coaching engine adapts to write-up, MPI, and pickup conversations.',
-      talkTrack: ['How does service training differ?', 'Where is trust leaking?', 'What does staff practice?'],
+      eyebrow: 'On the service drive',
+      summary: 'See the same coaching engine tuned for the service lane — the write-up, the MPI walk-through, and the pickup conversations your writers have all day.',
+      talkTrack: ['How does service coaching work?', 'Where is trust leaking?', 'What will my writers practice?'],
     },
   ];
   const bootScreen = document.getElementById("bootScreen");
@@ -4717,6 +4726,8 @@ tailwind.config = {
       document.body.classList.toggle('demo-ui', active);
     }
     if (demoModeBanner) demoModeBanner.classList.toggle('hidden-screen', !active);
+    // Exit is available in any demo persona view; clicking it returns to the persona picker.
+    if (demoModeExitBtn) demoModeExitBtn.classList.toggle('hidden-screen', !active);
     if (demoModePersonaLabel) demoModePersonaLabel.textContent = active ? `${state.dealerDemoPersona} persona` : 'Persona';
     if (!demoModePersonaSwitcher) return;
     demoModePersonaSwitcher.innerHTML = DEALER_DEMO_PERSONAS.map((p) => {
@@ -4776,8 +4787,12 @@ tailwind.config = {
     });
   }
 
-  function showDealerDemoLauncher() {
-    if (!canOpenDealerDemo()) return;
+  function showDealerDemoLauncher(options) {
+    // `force` bypasses the eligibility check: if the caller is EXITING a demo, the user was
+    // already inside one, so returning to the picker is always allowed — even when the only
+    // loaded bundle is the mock persona (which by role would fail canOpenDealerDemo).
+    const force = options === true || Boolean(options && options.force);
+    if (!force && !canOpenDealerDemo()) return;
     closeMenu();
     hideAllScreens();
     renderDealerDemoLauncher();
@@ -4822,23 +4837,33 @@ tailwind.config = {
     await loadBootstrap();
   }
 
-  async function exitDealerDemo() {
+  function exitDealerDemo() {
+    const wasInternalDemo = !state.publicDemo;
     state.dealerDemoActive = false;
     state.dealerDemoPersona = '';
     localStorage.removeItem("autoknerd:dealerDemoActive");
     localStorage.removeItem("autoknerd:dealerDemoPersona");
     state.managerSelectedTeamMemberBundle = null;
     state.teamMemberProfileBundle = null;
-    // In the public demo, "Exit" returns to the persona picker (no login). Strip any
-    // deep-linked persona from the URL so re-detection lands on the picker, not the same role.
+    // "Exit" always lands back on the persona picker ("the main demo screen"), never the
+    // app dashboard. Strip any deep-linked persona from the URL so a refresh re-lands there.
     if (state.publicDemo && window.history?.replaceState) {
       const url = new URL(window.location.href);
       url.searchParams.delete('persona');
       if (url.pathname !== '/demo') url.pathname = '/demo';
       window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
     }
+    // A logged-in operator was just viewing mock persona data; flag it so the picker's
+    // "Dashboard" back button reloads their real account instead of showing stale demo data.
+    state.demoNeedsRealReload = wasInternalDemo;
+    // Invalidate any bootstrap still in flight (e.g. the persona we just left) so it can't
+    // repaint the app over the picker after we land there.
+    state.bootstrapSeq = (state.bootstrapSeq || 0) + 1;
     renderDealerDemoBanner();
-    await loadBootstrap();
+    // Exit ALWAYS lands on the picker — synchronous and hang-proof, never a background
+    // reload that could repaint the app dashboard on top of it. force:true so it shows even
+    // when the only loaded bundle is the mock persona (which would otherwise fail eligibility).
+    showDealerDemoLauncher({ force: true });
   }
 
   function updateSettingsControls() {
@@ -9095,6 +9120,10 @@ tailwind.config = {
   }
 
   async function loadBootstrap() {
+    // Monotonic guard: if a newer navigation (or another bootstrap) starts while this one is
+    // awaiting the network, this call abandons its render so it can't clobber the newer
+    // screen — e.g. a slow persona load resolving after the user already exited to the picker.
+    const mySeq = (state.bootstrapSeq = (state.bootstrapSeq || 0) + 1);
     if (isResetPasswordRoute()) {
       clearTimeout(bootFallbackTimer);
       if (bootScreen) bootScreen.classList.add("hidden-screen");
@@ -9175,6 +9204,11 @@ tailwind.config = {
       }
       if (!payload.ok) {
         throw new Error(payload.message || 'Unable to load app data.');
+      }
+      // A newer navigation superseded this bootstrap while it was in flight — drop it so it
+      // can't overwrite state or repaint a screen the user has already moved on from.
+      if (mySeq !== state.bootstrapSeq) {
+        return null;
       }
       if (!demoActive) {
         saveAuthSession(token, payload.user.userId);
@@ -9927,7 +9961,14 @@ tailwind.config = {
   });
   if (openDealerDemoBtn) openDealerDemoBtn.addEventListener("click", showDealerDemoLauncher);
   if (dealerDemoBackBtn) dealerDemoBackBtn.addEventListener("click", () => {
-    showHome({ replaceRoute: true });
+    // Returning to the real app. If the operator was just in a demo persona, reload their
+    // live account so the dashboard shows real data — not the leftover mock demo bundle.
+    if (state.demoNeedsRealReload) {
+      state.demoNeedsRealReload = false;
+      void loadBootstrap();
+    } else {
+      showHome({ replaceRoute: true });
+    }
   });
   if (demoModeRolesToggle) demoModeRolesToggle.addEventListener("click", () => {
     const collapsed = demoModePersonaSwitcher?.classList.contains('demo-roles-collapsed');
