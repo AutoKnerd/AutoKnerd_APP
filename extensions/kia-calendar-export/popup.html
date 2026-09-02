@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Export calendar</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #16181d;
+        --muted: #646b7a;
+        --line: #dfe3ea;
+        --accent: #05141f;
+        --accent-fg: #ffffff;
+        --panel: #f6f7f9;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16181d;
+          --fg: #eef0f4;
+          --muted: #9aa2b1;
+          --line: #2c313a;
+          --accent: #eef0f4;
+          --accent-fg: #16181d;
+          --panel: #1e2128;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        width: 340px;
+        margin: 0;
+        padding: 14px;
+        background: var(--bg);
+        color: var(--fg);
+        font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      h1 { font-size: 14px; margin: 0 0 2px; }
+      .sub { color: var(--muted); font-size: 11.5px; margin: 0 0 12px; }
+      label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;
+              letter-spacing: .04em; color: var(--muted); margin: 0 0 4px; }
+      select, button {
+        width: 100%; font: inherit; border-radius: 7px; border: 1px solid var(--line);
+        padding: 7px 8px; background: var(--bg); color: var(--fg);
+      }
+      .field { margin-bottom: 10px; }
+      button.primary {
+        background: var(--accent); color: var(--accent-fg); border-color: var(--accent);
+        font-weight: 600; padding: 9px; cursor: pointer; margin-top: 2px;
+      }
+      button.primary:disabled { opacity: .45; cursor: not-allowed; }
+      .row { display: flex; gap: 8px; margin-top: 8px; }
+      .row button { flex: 1; font-size: 11.5px; padding: 6px; cursor: pointer; color: var(--muted); }
+      #status { margin-top: 10px; font-size: 11.5px; color: var(--muted); min-height: 16px; }
+      #preview {
+        margin-top: 10px; max-height: 150px; overflow-y: auto; background: var(--panel);
+        border: 1px solid var(--line); border-radius: 7px; padding: 8px; font-size: 11.5px;
+      }
+      #preview .ev { padding: 3px 0; border-bottom: 1px solid var(--line); }
+      #preview .ev:last-child { border-bottom: 0; }
+      #preview .when { color: var(--muted); }
+      .hint { margin-top: 10px; font-size: 11px; color: var(--muted); }
+      pre { white-space: pre-wrap; word-break: break-all; font-size: 10.5px; }
+    </style>
+  </head>
+  <body>
+    <h1>Export training calendar</h1>
+    <p class="sub">Open the calendar and browse the month you want, then export.</p>
+
+    <div class="field">
+      <label for="trainer">Trainer</label>
+      <select id="trainer"><option value="">All trainers</option></select>
+    </div>
+
+    <div class="field">
+      <label for="month">Month</label>
+      <select id="month"><option value="">All dates found</option></select>
+    </div>
+
+    <button id="export" class="primary" disabled>Export to .ics</button>
+
+    <div class="row">
+      <button id="rescan">Rescan page</button>
+      <button id="clear">Clear captured</button>
+      <button id="diagnose">Diagnose</button>
+    </div>
+
+    <div id="status"></div>
+    <div id="preview" hidden></div>
+    <p class="hint" id="hint">
+      Tip: the .ics file opens straight into Outlook or Apple Calendar, or import it
+      into Google Calendar.
+    </p>
+
+    <script src="ics.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

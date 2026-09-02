@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Kia Training Calendar Export",
+  "version": "0.1.0",
+  "description": "Pick a trainer and a month on the Kia Training calendar, then export those sessions to an .ics file for Outlook, Apple Calendar or Google Calendar.",
+  "permissions": ["storage", "downloads", "scripting", "activeTab"],
+  "host_permissions": [
+    "*://kiatraining.com/*",
+    "*://*.kiatraining.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Export calendar to .ics"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://kiatraining.com/*", "*://*.kiatraining.com/*"],
+      "js": ["interceptor.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true
+    },
+    {
+      "matches": ["*://kiatraining.com/*", "*://*.kiatraining.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ]
+}
