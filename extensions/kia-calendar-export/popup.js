@@ -13,6 +13,7 @@ const els = {
 };
 
 let allEvents = [];
+let roster = [];
 
 // ------------------------------------------------------------------ helpers
 const setStatus = (text) => (els.status.textContent = text);
@@ -88,15 +89,17 @@ const escapeHtml = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 function populate() {
-  const trainers = [...new Set(allEvents.map((e) => e.trainer).filter(Boolean))].sort((a, b) =>
-    a.localeCompare(b)
+  // Names come from the sidebar roster as well as the events themselves, so the
+  // dropdown is populated even before a facilitator has been matched to sessions.
+  const trainers = [...new Set([...roster, ...allEvents.map((e) => e.trainer)].filter(Boolean))].sort(
+    (a, b) => a.localeCompare(b)
   );
   const months = [...new Set(allEvents.map((e) => monthKey(e.start.ms)))].sort();
 
   const keepTrainer = els.trainer.value;
   const keepMonth = els.month.value;
 
-  els.trainer.innerHTML = '<option value="">All trainers</option>';
+  els.trainer.innerHTML = '<option value="">All facilitators</option>';
   for (const t of trainers) {
     const opt = document.createElement("option");
     opt.value = t;
@@ -137,13 +140,19 @@ async function scan(quiet) {
   }
 
   allEvents = (res.events || []).filter((e) => e && e.start && typeof e.start.ms === "number");
+  roster = res.roster || [];
   populate();
   renderPreview();
 
   if (!allEvents.length) {
-    setStatus("Nothing found yet. Reload the calendar, click through the month, then Rescan.");
+    setStatus("No sessions found. Reload the calendar, then hit Rescan.");
   } else {
-    setStatus(`${allEvents.length} session${allEvents.length === 1 ? "" : "s"} captured.`);
+    const named = allEvents.filter((e) => e.trainer).length;
+    setStatus(
+      `${allEvents.length} session${allEvents.length === 1 ? "" : "s"} · ` +
+        `${roster.length} facilitator${roster.length === 1 ? "" : "s"}` +
+        (named < allEvents.length ? ` · ${allEvents.length - named} unmatched` : "")
+    );
   }
 }
 

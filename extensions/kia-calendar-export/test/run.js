@@ -13,7 +13,7 @@ global.chrome = {
 };
 global.document = { querySelectorAll: () => [] };
 
-const { parseDate, harvest } = require(path.join(__dirname, "..", "content.js"));
+const { parseDate, harvest, idList, rgbKey, monthOffsets } = require(path.join(__dirname, "..", "content.js"));
 const ics = require(path.join(__dirname, "..", "ics.js"));
 
 let passed = 0;
@@ -103,6 +103,60 @@ test("survives circular structures", () => {
   const node = { name: "Loop" };
   node.self = node;
   assert.doesNotThrow(() => harvest(node, "x"));
+});
+
+console.log("facilitator resolution");
+
+test("facilitator ids are extracted from every shape", () => {
+  assert.deepStrictEqual(idList(7), ["7"]);
+  assert.deepStrictEqual(idList("7"), ["7"]);
+  assert.deepStrictEqual(idList([7, 9]), ["7", "9"]);
+  assert.deepStrictEqual(idList({ id: 7 }), ["7"]);
+  assert.deepStrictEqual(idList([{ id: 7 }, { id: 9 }]), ["7", "9"]);
+  assert.deepStrictEqual(idList(null), []);
+});
+
+test("a human name is never mistaken for an id", () => {
+  assert.deepStrictEqual(idList("Angela Gay"), []);
+});
+
+test("an event carrying only a facilitator id keeps it for later resolution", () => {
+  const [e] = harvest({ sessions: [{ title: "MISC: CX/Skills Coaching", start: "2026-09-02T11:00:00", facilitator_id: 12 }] }, "x");
+  assert.strictEqual(e.trainer, "");
+  assert.deepStrictEqual(e.trainerIds, ["12"]);
+});
+
+test("a facilitator array of ids is kept", () => {
+  const [e] = harvest({ items: [{ name: "EA Region", startDate: "2026-09-03T11:00:00", facilitators: [3, 8] }] }, "x");
+  assert.deepStrictEqual(e.trainerIds, ["3", "8"]);
+});
+
+test("a nested facilitator object still resolves to a name", () => {
+  const [e] = harvest({ items: [{ name: "Seltos Product", startDate: "2026-09-03T09:30:00", facilitator: { firstName: "Angela", lastName: "Gay" } }] }, "x");
+  assert.strictEqual(e.trainer, "Angela Gay");
+});
+
+test("chip colours normalise for matching", () => {
+  assert.strictEqual(rgbKey("rgb(180, 60, 40)"), "180,60,40");
+  assert.strictEqual(rgbKey("rgba(180, 60, 40, 0.9)"), "180,60,40");
+  assert.strictEqual(rgbKey("rgba(0, 0, 0, 0)"), ""); // transparent isn't a chip
+  assert.strictEqual(rgbKey("transparent"), "");
+});
+
+console.log("calendar grid");
+
+test("leading and trailing days get the neighbouring month", () => {
+  // The Sept 2026 grid in the screenshot opens on Mon 31 Aug.
+  const days = [31, 1, 2, 3, 4, 7, 8, 30, 1, 2];
+  assert.deepStrictEqual(monthOffsets(days), [-1, 0, 0, 0, 0, 0, 0, 0, 1, 1]);
+});
+
+test("a grid starting on the 1st has no leading month", () => {
+  assert.deepStrictEqual(monthOffsets([1, 2, 3]), [0, 0, 0]);
+});
+
+test("empty grid is handled", () => {
+  assert.deepStrictEqual(monthOffsets([]), []);
 });
 
 console.log("ics output");
