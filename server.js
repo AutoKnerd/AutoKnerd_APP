@@ -1256,7 +1256,7 @@ function inferWeeklyTrainingTuneFallback(sourceText, scope, roleProfile = null) 
   };
 }
 
-async function normalizeWeeklyTrainingTuneOutput({ sourceText, scope, roleProfile = null }) {
+async function normalizeWeeklyTrainingTuneOutput({ sourceText, scope, roleProfile = null, mock = false }) {
   const fallback = inferWeeklyTrainingTuneFallback(sourceText, scope, roleProfile);
   if (!String(sourceText || '').trim()) {
     return fallback;
@@ -1283,7 +1283,7 @@ async function normalizeWeeklyTrainingTuneOutput({ sourceText, scope, roleProfil
     '- Keep the theme short and concrete.',
   ].filter(Boolean).join('\n');
 
-  const raw = await callGemini(prompt, JSON.stringify(fallback));
+  const raw = mock ? JSON.stringify(fallback) : await callGemini(prompt, JSON.stringify(fallback));
   const parsed = extractJson(raw);
   const output = parsed && typeof parsed === 'object' ? parsed : {};
   const focusTrait = ['empathy', 'listening', 'trust', 'followUp', 'closing', 'relationship'].includes(String(output.focusTrait || '').trim())
@@ -3597,7 +3597,7 @@ async function handleToolInsight(req, res) {
       selectedNeed: body.selectedNeed,
       search: body.search,
     });
-    const insight = await withTimeout(callGeminiText(prompt, fallback), 9000, fallback);
+    const insight = bundle?.mockMode ? fallback : await withTimeout(callGeminiText(prompt, fallback), 9000, fallback);
     return sendJson(res, 200, {
       ok: true,
       insight: String(insight || fallback).trim(),
@@ -5472,7 +5472,7 @@ async function generateFreshUpStartSession(bundle) {
     lessonCategory,
     lessonProfile,
   });
-  const raw = await callGemini(prompt, JSON.stringify(fallback));
+  const raw = bundle.mockMode ? JSON.stringify(fallback) : await callGemini(prompt, JSON.stringify(fallback));
   const parsed = extractJson(raw);
   const mission = normalizeSessionStartOutput(parsed, fallback);
   return {
@@ -5584,7 +5584,8 @@ async function generateStartSession(bundle, lessonCategoryOverride = null, optio
     lessonProfile,
     weeklyTune: weeklyTrainingTune,
   });
-  const raw = await callGemini(prompt, JSON.stringify(fallback));
+  // Demo/mock sessions never hit the model — return the prebuilt fallback (zero AI cost).
+  const raw = bundle.mockMode ? JSON.stringify(fallback) : await callGemini(prompt, JSON.stringify(fallback));
   const parsed = extractJson(raw);
   return normalizeSessionStartOutput(parsed, fallback);
 }
@@ -5633,7 +5634,7 @@ async function generateSessionTurn(bundle, session, payload) {
   ].join('\n');
 
   const fallback = buildTurnFallback({ session, userMessage });
-  const raw = await callGemini(prompt, JSON.stringify(fallback));
+  const raw = (session?.mockMode || bundle?.mockMode) ? JSON.stringify(fallback) : await callGemini(prompt, JSON.stringify(fallback));
   const parsed = extractJson(raw);
   return normalizeSessionTurnOutput(parsed, fallback);
 }
@@ -5642,7 +5643,7 @@ async function generateSessionResult(bundle, session, payload) {
   const answerText = String(payload.answer || '').trim();
   const prompt = buildSessionResultPrompt({ bundle, session, userMessage: answerText });
   const fallback = buildResultFallback({ session });
-  const raw = await callGemini(prompt, JSON.stringify(fallback));
+  const raw = (session?.mockMode || bundle?.mockMode) ? JSON.stringify(fallback) : await callGemini(prompt, JSON.stringify(fallback));
   const parsed = extractJson(raw);
   return normalizeSessionResult(parsed, fallback);
 }
@@ -6917,7 +6918,7 @@ async function generateAutoForgeLessonPlan(bundle, storeSelection = 'all') {
   const context = buildAutoForgeContextFromBundle(bundle, storeSelection);
   const prompt = buildAutoForgePrompt(context);
   const fallback = buildAutoForgeFallbackReport(context);
-  const report = await withTimeout(callGeminiText(prompt, fallback), 12000, fallback);
+  const report = bundle?.mockMode ? fallback : await withTimeout(callGeminiText(prompt, fallback), 12000, fallback);
   const normalizedReport = normalizeAutoForgePlanTitle(replaceAutoForgeDataSection(report, context), context);
   return {
     report: normalizedReport.trim(),
@@ -7280,7 +7281,7 @@ async function handleWeeklyTrainingTuneUpdate(req, res) {
     // A skill with no note needs no AI pass; a note is normalized, and an explicit skill always wins.
     const traitLabel = chosenTrait ? (TRAIT_LABELS[chosenTrait] || chosenTrait) : '';
     const normalized = sourceText
-      ? await normalizeWeeklyTrainingTuneOutput({ sourceText, scope: targets[0], roleProfile: bundle.roleProfile })
+      ? await normalizeWeeklyTrainingTuneOutput({ sourceText, scope: targets[0], roleProfile: bundle.roleProfile, mock: !!bundle.mockMode })
       : {
           ...inferWeeklyTrainingTuneFallback(traitLabel, targets[0], bundle.roleProfile),
           title: traitLabel,
