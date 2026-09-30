@@ -27,10 +27,7 @@
   const TOOL_CATEGORIES = ['All', ...Array.from(new Set(TOOLS.map((t) => t.category)))];
   const LOGO = '/logo-icon1.png';
   const MEETING_URL = 'https://calendar.app.google/JEqSARn8hvjPtvUy9';
-  // Points at the live NEW marketing site. Using the Vercel alias for now because the
-  // autoknerd.com custom domain still serves the old deployment — switch back to
-  // 'https://autoknerd.com' once that domain is rebound to the new project.
-  const SITE_URL = 'https://autoknerd.vercel.app';
+  const SITE_URL = 'https://autoknerd.com';
   const DEMO_PERSONAS = [
     { role: 'Owner', eyebrow: 'Across your stores', summary: 'See every rooftop at a glance: which store needs you today, how they compare, and how one weekly focus steers coaching across the group.', questions: ['Which store needs me today?', 'What should we coach this week?', 'Who is ready to level up?'] },
     { role: 'General Manager', eyebrow: 'Your store, day to day', summary: 'Run the store from one screen: who is practicing, where CX is trending, your biggest opportunity, and a drill-down into any teammate.', questions: ['Where is my team stuck today?', 'How do I steer the week?', 'Who needs a one-on-one?'] },
