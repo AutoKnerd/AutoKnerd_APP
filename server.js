@@ -10,6 +10,7 @@ dotenv.config({ path: path.join(__dirname, '.env.local') });
 
 const PORT = Number(process.env.PORT || 5173);
 const INDEX_PATH = path.join(__dirname, 'index.html');
+const V3_INDEX_PATH = path.join(__dirname, 'v3', 'index.html');
 const MODEL_NAME = 'gemini-2.5-flash';
 const FIREBASE_WEB_API_KEY = process.env.FIREBASE_WEB_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyCTLbPGP5v2Vu4ahy0XWStVkCUWnYtRxdA';
 const MOCK_USER_ID = 'mock-sales-manager';
@@ -925,6 +926,9 @@ function buildMissionFocus(trait, role, lessonCategory, weeklyTune = null) {
       title: tuneTheme || null,
       coachingDirection: tuneDirection || tuneTheme || null,
       focusTrait: weeklyTune.focusTrait || null,
+      strength: normalizeWeeklyTuneStrength(weeklyTune.strength),
+      note: weeklyTune.sourceText || null,
+      updatedByName: weeklyTune.updatedByName || null,
       scopeLabel: weeklyTune.scopeLabel || null,
       scopeType: weeklyTune.scopeType || null,
       departmentKey: weeklyTune.departmentKey || null,
@@ -1297,6 +1301,46 @@ async function normalizeWeeklyTrainingTuneOutput({ sourceText, scope, roleProfil
   };
 }
 
+const WEEKLY_TUNE_TRAITS = ['empathy', 'listening', 'trust', 'followUp', 'closing', 'relationship'];
+
+function normalizeWeeklyTuneStrength(value) {
+  return String(value || '').trim().toLowerCase() === 'strong' ? 'strong' : 'light';
+}
+
+function normalizeWeeklyTuneTrait(value) {
+  const trait = String(value || '').trim();
+  return WEEKLY_TUNE_TRAITS.includes(trait) ? trait : null;
+}
+
+// The skill a strong weekly focus pushes sessions toward, or null for a light (soft) focus.
+function getWeeklyTuneLeanTrait(tune) {
+  const resolved = tune?.tune && typeof tune.tune === 'object' ? tune.tune : tune;
+  if (!resolved || normalizeWeeklyTuneStrength(resolved.strength) !== 'strong') return null;
+  return normalizeWeeklyTuneTrait(resolved.focusTrait);
+}
+
+// Leaders read the slot they write. Everyone else follows their department manager's focus first,
+// then the storewide focus set by the GM or owner.
+async function fetchEffectiveWeeklyTrainingTune({ roleProfile, roleLabel, roleType, dealershipId, dealershipName = '' }) {
+  const ownScope = getWeeklyTrainingTuneScope(roleLabel, roleType, dealershipId, dealershipName);
+  const normalizedRole = normalizeRoleLabel(roleLabel);
+  const readsOwnSlotOnly = ownScope.scopeType === 'department' || canSetWeeklyTrainingTune(normalizedRole);
+  if (readsOwnSlotOnly) {
+    return { scope: ownScope, tuneBundle: await fetchWeeklyTrainingTune({ dealershipId: ownScope.dealershipId, roleProfile, scope: ownScope, dealershipName }).catch(() => null) };
+  }
+  const departmentKey = resolveAisRoleType(normalizedRole || roleLabel || roleType || 'sales');
+  const departmentScope = {
+    ...ownScope,
+    scopeType: 'department',
+    departmentKey,
+    scopeKey: `department-${departmentKey}`,
+    scopeLabel: `${getWeeklyTuneDepartmentLabel(departmentKey)} team`,
+  };
+  const departmentTune = await fetchWeeklyTrainingTune({ dealershipId: ownScope.dealershipId, roleProfile, scope: departmentScope, dealershipName }).catch(() => null);
+  if (departmentTune?.tune) return { scope: departmentScope, tuneBundle: departmentTune };
+  return { scope: ownScope, tuneBundle: await fetchWeeklyTrainingTune({ dealershipId: ownScope.dealershipId, roleProfile, scope: ownScope, dealershipName }).catch(() => null) };
+}
+
 async function fetchWeeklyTrainingTune({ dealershipId, roleProfile, scope = null, dealershipName = '' }) {
   if (!firebaseDb) return null;
   const resolvedScope = scope || getWeeklyTrainingTuneScope(roleProfile?.roleLabel, roleProfile?.roleType, dealershipId, dealershipName);
@@ -1338,6 +1382,8 @@ async function fetchWeeklyTrainingTune({ dealershipId, roleProfile, scope = null
       coachingDirection: sanitizeBrandAgnosticText(data.coachingDirection || data.leaderMessage || ''),
       leaderMessage: sanitizeBrandAgnosticText(data.leaderMessage || data.coachingDirection || ''),
       sourceText: sanitizeBrandAgnosticText(data.sourceText || data.rawText || ''),
+      strength: normalizeWeeklyTuneStrength(data.strength),
+      scopeLabel: String(data.scopeLabel || resolvedScope.scopeLabel || '').trim(),
       updatedAt,
       expiresAt,
       updatedByUserId: String(data.updatedByUserId || '').trim() || null,
@@ -5218,28 +5264,25 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
   const freshUpMeter = clampScore(userData.freshUpMeter || 0);
   const freshUpAvailable = userData.freshUpAvailable === true;
   const momentumScore = Math.max(0, Math.min(100, Math.round(Math.max(averageSkill, freshUpMeter / 1.25))));
-  const weeklyTrainingScope = getWeeklyTrainingTuneScope(
-    roleProfile.roleLabel || effectiveRole,
-    roleType,
-    nextDealershipId || userData.dealershipId || userData.selfDeclaredDealershipId || 'independent',
-    resolvedDealershipName
-  );
-  const weeklyTrainingTuneBundle = await fetchWeeklyTrainingTune({
-    dealershipId: weeklyTrainingScope.dealershipId,
+  const { scope: weeklyTrainingScope, tuneBundle: weeklyTrainingTuneBundle } = await fetchEffectiveWeeklyTrainingTune({
     roleProfile,
-    scope: weeklyTrainingScope,
+    roleLabel: roleProfile.roleLabel || effectiveRole,
+    roleType,
+    dealershipId: nextDealershipId || userData.dealershipId || userData.selfDeclaredDealershipId || 'independent',
     dealershipName: resolvedDealershipName,
-  }).catch(() => null);
+  });
   const weeklyTrainingTune = weeklyTrainingTuneBundle?.tune || null;
+  // A strong weekly focus replaces the weakest skill as this week's session target.
+  const sessionFocusTrait = getWeeklyTuneLeanTrait(weeklyTrainingTune) || focusTrait;
   const lessonCategory = pickRoleLessonCategory(
     roleProfile.roleLabel || effectiveRole,
     roleType,
-    focusTrait,
+    sessionFocusTrait,
     `${userDoc.id}:${dateKey(new Date())}:${weeklyTrainingTune?.focusTrait || weeklyTrainingTune?.title || 'baseline'}`
   );
   const lessonProfile = getLessonCategoryProfile(lessonCategory);
   const lessonLibrary = buildLessonLibrary(roleProfile.roleLabel || effectiveRole, roleType, focusTrait, lessonCategory);
-  const focus = buildMissionFocus(focusTrait, roleProfile.roleLabel || 'Sales Consultant', lessonCategory, weeklyTrainingTuneBundle?.tune || null);
+  const focus = buildMissionFocus(sessionFocusTrait, roleProfile.roleLabel || 'Sales Consultant', lessonCategory, weeklyTrainingTuneBundle?.tune || null);
   const freshUpExperience = getFreshUpExperience(roleProfile.roleLabel || effectiveRole, roleType);
   const insightFallback = momentumScore >= 85
     ? 'You are building strong momentum. Keep the same pace and protect the trust you already built.'
@@ -5303,6 +5346,7 @@ async function fetchUserBundle(userId, roleOverride = null, mockMode = false, mo
       dealershipIds: Array.from(new Set([...(nextDealershipIds || []), String(userData.dealershipId || '').trim()].filter(Boolean))),
       dealershipName: resolvedDealershipName,
       focusTrait,
+      sessionFocusTrait,
       strongTrait,
       freshUpMeter,
       freshUpAvailable,
@@ -5479,6 +5523,14 @@ async function generateStartSession(bundle, lessonCategoryOverride = null, optio
   const weeklyTuneLine = weeklyTuneDirection || weeklyTuneTheme
     ? `Weekly tune: ${weeklyTuneDirection || weeklyTuneTheme}.`
     : '';
+  const weeklyTuneTrait = normalizeWeeklyTuneTrait(weeklyTrainingTune?.focusTrait);
+  const weeklyTuneTraitLabel = weeklyTuneTrait ? (TRAIT_LABELS[weeklyTuneTrait] || weeklyTuneTrait) : '';
+  const weeklyTuneLeanTrait = getWeeklyTuneLeanTrait(weeklyTrainingTune);
+  const weeklyTuneRule = weeklyTuneLeanTrait
+    ? `Leadership set a STRONG focus on ${weeklyTuneTraitLabel} this week. Make ${weeklyTuneTraitLabel} the skill this scenario tests: the customer's situation, the turning point, and the best choice should all hinge on ${weeklyTuneTraitLabel}. Treat the weakest skill (${weakest}) as secondary.`
+    : weeklyTuneLine
+      ? `The weekly tune should softly influence the opening, scenario flavor, and coaching line${weeklyTuneTraitLabel ? ` (light extra practice on ${weeklyTuneTraitLabel})` : ''}, but do not replace the weakest-skill target.`
+      : null;
 
   const prompt = [
     'You are Sprocket, AutoKnerd\'s dealership coaching assistant.',
@@ -5496,7 +5548,7 @@ async function generateStartSession(bundle, lessonCategoryOverride = null, optio
     `Today's focus: ${focus.title}. Micro focus: ${focus.microFocus}.`,
     `Sprocket insight: ${insight}.`,
     `Recommended session length: ${targetRange.min}-${targetRange.max} user turns.`,
-    weeklyTuneLine ? `The weekly tune should softly influence the opening, scenario flavor, and coaching line, but do not replace the weakest-skill target.` : null,
+    weeklyTuneRule,
     'Do not mention any automotive manufacturer name, model name, trim name, or branded parts name.',
     'Use generic terms like the manufacturer, the vehicle, the truck, the SUV, OEM part, or manufacturer part.',
     'Return JSON only with:',
@@ -5625,8 +5677,8 @@ function sendJson(res, statusCode, payload) {
   res.end(JSON.stringify(payload));
 }
 
-function serveIndex(res) {
-  const html = fs.readFileSync(INDEX_PATH, 'utf8');
+function serveIndex(res, indexPath = INDEX_PATH) {
+  const html = fs.readFileSync(indexPath, 'utf8');
   res.writeHead(200, {
     'Content-Type': 'text/html; charset=utf-8',
     'Cache-Control': 'no-store',
@@ -6993,7 +7045,7 @@ async function handleStartSession(req, res) {
       userLookupKeys: buildSessionUserKeys(bundle.user),
       role: bundle.user.role,
       roleLabel: bundle.user.roleLabel || normalizeRoleLabel(bundle.user.role),
-      focusTrait: bundle.user.focusTrait,
+      focusTrait: (isFreshUp ? null : bundle.user.sessionFocusTrait) || bundle.user.focusTrait,
       roleType: bundle.user.roleType || resolveAisRoleType(bundle.user.role),
       roleProfile: bundle.roleProfile,
       dealershipId,
@@ -7157,16 +7209,14 @@ async function handleWeeklyTrainingTuneUpdate(req, res) {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const token = getRequestToken(req, url, body);
     const authSession = getAuthSession(token);
-    if (!authSession?.userId) {
+    const mockMode = isTruthyFlag(body.mockMode);
+    // The public demo runs on sample data and never persists, so it can save without an account.
+    const actingUserId = authSession?.userId || (mockMode ? String(body.userId || '').trim() : '');
+    if (!actingUserId) {
       return sendJson(res, 401, { ok: false, authRequired: true, message: 'Sign in required.' });
     }
 
-    const bundle = await fetchUserBundle(
-      authSession.userId,
-      body.roleOverride,
-      body.mockMode,
-      body.mockRoleOverride
-    );
+    const bundle = await fetchUserBundle(actingUserId, body.roleOverride, body.mockMode, body.mockRoleOverride);
     if (!bundle?.user) {
       return sendJson(res, 404, { ok: false, message: 'No Firebase user found.' });
     }
@@ -7176,53 +7226,73 @@ async function handleWeeklyTrainingTuneUpdate(req, res) {
       return sendJson(res, 403, { ok: false, message: 'Manager access required.' });
     }
 
-    const dealershipId = String(body.dealershipId || bundle.user.dealershipId || bundle.user.selfDeclaredDealershipId || '').trim() || 'independent';
-    const dealershipName = String(body.dealershipName || bundle.user.dealershipName || bundle.user.storeName || bundle.user.companyName || '').trim();
-    const scope = getWeeklyTrainingTuneScope(roleLabel, bundle.roleProfile?.roleType || bundle.user.roleType, dealershipId, dealershipName);
-    const sourceText = String(body.sourceText || body.tuneText || body.text || body.weeklyTune || '').trim();
-    const mockMode = isTruthyFlag(body.mockMode);
+    // Which stores to update: one store, or every store an owner/GM picked ("All stores").
+    const homeDealershipId = String(bundle.user.dealershipId || bundle.user.selfDeclaredDealershipId || '').trim() || 'independent';
+    const requestedIds = Array.isArray(body.dealershipIds) && body.dealershipIds.length
+      ? body.dealershipIds
+      : [body.dealershipId || homeDealershipId];
+    const targetIds = Array.from(new Set(requestedIds.map((id) => String(id || '').trim()).filter(Boolean)));
+    const allowedIds = new Set([homeDealershipId, ...(bundle.user.dealershipIds || []), ...getResolvedDealershipIds(bundle.user)].map((id) => String(id || '').trim()).filter(Boolean));
+    if (!mockMode && !isPrivilegedDealershipRole(roleLabel) && targetIds.some((id) => !allowedIds.has(id))) {
+      return sendJson(res, 403, { ok: false, message: 'You can only set the training focus for your own stores.' });
+    }
+    const nameMap = mockMode ? new Map() : await fetchDealershipNameMap(targetIds).catch(() => new Map());
+    const nameFor = (id) => String(
+      (targetIds.length === 1 && body.dealershipName)
+      || nameMap.get(id)
+      || (id === homeDealershipId ? (bundle.user.dealershipName || bundle.user.storeName || bundle.user.companyName) : '')
+      || ''
+    ).trim();
+    const roleType = bundle.roleProfile?.roleType || bundle.user.roleType;
+    const targets = targetIds.map((id) => getWeeklyTrainingTuneScope(roleLabel, roleType, id, nameFor(id)));
 
-    if (!sourceText) {
+    const sourceText = String(body.sourceText || body.tuneText || body.text || body.weeklyTune || '').trim();
+    const chosenTrait = normalizeWeeklyTuneTrait(body.focusTrait);
+    const strength = normalizeWeeklyTuneStrength(body.strength);
+    const clearing = isTruthyFlag(body.clear) || (!sourceText && !chosenTrait);
+
+    const applyToMockBundle = (tuneForScope) => {
+      const wrap = (scope) => (tuneForScope ? { ...scope, tune: tuneForScope(scope) } : null);
+      const md = bundle.managerDashboard;
+      const stores = Array.isArray(md?.stores)
+        ? md.stores.map((store) => {
+            const scope = targets.find((t) => t.dealershipId === store.dealershipId);
+            return scope ? { ...store, weeklyTrainingTune: wrap(scope) } : store;
+          })
+        : md?.stores;
+      return {
+        ...bundle,
+        weeklyTrainingTune: wrap(targets[0]),
+        managerDashboard: md ? { ...md, stores, weeklyTrainingTune: wrap(targets[0]) } : null,
+      };
+    };
+
+    if (clearing) {
       if (!mockMode && firebaseDb) {
-        const docRef = getWeeklyTrainingTuneDocRef(scope.dealershipId, scope.scopeKey);
-        if (docRef) {
-          await docRef.delete().catch(() => null);
-        }
+        await Promise.all(targets.map((scope) => getWeeklyTrainingTuneDocRef(scope.dealershipId, scope.scopeKey)?.delete().catch(() => null)));
       }
       const refreshedBundle = mockMode
-        ? {
-            ...bundle,
-            weeklyTrainingTune: null,
-            managerDashboard: bundle.managerDashboard
-              ? {
-                  ...bundle.managerDashboard,
-                  weeklyTrainingTune: null,
-                }
-              : null,
-          }
-        : await fetchUserBundle(authSession.userId, body.roleOverride, body.mockMode, body.mockRoleOverride);
-      return sendJson(res, 200, {
-        ok: true,
-        cleared: true,
-        weeklyTrainingTune: null,
-        bundle: refreshedBundle || bundle,
-      });
+        ? applyToMockBundle(null)
+        : await fetchUserBundle(actingUserId, body.roleOverride, body.mockMode, body.mockRoleOverride);
+      return sendJson(res, 200, { ok: true, cleared: true, weeklyTrainingTune: null, bundle: refreshedBundle || bundle });
     }
 
-    const normalized = await normalizeWeeklyTrainingTuneOutput({
-      sourceText,
-      scope,
-      roleProfile: bundle.roleProfile,
-    });
-    const nextTune = {
-      dealershipId: scope.dealershipId,
-      scopeType: scope.scopeType,
-      departmentKey: scope.departmentKey,
-      scopeKey: scope.scopeKey,
-      scopeLabel: scope.scopeLabel,
+    // A skill with no note needs no AI pass; a note is normalized, and an explicit skill always wins.
+    const traitLabel = chosenTrait ? (TRAIT_LABELS[chosenTrait] || chosenTrait) : '';
+    const normalized = sourceText
+      ? await normalizeWeeklyTrainingTuneOutput({ sourceText, scope: targets[0], roleProfile: bundle.roleProfile })
+      : {
+          ...inferWeeklyTrainingTuneFallback(traitLabel, targets[0], bundle.roleProfile),
+          title: traitLabel,
+          normalizedTheme: `Extra practice on ${traitLabel.toLowerCase()} this week.`,
+          sourceText: '',
+        };
+    const tuneFields = {
+      ...normalized,
+      focusTrait: chosenTrait || normalized.focusTrait,
+      strength,
       sourceText,
       rawText: sourceText,
-      ...normalized,
       updatedByUserId: bundle.user.userId,
       updatedByName: bundle.user.name || '',
       updatedByRole: roleLabel,
@@ -7230,57 +7300,53 @@ async function handleWeeklyTrainingTuneUpdate(req, res) {
       expiresAt: getWeeklyTrainingTuneExpiryIso(new Date()),
       active: true,
     };
+    const tuneForScope = (scope) => ({
+      dealershipId: scope.dealershipId,
+      scopeType: scope.scopeType,
+      departmentKey: scope.departmentKey,
+      scopeKey: scope.scopeKey,
+      scopeLabel: scope.scopeLabel,
+      ...tuneFields,
+    });
 
     if (!mockMode && firebaseDb) {
-      const docRef = getWeeklyTrainingTuneDocRef(scope.dealershipId, scope.scopeKey);
-      if (!docRef) {
-        return sendJson(res, 500, { ok: false, message: 'Unable to save the weekly tune.' });
-      }
-      await docRef.set({
-        dealershipId: nextTune.dealershipId,
-        scopeType: nextTune.scopeType,
-        departmentKey: nextTune.departmentKey,
-        scopeKey: nextTune.scopeKey,
-        scopeLabel: nextTune.scopeLabel,
-        sourceText: nextTune.sourceText,
-        rawText: nextTune.rawText,
-        title: nextTune.title,
-        normalizedTheme: nextTune.normalizedTheme,
-        focusTrait: nextTune.focusTrait,
-        lessonBias: nextTune.lessonBias,
-        coachingDirection: nextTune.coachingDirection,
-        leaderMessage: nextTune.leaderMessage,
-        updatedByUserId: nextTune.updatedByUserId,
-        updatedByName: nextTune.updatedByName,
-        updatedByRole: nextTune.updatedByRole,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        expiresAt: nextTune.expiresAt,
-        active: true,
-      }, { merge: true });
+      await Promise.all(targets.map(async (scope) => {
+        const docRef = getWeeklyTrainingTuneDocRef(scope.dealershipId, scope.scopeKey);
+        if (!docRef) throw new Error(`No tune document for ${scope.dealershipId}`);
+        const doc = tuneForScope(scope);
+        await docRef.set({
+          dealershipId: doc.dealershipId,
+          scopeType: doc.scopeType,
+          departmentKey: doc.departmentKey,
+          scopeKey: doc.scopeKey,
+          scopeLabel: doc.scopeLabel,
+          sourceText: doc.sourceText,
+          rawText: doc.rawText,
+          title: doc.title,
+          normalizedTheme: doc.normalizedTheme,
+          focusTrait: doc.focusTrait,
+          strength: doc.strength,
+          lessonBias: doc.lessonBias,
+          coachingDirection: doc.coachingDirection,
+          leaderMessage: doc.leaderMessage,
+          updatedByUserId: doc.updatedByUserId,
+          updatedByName: doc.updatedByName,
+          updatedByRole: doc.updatedByRole,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          expiresAt: doc.expiresAt,
+          active: true,
+        }, { merge: true });
+      }));
     }
 
     const refreshedBundle = mockMode
-      ? {
-          ...bundle,
-          weeklyTrainingTune: {
-            ...scope,
-            tune: nextTune,
-          },
-          managerDashboard: bundle.managerDashboard
-            ? {
-                ...bundle.managerDashboard,
-                weeklyTrainingTune: {
-                  ...scope,
-                  tune: nextTune,
-                },
-              }
-            : null,
-        }
-      : await fetchUserBundle(authSession.userId, body.roleOverride, body.mockMode, body.mockRoleOverride);
+      ? applyToMockBundle(tuneForScope)
+      : await fetchUserBundle(actingUserId, body.roleOverride, body.mockMode, body.mockRoleOverride);
 
     return sendJson(res, 200, {
       ok: true,
-      weeklyTrainingTune: nextTune,
+      weeklyTrainingTune: tuneForScope(targets[0]),
+      updatedStores: targets.length,
       bundle: refreshedBundle || bundle,
     });
   } catch (error) {
@@ -7680,10 +7746,52 @@ async function handleCompleteSession(req, res) {
   }
 }
 
+// Static files are only served from these directories. Everything else under the
+// project root (.env.local, server.js, package.json, firestore.rules, .git, ...)
+// must never be reachable over HTTP.
+const STATIC_ROOTS = [
+  { prefix: '/v3/', dir: path.join(__dirname, 'v3') },
+  { prefix: '/', dir: path.join(__dirname, 'public') },
+];
+
+function resolveStaticFile(pathname) {
+  let requestPath;
+  try {
+    requestPath = decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
+  if (requestPath.includes('\0') || requestPath.includes('\\')) return null;
+  const segments = requestPath.split('/');
+  // Reject traversal and any dotfile/dotdir segment (.env, .git, .., ...).
+  if (segments.some((segment) => segment.startsWith('.'))) return null;
+
+  const root = STATIC_ROOTS.find((entry) => requestPath.startsWith(entry.prefix));
+  if (!root) return null;
+  const relativePath = requestPath.slice(root.prefix.length);
+  if (!relativePath) return null;
+
+  const resolved = path.resolve(root.dir, relativePath);
+  if (!resolved.startsWith(root.dir + path.sep)) return null;
+  try {
+    const realRoot = fs.realpathSync(root.dir);
+    const realPath = fs.realpathSync(resolved);
+    if (!realPath.startsWith(realRoot + path.sep)) return null;
+    return fs.statSync(realPath).isFile() ? realPath : null;
+  } catch {
+    return null;
+  }
+}
+
 async function routeRequest(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
 
-  if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/reset-password' || url.pathname === '/demo')) {
+  // The v3 app is the main experience; the classic app stays at /classic for the admin console.
+  if (req.method === 'GET' && ['/', '/index.html', '/reset-password', '/demo', '/v3', '/v3/', '/v3/reset-password'].includes(url.pathname)) {
+    return serveIndex(res, V3_INDEX_PATH);
+  }
+
+  if (req.method === 'GET' && (url.pathname === '/classic' || url.pathname === '/classic/')) {
     return serveIndex(res);
   }
 
@@ -7784,17 +7892,7 @@ async function routeRequest(req, res) {
   }
 
   if (req.method === 'GET') {
-    const requestPath = decodeURIComponent(url.pathname);
-    const normalizedPath = requestPath.replace(/^\/+/, '');
-    const staticCandidates = [
-      path.join(__dirname, normalizedPath),
-      path.join(__dirname, 'public', normalizedPath),
-    ];
-    const candidate = staticCandidates.find((entry) => (
-      entry.startsWith(__dirname)
-      && fs.existsSync(entry)
-      && fs.statSync(entry).isFile()
-    ));
+    const candidate = resolveStaticFile(url.pathname);
     if (candidate) {
       const ext = path.extname(candidate).toLowerCase();
       const type = ext === '.js'
