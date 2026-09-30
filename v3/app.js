@@ -27,6 +27,7 @@
   const TOOL_CATEGORIES = ['All', ...Array.from(new Set(TOOLS.map((t) => t.category)))];
   const LOGO = '/logo-icon1.png';
   const MEETING_URL = 'https://calendar.app.google/JEqSARn8hvjPtvUy9';
+  const SITE_URL = 'https://autoknerd.com';
   const DEMO_PERSONAS = [
     { role: 'Owner', eyebrow: 'Across your stores', summary: 'See every rooftop at a glance: which store needs you today, how they compare, and how one weekly focus steers coaching across the group.', questions: ['Which store needs me today?', 'What should we coach this week?', 'Who is ready to level up?'] },
     { role: 'General Manager', eyebrow: 'Your store, day to day', summary: 'Run the store from one screen: who is practicing, where CX is trending, your biggest opportunity, and a drill-down into any teammate.', questions: ['Where is my team stuck today?', 'How do I steer the week?', 'Who needs a one-on-one?'] },
@@ -255,7 +256,7 @@
     return `<div class="preview-banner"><span>Demo</span>
       <label><span class="sr-only">Viewing as</span><select data-change="preview">${roles.map((r) => `<option ${r === S.preview ? 'selected' : ''}>${esc(r)}</option>`).join('')}</select></label>
       <a href="${MEETING_URL}" target="_blank" rel="noopener" style="font-weight:800">Book a call</a>
-      <button class="link" style="color:inherit;padding:0" data-action="exit-preview">Exit</button></div>`;
+      <button class="link" style="color:inherit;padding:0;font-weight:800" data-action="exit-preview">Exit demo</button></div>`;
   }
   function screen(active, body) {
     return `${previewBanner()}<main class="page">${body}</main>${tabbar(active)}`;
@@ -1118,6 +1119,9 @@
     'exit-preview': async () => {
       S.preview = '';
       sessionStorage.removeItem('ak:preview');
+      // Public demo visitors leave the app entirely and go back to the marketing site.
+      if (!S.token) { window.location.href = SITE_URL; return; }
+      // Signed-in preview (admin/dev): drop back to the persona picker, not the site.
       S.bundle = null;
       S.session = null;
       S.result = null;
