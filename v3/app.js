@@ -681,6 +681,7 @@
         <a class="list-item" href="mailto:support@autoknerd.app?subject=AutoKnerd%20Support">${icon('mail')}<span class="title grow">Contact support</span><span class="chev">${icon('external', 18)}</span></a>
         <a class="list-item" href="#/privacy">${icon('doc')}<span class="title grow">Privacy Policy</span><span class="chev">${icon('chevR', 20)}</span></a>
         <a class="list-item" href="#/terms">${icon('doc')}<span class="title grow">Terms of Use</span><span class="chev">${icon('chevR', 20)}</span></a>
+        <a class="list-item" href="${SITE_URL}/legal" target="_blank" rel="noopener">${icon('doc')}<span class="title grow">Security &amp; all policies</span><span class="chev">${icon('external', 18)}</span></a>
         ${isAdmin() ? `<a class="list-item" href="/classic">${icon('settings')}<span class="title grow">Admin console (classic app)</span><span class="chev">${icon('external', 18)}</span></a>` : ''}
       </div></section>
       <button class="btn block danger" data-action="sign-out">${icon('logout', 20)} Sign out</button>
@@ -691,21 +692,23 @@
     const back = S.bundle ? 'settings' : '';
     const pages = {
       privacy: ['Privacy Policy', [
-        ['How we handle your coaching data', 'AutoKnerd stores your profile, lessons, scores, and progress so the app can coach you over time. We use this data to power your dashboard, session history, profile, and role-specific lesson library.'],
-        ['Sharing', 'We may use anonymous coaching data to improve the product if you turn on sharing in Settings.'],
-        ['What we collect', 'Profile info, role, XP, lesson results, skill trends, and app preferences.'],
-        ['What we do not do', 'We do not sell your personal coaching data.'],
+        ['What we collect', 'Your profile and role, the responses you submit in practice sessions, your CX and behavior scores, XP, streaks, and progress, and your app preferences.'],
+        ['How we use it', 'To run your practice sessions, power your dashboard and history, generate coaching summaries, and improve and secure the app.'],
+        ['AI', 'Practice scenarios and summaries use Google Gemini. Public demos run on sample data with a simulated response, so no personal data is sent to the AI for demos.'],
+        ['Your data and your dealership', 'Your dealership directs what is collected; AutoKnerd handles it as a service provider. Direct data requests to your dealership, or email privacy@autoknerd.com.'],
+        ['What we do not do', 'We do not sell your data or use it to train third-party AI models.'],
       ]],
       terms: ['Terms of Use', [
         ['Use the app responsibly', 'AutoKnerd is a coaching and training app for dealership teams. Use it for legitimate practice, coaching, and workflow support only.'],
-        ['Not professional advice', 'Session content, scores, and generated lesson plans support coaching. Do not rely on them as legal, financial, or employment advice.'],
+        ['Not professional advice', 'Session content, scores, and generated summaries support coaching. Do not rely on AI output for employment or disciplinary decisions without human review.'],
         ['Account access', 'Keep your login secure and do not share access with anyone else.'],
-        ['Content ownership', 'The app, coaching prompts, and generated lessons are part of the AutoKnerd service and may change over time.'],
+        ['Plans and content', 'Paid plans are billed as described at checkout. The app, coaching prompts, and generated lessons are part of the AutoKnerd service and may change over time.'],
       ]],
     };
     const [title, sections] = pages[kind];
     return `<main class="page no-tabs">${S.bundle ? backbar(title, back) : `<header class="backbar"><a class="icon-btn plain" href="#/" aria-label="Back">${icon('chevL', 24)}</a><h1>${title}</h1></header>`}
-      ${sections.map(([h, p]) => `<section class="card"><h3>${esc(h)}</h3><p class="muted">${esc(p)}</p></section>`).join('')}</main>`;
+      ${sections.map(([h, p]) => `<section class="card"><h3>${esc(h)}</h3><p class="muted">${esc(p)}</p></section>`).join('')}
+      <a class="btn block" href="${SITE_URL}/${kind}" target="_blank" rel="noopener">Read the full ${esc(title)} ${icon('external', 18)}</a></main>`;
   }
 
   function storeRequestScreen() {
