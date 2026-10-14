@@ -74,6 +74,7 @@
     insight: {},
     plan: null,
     planLoading: false,
+    admin: { data: null, status: null, loading: false, creating: false, createError: '', created: null, error: '' },
     sheet: null,
   };
 
@@ -334,11 +335,146 @@
         <span class="tile-icon accent">${icon('target', 20)}</span>
         <span class="stack grow"><b>Training app</b><span class="muted small">Practice, team dashboard, tools and progress.</span></span>
         <span class="muted">${icon('chevR', 20)}</span></a>
-      <a class="card tight" href="/classic" style="text-decoration:none;flex-direction:row;align-items:center">
+      <a class="card tight" href="#/admin" style="text-decoration:none;flex-direction:row;align-items:center">
         <span class="tile-icon accent">${icon('settings', 20)}</span>
-        <span class="stack grow"><b>Admin dashboard</b><span class="muted small">Dealerships, users, sessions and system status.</span></span>
-        <span class="muted">${icon('external', 18)}</span></a>
+        <span class="stack grow"><b>Admin dashboard</b><span class="muted small">Onboard stores, manage dealerships and users, system health.</span></span>
+        <span class="muted">${icon('chevR', 20)}</span></a>
       <button class="link" type="button" data-action="sign-out" style="align-self:center">Sign out</button>
+    </main>`;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Admin dashboard (admins only) — built on the existing /api/admin/* endpoints
+  // ---------------------------------------------------------------------------
+  const PLAN_OPTS = ['monthly', 'annual', 'pilot'];
+  const planLabel = (p) => { const s = String(p || 'monthly'); return s.charAt(0).toUpperCase() + s.slice(1); };
+
+  function formatUptime(sec) {
+    const s = Math.max(0, Number(sec) || 0);
+    const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+    if (d) return `${d}d ${h}h`;
+    if (h) return `${h}h ${m}m`;
+    return `${m}m`;
+  }
+
+  async function loadAdmin(force = false) {
+    if (S.admin.loading) return;
+    if (!force && S.admin.data) return;
+    S.admin.loading = true; S.admin.error = ''; render();
+    try {
+      const [overview, status] = await Promise.all([
+        api('/api/admin/dealerships'),
+        api('/api/admin/system-status').catch(() => null),
+      ]);
+      S.admin.data = overview;
+      if (status) S.admin.status = status.status || status;
+    } catch (err) {
+      S.admin.error = err.message;
+    }
+    S.admin.loading = false; render();
+  }
+
+  async function updateStore(body) {
+    S.busy = true; render();
+    try {
+      await api('/api/admin/dealership/update', { method: 'POST', body });
+      S.sheet = null;
+      S.busy = false;
+      toast('Saved.');
+      await loadAdmin(true);
+    } catch (err) {
+      S.busy = false;
+      toast(err.message, true);
+      render();
+    }
+  }
+
+  function adminStoreSheet(s) {
+    return `<h2>Edit store</h2>
+      <p class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'} on this store</p>
+      <form class="form" data-form="admin-edit-store">
+        <input type="hidden" name="dealershipId" value="${esc(s.id)}">
+        <label class="field"><span>Dealership name</span><input class="input" name="name" value="${esc(s.name)}" required></label>
+        <label class="field"><span>Dealer code <span class="muted small">(blank removes it)</span></span><input class="input" name="dealerCode" value="${esc(s.dealerCode || '')}" autocapitalize="characters" placeholder="SUNRISE-001"></label>
+        <label class="field"><span>Plan</span><select class="select" name="plan">${PLAN_OPTS.map((p) => `<option value="${p}" ${s.plan === p ? 'selected' : ''}>${planLabel(p)}</option>`).join('')}</select></label>
+        <label class="check"><input type="checkbox" name="active" ${s.active ? 'checked' : ''}><span>Active (reps can use this store)</span></label>
+        <button class="btn primary block" type="submit" ${S.busy ? 'disabled' : ''}>${S.busy ? 'Saving…' : 'Save changes'}</button>
+      </form>`;
+  }
+
+  function adminScreen() {
+    const a = S.admin;
+    const header = `<header class="backbar"><a class="icon-btn plain" href="#/launch" aria-label="Back">${icon('chevL', 24)}</a><h1 class="grow">Admin</h1><button class="icon-btn" type="button" data-action="admin-refresh" aria-label="Refresh data">${icon('refresh', 20)}</button></header>`;
+    if (a.loading && !a.data) {
+      return `<main class="page no-tabs">${header}<section class="card"><p class="muted">Loading admin data…</p></section></main>`;
+    }
+    const d = a.data || {};
+    const sum = d.summary || {};
+    const st = a.status;
+    const dot = (ok) => `<span class="health-dot ${ok ? 'ok' : 'bad'}"></span>`;
+
+    const kpis = `<div class="grid3">
+      <div class="card tight stat"><div class="value">${esc(sum.totalDealerships ?? '—')}</div><div class="caption">Stores</div></div>
+      <div class="card tight stat"><div class="value">${esc(sum.activeDealerships ?? '—')}</div><div class="caption">Active</div></div>
+      <div class="card tight stat"><div class="value">${esc(sum.totalUsers ?? '—')}</div><div class="caption">Users</div></div>
+    </div>`;
+
+    const health = st ? `<section class="card"><span class="label">System health</span>
+      <div class="list">
+        <div class="list-item">${dot(st.firestore?.reachable)}<span class="title grow">Database</span><span class="muted small">${esc(st.firestore?.message || '')}</span></div>
+        <div class="list-item">${dot(st.gemini?.live)}<span class="title grow">AI engine</span><span class="muted small">${esc(st.gemini?.message || '')}</span></div>
+        <div class="list-item">${dot(true)}<span class="title grow">Server</span><span class="muted small">Up ${formatUptime(st.uptimeSeconds)} · ${esc(st.nodeVersion || '')}</span></div>
+      </div></section>` : '';
+
+    const c = a.created;
+    const createdBox = c ? `<div class="enroll-box">
+        <span class="label">Store created ✓</span>
+        <b>${esc(c.name)}</b>
+        ${c.dealerCode
+          ? `<div class="copy-row"><span class="muted small">Dealer code</span><code>${esc(c.dealerCode)}</code><button class="link accent" type="button" data-action="copy" data-copy="${esc(c.dealerCode)}">Copy</button></div>`
+            + (c.enrollmentUrl ? `<div class="copy-row"><span class="muted small grow trunc">${esc(c.enrollmentUrl)}</span><button class="link accent" type="button" data-action="copy" data-copy="${esc(c.enrollmentUrl)}">Copy link</button></div>` : '')
+          : '<p class="muted small">No dealer code yet — add one below so reps can join.</p>'}
+      </div>` : '';
+
+    const onboard = `<section class="card">
+      <span class="label">Onboard a store</span>
+      <form class="form" data-form="admin-create" novalidate>
+        <label class="field"><span>Dealership name</span><input class="input" name="name" placeholder="Sunrise Motors" required></label>
+        <label class="field"><span>Dealer code <span class="muted small">(optional — reps join with this)</span></span><input class="input" name="dealerCode" placeholder="SUNRISE-001" autocapitalize="characters"></label>
+        <label class="field"><span>Plan</span><select class="select" name="plan">${PLAN_OPTS.map((p) => `<option value="${p}">${planLabel(p)}</option>`).join('')}</select></label>
+        <button class="btn primary block" type="submit" ${a.creating ? 'disabled' : ''}>${a.creating ? 'Creating…' : 'Create store'}</button>
+        ${a.createError ? `<p class="error">${esc(a.createError)}</p>` : ''}
+      </form>
+      ${createdBox}
+    </section>`;
+
+    const stores = (d.dealerships || []).map((s) => `
+      <div class="card tight store-row">
+        <div class="store-head">
+          <div class="stack grow"><b>${esc(s.name)}</b><span class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'} · ${esc(planLabel(s.plan))}</span></div>
+          <span class="badge ${s.active ? 'ok' : 'off'}">${s.active ? 'Active' : 'Off'}</span>
+        </div>
+        ${s.dealerCode
+          ? `<div class="copy-row"><code>${esc(s.dealerCode)}</code>${s.enrollmentUrl ? `<button class="link accent" type="button" data-action="copy" data-copy="${esc(s.enrollmentUrl)}">Copy join link</button>` : ''}</div>`
+          : '<span class="muted small">No dealer code</span>'}
+        <div class="row gap">
+          <button class="btn ghost small" type="button" data-action="admin-edit" data-id="${esc(s.id)}">Edit</button>
+          <button class="btn ghost small" type="button" data-action="admin-toggle" data-id="${esc(s.id)}" data-active="${s.active ? '1' : '0'}">${s.active ? 'Deactivate' : 'Activate'}</button>
+        </div>
+      </div>`).join('');
+
+    const dealerships = `<section class="card flush">
+      <div class="section-title"><h2>Stores</h2><span class="muted small">${(d.dealerships || []).length}</span></div>
+      ${stores || '<p class="muted small" style="padding:4px">No stores yet — onboard one above.</p>'}
+    </section>`;
+
+    return `<main class="page no-tabs">${header}
+      ${a.error ? `<section class="card"><p class="error">${esc(a.error)}</p></section>` : ''}
+      ${kpis}
+      ${health}
+      ${onboard}
+      ${dealerships}
+      <a class="list-item card" href="/classic">${icon('settings')}<span class="title grow">Advanced tools (classic)</span><span class="chev">${icon('external', 18)}</span></a>
     </main>`;
   }
 
@@ -700,8 +836,8 @@
         <a class="list-item" href="#/privacy">${icon('doc')}<span class="title grow">Privacy Policy</span><span class="chev">${icon('chevR', 20)}</span></a>
         <a class="list-item" href="#/terms">${icon('doc')}<span class="title grow">Terms of Use</span><span class="chev">${icon('chevR', 20)}</span></a>
         <a class="list-item" href="${SITE_URL}/legal" target="_blank" rel="noopener">${icon('doc')}<span class="title grow">Security &amp; all policies</span><span class="chev">${icon('external', 18)}</span></a>
-        ${isAdmin() ? `<a class="list-item" href="#/launch">${icon('home')}<span class="title grow">App or admin menu</span><span class="chev">${icon('chevR', 20)}</span></a>` : ''}
-        ${isAdmin() ? `<a class="list-item" href="/classic">${icon('settings')}<span class="title grow">Admin dashboard (classic app)</span><span class="chev">${icon('external', 18)}</span></a>` : ''}
+        ${isAdmin() ? `<a class="list-item" href="#/admin">${icon('settings')}<span class="title grow">Admin dashboard</span><span class="chev">${icon('chevR', 20)}</span></a>` : ''}
+        ${isAdmin() ? `<a class="list-item" href="/classic">${icon('doc')}<span class="title grow">Advanced tools (classic)</span><span class="chev">${icon('external', 18)}</span></a>` : ''}
       </div></section>
       <button class="btn block danger" data-action="sign-out">${icon('logout', 20)} Sign out</button>
     </main>`;
@@ -1088,6 +1224,7 @@
     else {
       switch (name) {
         case 'launch': html = isAdmin() ? launchScreen() : (isLeader() ? teamScreen() : homeScreen()); break;
+        case 'admin': html = isAdmin() ? adminScreen() : (isLeader() ? teamScreen() : homeScreen()); break;
         case 'home': html = isLeader() ? teamScreen() : homeScreen(); break;
         case 'team': html = isLeader() ? teamScreen() : homeScreen(); break;
         case 'member': html = isLeader() ? memberScreen(params[0]) : homeScreen(); break;
@@ -1195,6 +1332,14 @@
       }
       render();
     },
+    'admin-refresh': () => loadAdmin(true),
+    'admin-edit': (el) => { const s = (S.admin.data?.dealerships || []).find((x) => x.id === el.dataset.id); if (s) openSheet(() => adminStoreSheet(s)); },
+    'admin-toggle': (el) => updateStore({ dealershipId: el.dataset.id, active: el.dataset.active !== '1' }),
+    copy: (el) => {
+      const text = el.dataset.copy || '';
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => toast('Copied.')).catch(() => toast('Copy failed.', true));
+      else toast('Copy not supported here.', true);
+    },
     'sign-out': async () => {
       if (!S.preview) api('/api/auth/sign-out', { method: 'POST', body: {} }).catch(() => {});
       if (S.preview) { sessionStorage.removeItem('ak:preview'); S.preview = ''; }
@@ -1294,6 +1439,24 @@
       render();
     },
     tune: (f) => saveTune({ text: f.text.value.trim(), trait: f.querySelector('[name="trait"]:checked')?.value, strength: f.querySelector('[name="strength"]:checked')?.value }),
+    'admin-create': async (f) => {
+      if (!f.reportValidity()) return;
+      const name = f.name.value.trim();
+      if (!name) { S.admin.createError = 'A dealership name is required.'; render(); return; }
+      S.admin.creating = true; S.admin.createError = ''; render();
+      try {
+        const data = await api('/api/admin/dealership/create', { method: 'POST', body: { name, dealerCode: f.dealerCode.value.trim(), plan: f.plan.value } });
+        S.admin.created = data.dealership || { name };
+        S.admin.creating = false;
+        toast('Store created.');
+        await loadAdmin(true);
+      } catch (err) {
+        S.admin.creating = false;
+        S.admin.createError = err.message;
+        render();
+      }
+    },
+    'admin-edit-store': (f) => updateStore({ dealershipId: f.dealershipId.value, name: f.name.value.trim(), dealerCode: f.dealerCode.value.trim(), plan: f.plan.value, active: f.active.checked }),
     'store-request': (f) => {
       if (!f.reportValidity()) return;
       const u = S.bundle.user || {};
@@ -1371,6 +1534,7 @@
     S.sheet = null;
     const { name } = parseRoute();
     if (name === 'plan' && !S.plan && !S.planLoading && S.bundle) { loadPlan(); return; }
+    if (name === 'admin' && isAdmin() && !S.admin.data && !S.admin.loading) { window.scrollTo(0, 0); loadAdmin(); return; }
     if (name === 'tool') {
       const id = parseRoute().params[0];
       const st = toolState();
@@ -1413,6 +1577,7 @@
     }
     render();
     if (parseRoute().name === 'plan' && S.bundle && isLeader()) loadPlan();
+    if (parseRoute().name === 'admin' && S.bundle && isAdmin()) loadAdmin();
   }
 
   boot();

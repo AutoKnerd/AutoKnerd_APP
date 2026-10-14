@@ -323,3 +323,17 @@ input:focus-visible + [data-avatar-option] { outline: 2px dashed var(--accent); 
   .preview-banner { background: #E2F8FB; color: #0A6A72; }
   .preview-banner select { border-color: rgba(10, 106, 114, 0.35); }
 }
+
+/* Admin dashboard */
+.health-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: 0 0 9px; }
+.health-dot.ok { background: #2FBF71; }
+.health-dot.bad { background: #E5484D; }
+.badge { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 800; letter-spacing: .02em; border: 1px solid var(--line); color: var(--muted); background: var(--s2); white-space: nowrap; flex: 0 0 auto; }
+.badge.ok { color: #2FBF71; border-color: rgba(47, 191, 113, .4); background: rgba(47, 191, 113, .12); }
+.store-row { gap: 10px; }
+.store-head { display: flex; align-items: flex-start; gap: 12px; }
+.copy-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.copy-row code { font-family: var(--num); font-size: 13px; padding: 3px 9px; border-radius: 8px; background: var(--s2); border: 1px solid var(--line); color: var(--text); }
+.enroll-box { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; padding: 14px; border: 1px solid var(--accent); border-radius: 14px; background: var(--accent-soft); }
+.btn.small { min-height: 40px; padding: 0 16px; border-radius: 12px; font-size: 14px; font-weight: 700; }
+.trunc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
