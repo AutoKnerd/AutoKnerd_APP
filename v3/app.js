@@ -598,11 +598,27 @@
     } catch (err) { S.busy = false; toast(err.message, true); render(); }
   }
 
+  const SHORT_TRAIT = { 'Follow-Up': 'Follow-up', 'Relationship Building': 'Relationship' };
+  const shortTrait = (l) => SHORT_TRAIT[l] || l;
+  function topBottomTraits(stats) {
+    const scored = TRAITS.map(([k, l]) => [l, score(stats, k)]).filter(([, v]) => v > 0);
+    if (scored.length < 2) return null;
+    let strong = scored[0], weak = scored[0];
+    for (const s of scored) { if (s[1] > strong[1]) strong = s; if (s[1] < weak[1]) weak = s; }
+    return { strong, weak };
+  }
+  function traitsLine(u) {
+    const tb = topBottomTraits(u.stats);
+    if (!tb) return '';
+    return `<span class="traits small"><span class="t-strong">↑ ${esc(shortTrait(tb.strong[0]))} ${tb.strong[1]}</span><span class="t-weak">↓ ${esc(shortTrait(tb.weak[0]))} ${tb.weak[1]}</span></span>`;
+  }
+
   function rosterMemberSheet(u, storeId) {
     const stores = S.admin.data?.dealerships || [];
     const known = ROSTER_ROLES.includes(u.role);
     return `<h2>${esc(u.name)}</h2>
       <p class="muted small">${esc(u.email || 'no email on file')}${u.lastActive ? ` · ${esc(u.lastActive)}` : ''}${u.active ? '' : ' · deactivated'}</p>
+      ${traitsLine(u) ? `<div class="sheet-stats">${traitsLine(u)}${u.momentumScore != null ? `<span class="muted small">Momentum ${esc(u.momentumScore)}</span>` : ''}</div>` : ''}
       <form class="form" data-form="member-edit">
         <input type="hidden" name="userId" value="${esc(u.id)}">
         <label class="field"><span>Role</span><select class="select" name="role">${ROSTER_ROLES.map((r) => `<option ${r === u.role ? 'selected' : ''}>${esc(r)}</option>`).join('')}${known ? '' : `<option selected>${esc(u.role || 'Unknown')}</option>`}</select></label>
@@ -634,7 +650,7 @@
       ? users.map((u) => `
         <button class="list-item" type="button" data-action="roster-member" data-id="${esc(u.id)}">
           ${avatar(u, 'neutral')}
-          <span class="stack grow"><b>${esc(u.name)}</b><span class="muted small">${esc(u.role || '—')}${u.active ? '' : ' · off'}${u.lastActive ? ` · ${esc(u.lastActive)}` : ''}</span></span>
+          <span class="stack grow"><b>${esc(u.name)}</b><span class="muted small">${esc(u.role || '—')}${u.active ? '' : ' · off'}${u.lastActive ? ` · ${esc(u.lastActive)}` : ''}</span>${traitsLine(u)}</span>
           <span class="chev">${icon('chevR', 20)}</span>
         </button>`).join('')
       : '<p class="muted small" style="padding:4px">No one in this store yet — share the join link above.</p>';

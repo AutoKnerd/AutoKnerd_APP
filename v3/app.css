@@ -335,6 +335,10 @@ input:focus-visible + [data-avatar-option] { outline: 2px dashed var(--accent); 
 .badge.warn { color: #E8A317; border-color: rgba(232, 163, 23, .45); background: rgba(232, 163, 23, .14); }
 .store-row { gap: 10px; }
 .store-link { text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.traits { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 3px; font-size: 12px; font-weight: 700; }
+.t-strong { color: #2FBF71; }
+.t-weak { color: #E8A317; }
+.sheet-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: -2px 0 10px; }
 .store-head { display: flex; align-items: flex-start; gap: 12px; }
 .copy-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
 .copy-row code { font-family: var(--num); font-size: 13px; padding: 3px 9px; border-radius: 8px; background: var(--s2); border: 1px solid var(--line); color: var(--text); }
