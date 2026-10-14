@@ -2960,8 +2960,48 @@ function getDealershipCodeData(data = {}) {
   };
 }
 
+const PILOT_DURATION_DAYS = 90;
+const PILOT_DURATION_MS = PILOT_DURATION_DAYS * 24 * 60 * 60 * 1000;
+
+function isPilotPlan(dealershipData = {}) {
+  return String(dealershipData.plan || '').trim().toLowerCase() === 'pilot';
+}
+
+function isPilotExpired(dealershipData = {}) {
+  if (!isPilotPlan(dealershipData)) return false;
+  const ends = toDate(dealershipData.pilotEndsAt);
+  return Boolean(ends) && ends.getTime() <= Date.now();
+}
+
 function isDealershipDeactivated(dealershipData = {}) {
-  return dealershipData.active === false || String(dealershipData.accountStatus || '').trim().toLowerCase() === 'inactive';
+  if (dealershipData.active === false) return true;
+  if (String(dealershipData.accountStatus || '').trim().toLowerCase() === 'inactive') return true;
+  if (isPilotExpired(dealershipData)) return true;
+  return false;
+}
+
+// Access gate for non-admin users: returns a block descriptor when the user's
+// store is paused (inactive) or its pilot has ended, else null. Fail-open —
+// any lookup error returns null so a bug can never lock people out.
+async function getDealershipAccessBlock(userData = {}) {
+  try {
+    const dealershipId = getResolvedDealershipId(userData);
+    if (!dealershipId || dealershipId === 'independent') return null;
+    const rec = await lookupDealershipById(dealershipId);
+    const data = rec?.data || null;
+    if (!data || !isDealershipDeactivated(data)) return null;
+    const reason = isPilotExpired(data) ? 'pilot_ended' : 'inactive';
+    return {
+      reason,
+      dealershipName: String(data.name || data.dealer_name || data.storeName || '').trim(),
+      message: reason === 'pilot_ended'
+        ? 'Your store’s AutoKnerd pilot has ended. Contact AutoKnerd to keep your team going.'
+        : 'Your store’s AutoKnerd access is paused. Contact AutoKnerd to continue.',
+    };
+  } catch (error) {
+    console.warn('[access-gate] check failed, allowing access:', error?.message);
+    return null;
+  }
 }
 
 function getTrialWindowTimestamps(days = 14) {
@@ -3017,6 +3057,13 @@ function serializeDealershipRecord(doc, userCount = 0, origin = '') {
   const dealershipId = String(data.dealershipId || doc?.id || '').trim();
   const { dealerCode, dealerCodeNormalized } = getDealershipCodeData(data);
   const enrollmentCode = dealerCode;
+  const plan = String(data.plan || 'monthly').trim().toLowerCase() || 'monthly';
+  const activeRaw = data.active !== false;
+  const pilotEndsDate = toDate(data.pilotEndsAt);
+  const pilotExpired = isPilotExpired(data);
+  const pilotDaysLeft = (plan === 'pilot' && pilotEndsDate)
+    ? Math.ceil((pilotEndsDate.getTime() - Date.now()) / 86400000)
+    : null;
   return {
     id: String(doc?.id || dealershipId || '').trim(),
     dealershipId,
@@ -3026,8 +3073,13 @@ function serializeDealershipRecord(doc, userCount = 0, origin = '') {
     enrollmentCode,
     enrollmentCodeNormalized: dealerCodeNormalized,
     enrollmentUrl: buildEnrollmentUrl(origin, enrollmentCode) || '',
-    active: data.active !== false,
-    plan: String(data.plan || 'monthly').trim() || 'monthly',
+    active: activeRaw,
+    effectiveActive: activeRaw && !pilotExpired,
+    plan,
+    pilotStartedAt: toIso(data.pilotStartedAt),
+    pilotEndsAt: toIso(data.pilotEndsAt),
+    pilotDaysLeft,
+    pilotExpired,
     createdAt: toIso(data.createdAt),
     updatedAt: toIso(data.updatedAt),
     userCount: Math.max(0, Number(userCount) || 0),
@@ -3117,7 +3169,7 @@ async function buildDealershipAdminOverview({ origin = '' } = {}) {
     dealerships,
     summary: {
       totalDealerships: dealerships.length,
-      activeDealerships: dealerships.filter((dealership) => dealership.active).length,
+      activeDealerships: dealerships.filter((dealership) => dealership.effectiveActive !== false).length,
       totalUsers: userDocs.length,
     },
   };
@@ -5802,6 +5854,15 @@ async function handleBootstrap(req, res, url) {
     if (!bundle) {
       return sendJson(res, 504, { ok: false, message: 'User data took too long to load. Please try again.' });
     }
+    if (!isTruthyFlag(mockMode)) {
+      const roleLabel = normalizeRoleLabel(bundle.user?.roleLabel || bundle.user?.role);
+      if (!isPrivilegedDealershipRole(roleLabel)) {
+        const block = await getDealershipAccessBlock(bundle.user);
+        if (block) {
+          return sendJson(res, 403, { ok: false, accessBlocked: true, ...block });
+        }
+      }
+    }
     const activeSession = serializeActiveSession(getActiveSessionForUser(bundle.user));
     return sendJson(res, 200, { ok: true, ...bundle, activeSession });
   } catch (error) {
@@ -5900,6 +5961,16 @@ async function handleAuthSignIn(req, res) {
           userData: bundle.user,
           roleProfile: bundle.roleProfile,
         });
+      }
+    }
+
+    if (!isTruthyFlag(body.mockMode)) {
+      const signedInRole = normalizeRoleLabel(bundle.user?.roleLabel || bundle.user?.role);
+      if (!isPrivilegedDealershipRole(signedInRole)) {
+        const block = await getDealershipAccessBlock(bundle.user);
+        if (block) {
+          return sendJson(res, 403, { ok: false, accessBlocked: true, ...block });
+        }
       }
     }
 
@@ -6274,6 +6345,12 @@ async function handleAdminDealershipCreate(req, res) {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
+    if (plan === 'pilot') {
+      const now = new Date();
+      dealershipDoc.pilotStartedAt = admin.firestore.Timestamp.fromDate(now);
+      dealershipDoc.pilotEndsAt = admin.firestore.Timestamp.fromDate(new Date(now.getTime() + PILOT_DURATION_MS));
+    }
+
     Object.keys(dealershipDoc).forEach((key) => {
       if (dealershipDoc[key] === undefined) {
         delete dealershipDoc[key];
@@ -6370,7 +6447,22 @@ async function handleAdminDealershipUpdate(req, res) {
       updates.active = isTruthyFlag(body.active);
     }
     if (Object.prototype.hasOwnProperty.call(body, 'plan')) {
-      updates.plan = String(body.plan || 'monthly').trim().toLowerCase() || 'monthly';
+      const nextPlan = String(body.plan || 'monthly').trim().toLowerCase() || 'monthly';
+      updates.plan = nextPlan;
+      if (nextPlan === 'pilot') {
+        // Start (or restart) the 90-day clock unless an unexpired pilot is already running.
+        const currentEnds = toDate(currentData.pilotEndsAt);
+        const runningPilot = isPilotPlan(currentData) && currentEnds && currentEnds.getTime() > Date.now();
+        if (!runningPilot) {
+          const now = new Date();
+          updates.pilotStartedAt = admin.firestore.Timestamp.fromDate(now);
+          updates.pilotEndsAt = admin.firestore.Timestamp.fromDate(new Date(now.getTime() + PILOT_DURATION_MS));
+        }
+      } else {
+        // Converting away from pilot clears the pilot clock.
+        updates.pilotStartedAt = admin.firestore.FieldValue.delete();
+        updates.pilotEndsAt = admin.firestore.FieldValue.delete();
+      }
     }
     if (Object.prototype.hasOwnProperty.call(body, 'enablePppProtocol')) {
       updates.enablePppProtocol = isTruthyFlag(body.enablePppProtocol);

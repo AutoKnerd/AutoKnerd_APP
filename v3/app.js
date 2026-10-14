@@ -75,6 +75,7 @@
     plan: null,
     planLoading: false,
     admin: { data: null, status: null, loading: false, creating: false, createError: '', created: null, error: '' },
+    accessBlock: null,
     sheet: null,
   };
 
@@ -198,6 +199,11 @@
     if (res.status === 401 && data.authRequired && !S.preview) {
       signOutLocal();
       throw new Error('Please sign in again.');
+    }
+    if (res.status === 403 && data.accessBlocked && !S.preview) {
+      S.accessBlock = data;
+      signOutLocal();
+      throw new Error(data.message || 'Access paused.');
     }
     if (!res.ok || data.ok === false) throw new Error(data.message || 'Something went wrong. Please try again.');
     return data;
@@ -325,6 +331,18 @@
       </form></main>`;
   }
 
+  // Shown when a non-admin's store is paused or its pilot has ended.
+  function blockedScreen() {
+    const b = S.accessBlock || {};
+    const pilot = b.reason === 'pilot_ended';
+    return `<main class="auth">
+      <div class="brand"><img src="${LOGO}" alt="" width="72" height="72"><h1>${pilot ? 'Pilot ended' : 'Access paused'}</h1>
+        <p class="muted" style="margin:0">${esc(b.message || 'Your store’s AutoKnerd access is paused. Contact AutoKnerd to continue.')}</p></div>
+      <a class="btn primary block" href="${MEETING_URL}" target="_blank" rel="noopener">Contact AutoKnerd</a>
+      <button class="btn ghost block" type="button" data-action="access-reset">Back to sign in</button>
+    </main>`;
+  }
+
   // Admin-only landing: choose the training app or the admin dashboard on sign in.
   function launchScreen() {
     const name = firstName(S.bundle?.user?.name);
@@ -348,6 +366,14 @@
   // ---------------------------------------------------------------------------
   const PLAN_OPTS = ['monthly', 'annual', 'pilot'];
   const planLabel = (p) => { const s = String(p || 'monthly'); return s.charAt(0).toUpperCase() + s.slice(1); };
+  function storeBadge(s) {
+    if (s.plan === 'pilot') {
+      if (s.pilotExpired || (s.pilotDaysLeft != null && s.pilotDaysLeft <= 0)) return '<span class="badge bad">Pilot ended</span>';
+      const dl = s.pilotDaysLeft;
+      return `<span class="badge ${dl != null && dl <= 7 ? 'warn' : 'ok'}">${dl != null ? `Pilot · ${dl}d` : 'Pilot'}</span>`;
+    }
+    return `<span class="badge ${s.active ? 'ok' : 'off'}">${s.active ? 'Active' : 'Off'}</span>`;
+  }
 
   function formatUptime(sec) {
     const s = Math.max(0, Number(sec) || 0);
@@ -391,7 +417,7 @@
 
   function adminStoreSheet(s) {
     return `<h2>Edit store</h2>
-      <p class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'} on this store</p>
+      <p class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'}${s.plan === 'pilot' ? ` · ${s.pilotExpired ? 'pilot ended' : (s.pilotDaysLeft != null ? `pilot ${s.pilotDaysLeft}d left` : 'pilot')}` : ''}</p>
       <form class="form" data-form="admin-edit-store">
         <input type="hidden" name="dealershipId" value="${esc(s.id)}">
         <label class="field"><span>Dealership name</span><input class="input" name="name" value="${esc(s.name)}" required></label>
@@ -452,7 +478,7 @@
       <div class="card tight store-row">
         <div class="store-head">
           <div class="stack grow"><b>${esc(s.name)}</b><span class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'} · ${esc(planLabel(s.plan))}</span></div>
-          <span class="badge ${s.active ? 'ok' : 'off'}">${s.active ? 'Active' : 'Off'}</span>
+          ${storeBadge(s)}
         </div>
         ${s.dealerCode
           ? `<div class="copy-row"><code>${esc(s.dealerCode)}</code>${s.enrollmentUrl ? `<button class="link accent" type="button" data-action="copy" data-copy="${esc(s.enrollmentUrl)}">Copy join link</button>` : ''}</div>`
@@ -1217,7 +1243,8 @@
     const resetCode = url.searchParams.get('oobCode') || (url.pathname.endsWith('/reset-password') ? url.searchParams.get('code') : '');
 
     let html;
-    if (resetCode || url.searchParams.get('mode') === 'resetPassword') html = resetScreen();
+    if (S.accessBlock) html = blockedScreen();
+    else if (resetCode || url.searchParams.get('mode') === 'resetPassword') html = resetScreen();
     else if (name === 'privacy' || name === 'terms') html = staticScreen(name);
     else if (name === 'demo') html = demoScreen();
     else if (!S.bundle) html = authScreen();
@@ -1332,6 +1359,7 @@
       }
       render();
     },
+    'access-reset': () => { S.accessBlock = null; signOutLocal(); go(''); },
     'admin-refresh': () => loadAdmin(true),
     'admin-edit': (el) => { const s = (S.admin.data?.dealerships || []).find((x) => x.id === el.dataset.id); if (s) openSheet(() => adminStoreSheet(s)); },
     'admin-toggle': (el) => updateStore({ dealershipId: el.dataset.id, active: el.dataset.active !== '1' }),
