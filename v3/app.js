@@ -324,6 +324,24 @@
       </form></main>`;
   }
 
+  // Admin-only landing: choose the training app or the admin dashboard on sign in.
+  function launchScreen() {
+    const name = firstName(S.bundle?.user?.name);
+    return `<main class="auth">
+      <div class="brand"><img src="${LOGO}" alt="" width="72" height="72"><h1>Welcome back, ${esc(name)}</h1>
+        <p class="muted small" style="margin:0">Where would you like to go?</p></div>
+      <a class="card tight" href="#/${homeRoute()}" style="text-decoration:none;flex-direction:row;align-items:center">
+        <span class="tile-icon accent">${icon('target', 20)}</span>
+        <span class="stack grow"><b>Training app</b><span class="muted small">Practice, team dashboard, tools and progress.</span></span>
+        <span class="muted">${icon('chevR', 20)}</span></a>
+      <a class="card tight" href="/classic" style="text-decoration:none;flex-direction:row;align-items:center">
+        <span class="tile-icon accent">${icon('settings', 20)}</span>
+        <span class="stack grow"><b>Admin dashboard</b><span class="muted small">Dealerships, users, sessions and system status.</span></span>
+        <span class="muted">${icon('external', 18)}</span></a>
+      <button class="link" type="button" data-action="sign-out" style="align-self:center">Sign out</button>
+    </main>`;
+  }
+
   // ---------------------------------------------------------------------------
   // Home (frontline) and the shared "today" card
   // ---------------------------------------------------------------------------
@@ -682,7 +700,8 @@
         <a class="list-item" href="#/privacy">${icon('doc')}<span class="title grow">Privacy Policy</span><span class="chev">${icon('chevR', 20)}</span></a>
         <a class="list-item" href="#/terms">${icon('doc')}<span class="title grow">Terms of Use</span><span class="chev">${icon('chevR', 20)}</span></a>
         <a class="list-item" href="${SITE_URL}/legal" target="_blank" rel="noopener">${icon('doc')}<span class="title grow">Security &amp; all policies</span><span class="chev">${icon('external', 18)}</span></a>
-        ${isAdmin() ? `<a class="list-item" href="/classic">${icon('settings')}<span class="title grow">Admin console (classic app)</span><span class="chev">${icon('external', 18)}</span></a>` : ''}
+        ${isAdmin() ? `<a class="list-item" href="#/launch">${icon('home')}<span class="title grow">App or admin menu</span><span class="chev">${icon('chevR', 20)}</span></a>` : ''}
+        ${isAdmin() ? `<a class="list-item" href="/classic">${icon('settings')}<span class="title grow">Admin dashboard (classic app)</span><span class="chev">${icon('external', 18)}</span></a>` : ''}
       </div></section>
       <button class="btn block danger" data-action="sign-out">${icon('logout', 20)} Sign out</button>
     </main>`;
@@ -1068,6 +1087,7 @@
     else if (!S.bundle) html = authScreen();
     else {
       switch (name) {
+        case 'launch': html = isAdmin() ? launchScreen() : (isLeader() ? teamScreen() : homeScreen()); break;
         case 'home': html = isLeader() ? teamScreen() : homeScreen(); break;
         case 'team': html = isLeader() ? teamScreen() : homeScreen(); break;
         case 'member': html = isLeader() ? memberScreen(params[0]) : homeScreen(); break;
@@ -1290,7 +1310,7 @@
     S.session = data.bundle?.activeSession || null;
     if (data.bundle?.user?.userId) write(LS.userId, data.bundle.user.userId);
     S.busy = false;
-    history.replaceState(null, '', `${location.pathname}#/${homeRoute()}`);
+    history.replaceState(null, '', `${location.pathname}#/${isAdmin() ? 'launch' : homeRoute()}`);
     loadBundle().then(render).catch(() => {});
     render();
   }
@@ -1385,7 +1405,7 @@
     if (S.token || S.preview) {
       try {
         await loadBundle();
-        if (!location.hash || location.hash === '#/' || location.hash === '#' || (S.preview && location.hash === '#/demo')) history.replaceState(null, '', `${location.pathname}${location.search}#/${homeRoute()}`);
+        if (!location.hash || location.hash === '#/' || location.hash === '#' || (S.preview && location.hash === '#/demo')) history.replaceState(null, '', `${location.pathname}${location.search}#/${isAdmin() && !S.preview ? 'launch' : homeRoute()}`);
       } catch (err) {
         if (S.preview) { toast(err.message, true); S.preview = ''; sessionStorage.removeItem('ak:preview'); }
         S.bundle = null;
