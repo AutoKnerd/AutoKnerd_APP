@@ -325,6 +325,7 @@ input:focus-visible + [data-avatar-option] { outline: 2px dashed var(--accent); 
 }
 
 /* Admin dashboard */
+[hidden] { display: none !important; }
 .health-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: 0 0 9px; }
 .health-dot.ok { background: #2FBF71; }
 .health-dot.bad { background: #E5484D; }

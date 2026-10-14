@@ -2963,20 +2963,51 @@ function getDealershipCodeData(data = {}) {
 const PILOT_DURATION_DAYS = 90;
 const PILOT_DURATION_MS = PILOT_DURATION_DAYS * 24 * 60 * 60 * 1000;
 
-function isPilotPlan(dealershipData = {}) {
-  return String(dealershipData.plan || '').trim().toLowerCase() === 'pilot';
+// Access term presets. Each sets an access-until date; 'custom' uses a supplied date.
+const TERM_LABELS = {
+  pilot: 'Pilot (90 days)',
+  '1-month': '1 month',
+  '3-month': '3 months',
+  '6-month': '6 months',
+  '1-year': '1 year',
+  custom: 'Custom',
+  // legacy labels still stored on older records:
+  monthly: 'Monthly', quarterly: 'Quarterly', annual: 'Annual',
+};
+function termLabel(term) {
+  const key = String(term || '').trim().toLowerCase();
+  return TERM_LABELS[key] || (key ? key.charAt(0).toUpperCase() + key.slice(1) : 'Term');
+}
+function computeTermEndDate(term, customEndDate) {
+  const key = String(term || '').trim().toLowerCase();
+  const now = new Date();
+  const addMonths = (n) => { const d = new Date(now); d.setMonth(d.getMonth() + n); return d; };
+  switch (key) {
+    case 'pilot': return new Date(now.getTime() + PILOT_DURATION_MS);
+    case '1-month': return addMonths(1);
+    case '3-month': return addMonths(3);
+    case '6-month': return addMonths(6);
+    case '1-year': { const d = new Date(now); d.setFullYear(d.getFullYear() + 1); return d; }
+    case 'custom': {
+      const d = customEndDate ? new Date(customEndDate) : null;
+      return (d && !Number.isNaN(d.getTime())) ? d : null;
+    }
+    default: return null; // unknown/legacy term → no enforced end date
+  }
 }
 
-function isPilotExpired(dealershipData = {}) {
-  if (!isPilotPlan(dealershipData)) return false;
-  const ends = toDate(dealershipData.pilotEndsAt);
-  return Boolean(ends) && ends.getTime() <= Date.now();
+function getAccessEndsDate(dealershipData = {}) {
+  return toDate(dealershipData.accessEndsAt) || toDate(dealershipData.pilotEndsAt) || null;
+}
+function isAccessExpired(dealershipData = {}) {
+  const end = getAccessEndsDate(dealershipData);
+  return Boolean(end) && end.getTime() <= Date.now();
 }
 
 function isDealershipDeactivated(dealershipData = {}) {
   if (dealershipData.active === false) return true;
   if (String(dealershipData.accountStatus || '').trim().toLowerCase() === 'inactive') return true;
-  if (isPilotExpired(dealershipData)) return true;
+  if (isAccessExpired(dealershipData)) return true;
   return false;
 }
 
@@ -2990,13 +3021,17 @@ async function getDealershipAccessBlock(userData = {}) {
     const rec = await lookupDealershipById(dealershipId);
     const data = rec?.data || null;
     if (!data || !isDealershipDeactivated(data)) return null;
-    const reason = isPilotExpired(data) ? 'pilot_ended' : 'inactive';
+    const expired = isAccessExpired(data);
+    const pilot = String(data.plan || '').trim().toLowerCase() === 'pilot';
+    const reason = expired ? (pilot ? 'pilot_ended' : 'term_ended') : 'inactive';
     return {
       reason,
       dealershipName: String(data.name || data.dealer_name || data.storeName || '').trim(),
-      message: reason === 'pilot_ended'
-        ? 'Your store’s AutoKnerd pilot has ended. Contact AutoKnerd to keep your team going.'
-        : 'Your store’s AutoKnerd access is paused. Contact AutoKnerd to continue.',
+      message: !expired
+        ? 'Your store’s AutoKnerd access is paused. Contact AutoKnerd to continue.'
+        : pilot
+          ? 'Your store’s AutoKnerd pilot has ended. Contact AutoKnerd to keep your team going.'
+          : 'Your store’s AutoKnerd access period has ended. Contact AutoKnerd to renew.',
     };
   } catch (error) {
     console.warn('[access-gate] check failed, allowing access:', error?.message);
@@ -3059,11 +3094,9 @@ function serializeDealershipRecord(doc, userCount = 0, origin = '') {
   const enrollmentCode = dealerCode;
   const plan = String(data.plan || 'monthly').trim().toLowerCase() || 'monthly';
   const activeRaw = data.active !== false;
-  const pilotEndsDate = toDate(data.pilotEndsAt);
-  const pilotExpired = isPilotExpired(data);
-  const pilotDaysLeft = (plan === 'pilot' && pilotEndsDate)
-    ? Math.ceil((pilotEndsDate.getTime() - Date.now()) / 86400000)
-    : null;
+  const accessEndsDate = getAccessEndsDate(data);
+  const accessExpired = isAccessExpired(data);
+  const accessDaysLeft = accessEndsDate ? Math.ceil((accessEndsDate.getTime() - Date.now()) / 86400000) : null;
   return {
     id: String(doc?.id || dealershipId || '').trim(),
     dealershipId,
@@ -3074,12 +3107,14 @@ function serializeDealershipRecord(doc, userCount = 0, origin = '') {
     enrollmentCodeNormalized: dealerCodeNormalized,
     enrollmentUrl: buildEnrollmentUrl(origin, enrollmentCode) || '',
     active: activeRaw,
-    effectiveActive: activeRaw && !pilotExpired,
+    effectiveActive: activeRaw && !accessExpired,
     plan,
-    pilotStartedAt: toIso(data.pilotStartedAt),
-    pilotEndsAt: toIso(data.pilotEndsAt),
-    pilotDaysLeft,
-    pilotExpired,
+    term: plan,
+    termLabel: termLabel(plan),
+    accessStartedAt: toIso(data.accessStartedAt) || toIso(data.pilotStartedAt),
+    accessEndsAt: accessEndsDate ? accessEndsDate.toISOString() : null,
+    accessDaysLeft,
+    accessExpired,
     createdAt: toIso(data.createdAt),
     updatedAt: toIso(data.updatedAt),
     userCount: Math.max(0, Number(userCount) || 0),
@@ -6319,7 +6354,7 @@ async function handleAdminDealershipCreate(req, res) {
     }
 
     const name = String(body.name || '').trim();
-    const plan = String(body.plan || 'monthly').trim().toLowerCase() || 'monthly';
+    const term = String(body.term || body.plan || '1-month').trim().toLowerCase() || '1-month';
     const dealerCodeDisplay = String(body.dealerCode || body.enrollmentCode || '').trim();
     const dealerCodeNormalized = normalizeDealerCode(dealerCodeDisplay);
     if (!name) {
@@ -6341,14 +6376,15 @@ async function handleAdminDealershipCreate(req, res) {
       enrollmentCodeNormalized: dealerCodeNormalized || undefined,
       active: true,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      plan,
+      plan: term,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    if (plan === 'pilot') {
+    const termEnd = computeTermEndDate(term, body.customEndDate);
+    if (termEnd) {
       const now = new Date();
-      dealershipDoc.pilotStartedAt = admin.firestore.Timestamp.fromDate(now);
-      dealershipDoc.pilotEndsAt = admin.firestore.Timestamp.fromDate(new Date(now.getTime() + PILOT_DURATION_MS));
+      dealershipDoc.accessStartedAt = admin.firestore.Timestamp.fromDate(now);
+      dealershipDoc.accessEndsAt = admin.firestore.Timestamp.fromDate(termEnd);
     }
 
     Object.keys(dealershipDoc).forEach((key) => {
@@ -6444,22 +6480,30 @@ async function handleAdminDealershipUpdate(req, res) {
     }
 
     if (Object.prototype.hasOwnProperty.call(body, 'active')) {
-      updates.active = isTruthyFlag(body.active);
+      const nextActive = isTruthyFlag(body.active);
+      updates.active = nextActive;
+      // Turning a store back on should clear every "off" state, not just the toggle.
+      if (nextActive) {
+        updates.accountStatus = 'active';
+        updates.deactivatedAt = admin.firestore.FieldValue.delete();
+      }
     }
-    if (Object.prototype.hasOwnProperty.call(body, 'plan')) {
-      const nextPlan = String(body.plan || 'monthly').trim().toLowerCase() || 'monthly';
-      updates.plan = nextPlan;
-      if (nextPlan === 'pilot') {
-        // Start (or restart) the 90-day clock unless an unexpired pilot is already running.
-        const currentEnds = toDate(currentData.pilotEndsAt);
-        const runningPilot = isPilotPlan(currentData) && currentEnds && currentEnds.getTime() > Date.now();
-        if (!runningPilot) {
-          const now = new Date();
-          updates.pilotStartedAt = admin.firestore.Timestamp.fromDate(now);
-          updates.pilotEndsAt = admin.firestore.Timestamp.fromDate(new Date(now.getTime() + PILOT_DURATION_MS));
-        }
-      } else {
-        // Converting away from pilot clears the pilot clock.
+    const hasTermField = Object.prototype.hasOwnProperty.call(body, 'term') || Object.prototype.hasOwnProperty.call(body, 'plan');
+    if (hasTermField) {
+      const nextTerm = String(body.term || body.plan || '').trim().toLowerCase();
+      const currentTerm = String(currentData.plan || '').trim().toLowerCase();
+      const termChanged = Boolean(nextTerm) && nextTerm !== currentTerm;
+      const forceReset = isTruthyFlag(body.setTerm) || Object.prototype.hasOwnProperty.call(body, 'customEndDate');
+      if (nextTerm) updates.plan = nextTerm;
+      // Only (re)start the access clock when the term actually changes, a custom
+      // date is given, or the caller forces it (e.g. the Activate flow). Editing
+      // a store's name alone must not shorten or reset its paid term.
+      if (nextTerm && (termChanged || forceReset)) {
+        const termEnd = computeTermEndDate(nextTerm, body.customEndDate);
+        updates.accessStartedAt = admin.firestore.Timestamp.fromDate(new Date());
+        updates.accessEndsAt = termEnd
+          ? admin.firestore.Timestamp.fromDate(termEnd)
+          : admin.firestore.FieldValue.delete();
         updates.pilotStartedAt = admin.firestore.FieldValue.delete();
         updates.pilotEndsAt = admin.firestore.FieldValue.delete();
       }

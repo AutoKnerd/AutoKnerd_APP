@@ -334,9 +334,9 @@
   // Shown when a non-admin's store is paused or its pilot has ended.
   function blockedScreen() {
     const b = S.accessBlock || {};
-    const pilot = b.reason === 'pilot_ended';
+    const heading = b.reason === 'pilot_ended' ? 'Pilot ended' : (b.reason === 'term_ended' ? 'Access ended' : 'Access paused');
     return `<main class="auth">
-      <div class="brand"><img src="${LOGO}" alt="" width="72" height="72"><h1>${pilot ? 'Pilot ended' : 'Access paused'}</h1>
+      <div class="brand"><img src="${LOGO}" alt="" width="72" height="72"><h1>${heading}</h1>
         <p class="muted" style="margin:0">${esc(b.message || 'Your store’s AutoKnerd access is paused. Contact AutoKnerd to continue.')}</p></div>
       <a class="btn primary block" href="${MEETING_URL}" target="_blank" rel="noopener">Contact AutoKnerd</a>
       <button class="btn ghost block" type="button" data-action="access-reset">Back to sign in</button>
@@ -364,15 +364,41 @@
   // ---------------------------------------------------------------------------
   // Admin dashboard (admins only) — built on the existing /api/admin/* endpoints
   // ---------------------------------------------------------------------------
-  const PLAN_OPTS = ['monthly', 'annual', 'pilot'];
-  const planLabel = (p) => { const s = String(p || 'monthly'); return s.charAt(0).toUpperCase() + s.slice(1); };
+  const TERM_OPTIONS = [
+    ['pilot', 'Pilot (90 days)'],
+    ['1-month', '1 month'],
+    ['3-month', '3 months'],
+    ['6-month', '6 months'],
+    ['1-year', '1 year'],
+    ['custom', 'Custom date…'],
+  ];
+  const TERM_LABEL = { pilot: 'Pilot', '1-month': '1 month', '3-month': '3 months', '6-month': '6 months', '1-year': '1 year', custom: 'Custom', monthly: 'Monthly', quarterly: 'Quarterly', annual: 'Annual' };
+  const termLabel = (t) => { const s = String(t || '').toLowerCase(); return TERM_LABEL[s] || (s ? s.charAt(0).toUpperCase() + s.slice(1) : 'Term'); };
+  const termOptionsHtml = (selected) => {
+    const sel = String(selected || '').toLowerCase();
+    const known = TERM_OPTIONS.some(([v]) => v === sel);
+    return TERM_OPTIONS.map(([v, l]) => `<option value="${v}" ${v === sel ? 'selected' : ''}>${l}</option>`).join('')
+      + (sel && !known ? `<option value="${esc(sel)}" selected>${esc(termLabel(sel))}</option>` : '');
+  };
+  // Effectively on = toggled active AND inside its access term.
   function storeBadge(s) {
-    if (s.plan === 'pilot') {
-      if (s.pilotExpired || (s.pilotDaysLeft != null && s.pilotDaysLeft <= 0)) return '<span class="badge bad">Pilot ended</span>';
-      const dl = s.pilotDaysLeft;
-      return `<span class="badge ${dl != null && dl <= 7 ? 'warn' : 'ok'}">${dl != null ? `Pilot · ${dl}d` : 'Pilot'}</span>`;
-    }
-    return `<span class="badge ${s.active ? 'ok' : 'off'}">${s.active ? 'Active' : 'Off'}</span>`;
+    if (!s.active) return '<span class="badge off">Off</span>';
+    if (s.accessExpired || (s.accessDaysLeft != null && s.accessDaysLeft <= 0)) return '<span class="badge bad">Expired</span>';
+    const dl = s.accessDaysLeft;
+    if (dl == null) return '<span class="badge ok">Active</span>';
+    return `<span class="badge ${dl <= 14 ? 'warn' : 'ok'}">Active · ${dl}d</span>`;
+  }
+  function accessSummary(s) {
+    if (!s.active) return 'Off';
+    if (s.accessExpired) return 'access ended';
+    if (s.accessDaysLeft != null) return `${s.accessDaysLeft}d left`;
+    return 'no end date';
+  }
+  function termBody(f) {
+    const term = f.term ? f.term.value : '';
+    const body = { term };
+    if (term === 'custom' && f.customEndDate && f.customEndDate.value) body.customEndDate = f.customEndDate.value;
+    return body;
   }
 
   function formatUptime(sec) {
@@ -417,14 +443,27 @@
 
   function adminStoreSheet(s) {
     return `<h2>Edit store</h2>
-      <p class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'}${s.plan === 'pilot' ? ` · ${s.pilotExpired ? 'pilot ended' : (s.pilotDaysLeft != null ? `pilot ${s.pilotDaysLeft}d left` : 'pilot')}` : ''}</p>
+      <p class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'} · ${esc(s.termLabel || termLabel(s.plan))} · ${esc(accessSummary(s))}</p>
       <form class="form" data-form="admin-edit-store">
         <input type="hidden" name="dealershipId" value="${esc(s.id)}">
         <label class="field"><span>Dealership name</span><input class="input" name="name" value="${esc(s.name)}" required></label>
         <label class="field"><span>Dealer code <span class="muted small">(blank removes it)</span></span><input class="input" name="dealerCode" value="${esc(s.dealerCode || '')}" autocapitalize="characters" placeholder="SUNRISE-001"></label>
-        <label class="field"><span>Plan</span><select class="select" name="plan">${PLAN_OPTS.map((p) => `<option value="${p}" ${s.plan === p ? 'selected' : ''}>${planLabel(p)}</option>`).join('')}</select></label>
+        <label class="field"><span>Access term <span class="muted small">(changing it restarts the clock)</span></span><select class="select" name="term" data-change="term-edit">${termOptionsHtml(s.term || s.plan)}</select></label>
+        <label class="field" id="editCustomDate" hidden><span>Access ends on</span><input class="input" name="customEndDate" type="date"></label>
         <label class="check"><input type="checkbox" name="active" ${s.active ? 'checked' : ''}><span>Active (reps can use this store)</span></label>
         <button class="btn primary block" type="submit" ${S.busy ? 'disabled' : ''}>${S.busy ? 'Saving…' : 'Save changes'}</button>
+      </form>`;
+  }
+
+  function activateStoreSheet(s) {
+    const renew = Boolean(s.accessExpired);
+    return `<h2>${renew ? 'Renew' : 'Activate'} ${esc(s.name)}</h2>
+      <p class="muted small">Pick how long their access runs. Reps can use the app until it ends.</p>
+      <form class="form" data-form="admin-activate">
+        <input type="hidden" name="dealershipId" value="${esc(s.id)}">
+        <label class="field"><span>Access term</span><select class="select" name="term" data-change="term-activate">${termOptionsHtml('1-year')}</select></label>
+        <label class="field" id="activateCustomDate" hidden><span>Access ends on</span><input class="input" name="customEndDate" type="date"></label>
+        <button class="btn primary block" type="submit" ${S.busy ? 'disabled' : ''}>${S.busy ? 'Saving…' : (renew ? 'Renew access' : 'Activate store')}</button>
       </form>`;
   }
 
@@ -467,7 +506,8 @@
       <form class="form" data-form="admin-create" novalidate>
         <label class="field"><span>Dealership name</span><input class="input" name="name" placeholder="Sunrise Motors" required></label>
         <label class="field"><span>Dealer code <span class="muted small">(optional — reps join with this)</span></span><input class="input" name="dealerCode" placeholder="SUNRISE-001" autocapitalize="characters"></label>
-        <label class="field"><span>Plan</span><select class="select" name="plan">${PLAN_OPTS.map((p) => `<option value="${p}">${planLabel(p)}</option>`).join('')}</select></label>
+        <label class="field"><span>Access term</span><select class="select" name="term" data-change="term-create">${termOptionsHtml('1-month')}</select></label>
+        <label class="field" id="createCustomDate" hidden><span>Access ends on</span><input class="input" name="customEndDate" type="date"></label>
         <button class="btn primary block" type="submit" ${a.creating ? 'disabled' : ''}>${a.creating ? 'Creating…' : 'Create store'}</button>
         ${a.createError ? `<p class="error">${esc(a.createError)}</p>` : ''}
       </form>
@@ -477,7 +517,7 @@
     const stores = (d.dealerships || []).map((s) => `
       <div class="card tight store-row">
         <div class="store-head">
-          <div class="stack grow"><b>${esc(s.name)}</b><span class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'} · ${esc(planLabel(s.plan))}</span></div>
+          <div class="stack grow"><b>${esc(s.name)}</b><span class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'} · ${esc(s.termLabel || termLabel(s.plan))}</span></div>
           ${storeBadge(s)}
         </div>
         ${s.dealerCode
@@ -485,7 +525,9 @@
           : '<span class="muted small">No dealer code</span>'}
         <div class="row gap">
           <button class="btn ghost small" type="button" data-action="admin-edit" data-id="${esc(s.id)}">Edit</button>
-          <button class="btn ghost small" type="button" data-action="admin-toggle" data-id="${esc(s.id)}" data-active="${s.active ? '1' : '0'}">${s.active ? 'Deactivate' : 'Activate'}</button>
+          ${(s.active && !s.accessExpired)
+            ? `<button class="btn ghost small" type="button" data-action="admin-deactivate" data-id="${esc(s.id)}">Deactivate</button>`
+            : `<button class="btn ghost small" type="button" data-action="admin-activate" data-id="${esc(s.id)}">${s.accessExpired ? 'Renew' : 'Activate'}</button>`}
         </div>
       </div>`).join('');
 
@@ -1362,7 +1404,8 @@
     'access-reset': () => { S.accessBlock = null; signOutLocal(); go(''); },
     'admin-refresh': () => loadAdmin(true),
     'admin-edit': (el) => { const s = (S.admin.data?.dealerships || []).find((x) => x.id === el.dataset.id); if (s) openSheet(() => adminStoreSheet(s)); },
-    'admin-toggle': (el) => updateStore({ dealershipId: el.dataset.id, active: el.dataset.active !== '1' }),
+    'admin-deactivate': (el) => updateStore({ dealershipId: el.dataset.id, active: false }),
+    'admin-activate': (el) => { const s = (S.admin.data?.dealerships || []).find((x) => x.id === el.dataset.id); if (s) openSheet(() => activateStoreSheet(s)); },
     copy: (el) => {
       const text = el.dataset.copy || '';
       if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => toast('Copied.')).catch(() => toast('Copy failed.', true));
@@ -1473,7 +1516,7 @@
       if (!name) { S.admin.createError = 'A dealership name is required.'; render(); return; }
       S.admin.creating = true; S.admin.createError = ''; render();
       try {
-        const data = await api('/api/admin/dealership/create', { method: 'POST', body: { name, dealerCode: f.dealerCode.value.trim(), plan: f.plan.value } });
+        const data = await api('/api/admin/dealership/create', { method: 'POST', body: { name, dealerCode: f.dealerCode.value.trim(), ...termBody(f) } });
         S.admin.created = data.dealership || { name };
         S.admin.creating = false;
         toast('Store created.');
@@ -1484,7 +1527,8 @@
         render();
       }
     },
-    'admin-edit-store': (f) => updateStore({ dealershipId: f.dealershipId.value, name: f.name.value.trim(), dealerCode: f.dealerCode.value.trim(), plan: f.plan.value, active: f.active.checked }),
+    'admin-edit-store': (f) => updateStore({ dealershipId: f.dealershipId.value, name: f.name.value.trim(), dealerCode: f.dealerCode.value.trim(), active: f.active.checked, ...termBody(f) }),
+    'admin-activate': (f) => updateStore({ dealershipId: f.dealershipId.value, active: true, setTerm: true, ...termBody(f) }),
     'store-request': (f) => {
       if (!f.reportValidity()) return;
       const u = S.bundle.user || {};
@@ -1553,6 +1597,11 @@
     if (el.dataset.change === 'store') { write(LS.store(S.bundle.user?.userId), el.value); S.plan = null; S.showAllTeam = false; render(); }
     if (el.dataset.change === 'pref') write(el.dataset.key, el.checked ? '1' : null);
     if (el.dataset.change === 'preview') enterDemo(el.value);
+    if (el.dataset.change && el.dataset.change.indexOf('term-') === 0) {
+      const map = { 'term-create': 'createCustomDate', 'term-edit': 'editCustomDate', 'term-activate': 'activateCustomDate' };
+      const field = document.getElementById(map[el.dataset.change]);
+      if (field) field.hidden = el.value !== 'custom';
+    }
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && S.sheet) closeSheet();
