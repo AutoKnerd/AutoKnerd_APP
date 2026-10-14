@@ -74,7 +74,7 @@
     insight: {},
     plan: null,
     planLoading: false,
-    admin: { data: null, status: null, loading: false, creating: false, createError: '', created: null, error: '' },
+    admin: { data: null, status: null, loading: false, creating: false, createError: '', created: null, error: '', roster: { dealershipId: null, data: null, loading: false, error: '' } },
     accessBlock: null,
     sheet: null,
   };
@@ -380,6 +380,7 @@
     return TERM_OPTIONS.map(([v, l]) => `<option value="${v}" ${v === sel ? 'selected' : ''}>${l}</option>`).join('')
       + (sel && !known ? `<option value="${esc(sel)}" selected>${esc(termLabel(sel))}</option>` : '');
   };
+  const ROSTER_ROLES = ['Owner', 'General Manager', 'Sales Manager', 'Service Manager', 'Parts Manager', 'Finance Manager', 'Sales Consultant', 'BDC', 'Service Writer', 'Parts Consultant', 'Parts Advisor', 'Trainer'];
   // Effectively on = toggled active AND inside its access term.
   function storeBadge(s) {
     if (!s.active) return '<span class="badge off">Off</span>';
@@ -531,7 +532,7 @@
     const stores = (d.dealerships || []).map((s) => `
       <div class="card tight store-row">
         <div class="store-head">
-          <div class="stack grow"><b>${esc(s.name)}</b><span class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'} · ${esc(s.termLabel || termLabel(s.plan))}</span></div>
+          <a class="stack grow store-link" href="#/admin/store/${esc(s.id)}"><b>${esc(s.name)}</b><span class="muted small">${esc(s.userCount)} user${s.userCount === 1 ? '' : 's'} · ${esc(s.termLabel || termLabel(s.plan))} · manage people →</span></a>
           ${storeBadge(s)}
         </div>
         ${s.dealerCode
@@ -558,6 +559,89 @@
       ${onboard}
       ${dealerships}
       <a class="list-item card" href="/classic">${icon('settings')}<span class="title grow">Advanced tools (classic)</span><span class="chev">${icon('external', 18)}</span></a>
+    </main>`;
+  }
+
+  // ---- Store roster: view people, change roles, move, deactivate, remove ----
+  async function loadRoster(id, force = false) {
+    if (!id) return;
+    if (S.admin.roster.loading) return;
+    if (!force && S.admin.roster.data && S.admin.roster.dealershipId === id) return;
+    S.admin.roster = { dealershipId: id, data: (S.admin.roster.dealershipId === id ? S.admin.roster.data : null), loading: true, error: '' };
+    render();
+    try {
+      S.admin.roster.data = await api(`/api/developer/dashboard?dealershipId=${encodeURIComponent(id)}`);
+    } catch (err) {
+      S.admin.roster.error = err.message;
+    }
+    S.admin.roster.loading = false;
+    render();
+  }
+
+  async function updateMember(body) {
+    S.busy = true; render();
+    try {
+      await api('/api/admin/user/update-dealership', { method: 'POST', body });
+      S.sheet = null; S.busy = false;
+      toast('Saved.');
+      await loadRoster(S.admin.roster.dealershipId, true);
+    } catch (err) { S.busy = false; toast(err.message, true); render(); }
+  }
+
+  async function removeMember(userId) {
+    S.busy = true; render();
+    try {
+      await api('/api/admin/user/remove-from-store', { method: 'POST', body: { userId } });
+      S.sheet = null; S.busy = false;
+      toast('Removed from store.');
+      await loadRoster(S.admin.roster.dealershipId, true);
+    } catch (err) { S.busy = false; toast(err.message, true); render(); }
+  }
+
+  function rosterMemberSheet(u, storeId) {
+    const stores = S.admin.data?.dealerships || [];
+    const known = ROSTER_ROLES.includes(u.role);
+    return `<h2>${esc(u.name)}</h2>
+      <p class="muted small">${esc(u.email || 'no email on file')}${u.lastActive ? ` · ${esc(u.lastActive)}` : ''}${u.active ? '' : ' · deactivated'}</p>
+      <form class="form" data-form="member-edit">
+        <input type="hidden" name="userId" value="${esc(u.id)}">
+        <label class="field"><span>Role</span><select class="select" name="role">${ROSTER_ROLES.map((r) => `<option ${r === u.role ? 'selected' : ''}>${esc(r)}</option>`).join('')}${known ? '' : `<option selected>${esc(u.role || 'Unknown')}</option>`}</select></label>
+        <label class="field"><span>Store</span><select class="select" name="dealershipId">${stores.map((st) => `<option value="${esc(st.id)}" ${st.id === storeId ? 'selected' : ''}>${esc(st.name)}</option>`).join('')}</select></label>
+        <button class="btn primary block" type="submit" ${S.busy ? 'disabled' : ''}>${S.busy ? 'Saving…' : 'Save changes'}</button>
+      </form>
+      ${u.active
+        ? `<button class="btn ghost block" type="button" data-action="member-deactivate" data-id="${esc(u.id)}">Deactivate this person</button>`
+        : `<button class="btn ghost block" type="button" data-action="member-reactivate" data-id="${esc(u.id)}">Reactivate this person</button>`}
+      <button class="btn ghost block danger" type="button" data-action="member-remove" data-id="${esc(u.id)}" data-name="${esc(u.name)}">Remove from store</button>`;
+  }
+
+  function storeRosterScreen(id) {
+    const store = (S.admin.data?.dealerships || []).find((x) => x.id === id);
+    const r = S.admin.roster;
+    const header = `<header class="backbar"><a class="icon-btn plain" href="#/admin" aria-label="Back">${icon('chevL', 24)}</a><h1 class="grow">${esc(store?.name || 'Store')}</h1><button class="icon-btn" type="button" data-action="roster-refresh" aria-label="Refresh">${icon('refresh', 20)}</button></header>`;
+    if (r.loading && (!r.data || r.dealershipId !== id)) {
+      return `<main class="page no-tabs">${header}<section class="card"><p class="muted">Loading roster…</p></section></main>`;
+    }
+    const users = r.data?.dashboard?.users || [];
+    const invite = store && store.dealerCode
+      ? `<section class="card"><span class="label">Add someone</span>
+          <p class="muted small">Send this join link — they sign up into this store, then set their role below.</p>
+          <div class="copy-row"><span class="muted small">Code</span><code>${esc(store.dealerCode)}</code></div>
+          ${store.enrollmentUrl ? `<div class="copy-row"><span class="muted small grow trunc">${esc(store.enrollmentUrl)}</span><button class="link accent" type="button" data-action="copy" data-copy="${esc(store.enrollmentUrl)}">Copy join link</button></div>` : ''}
+        </section>`
+      : `<section class="card"><span class="label">Add someone</span><p class="muted small">This store has no dealer code yet — add one from its Edit screen to get a join link.</p></section>`;
+    const list = users.length
+      ? users.map((u) => `
+        <button class="list-item" type="button" data-action="roster-member" data-id="${esc(u.id)}">
+          ${avatar(u, 'neutral')}
+          <span class="stack grow"><b>${esc(u.name)}</b><span class="muted small">${esc(u.role || '—')}${u.active ? '' : ' · off'}${u.lastActive ? ` · ${esc(u.lastActive)}` : ''}</span></span>
+          <span class="chev">${icon('chevR', 20)}</span>
+        </button>`).join('')
+      : '<p class="muted small" style="padding:4px">No one in this store yet — share the join link above.</p>';
+    return `<main class="page no-tabs">${header}
+      ${r.error ? `<section class="card"><p class="error">${esc(r.error)}</p></section>` : ''}
+      ${invite}
+      <section class="card flush"><div class="section-title"><h2>People</h2><span class="muted small">${users.length}</span></div>${list}</section>
     </main>`;
   }
 
@@ -1308,7 +1392,7 @@
     else {
       switch (name) {
         case 'launch': html = isAdmin() ? launchScreen() : (isLeader() ? teamScreen() : homeScreen()); break;
-        case 'admin': html = isAdmin() ? adminScreen() : (isLeader() ? teamScreen() : homeScreen()); break;
+        case 'admin': html = isAdmin() ? (params[0] === 'store' ? storeRosterScreen(params[1]) : adminScreen()) : (isLeader() ? teamScreen() : homeScreen()); break;
         case 'home': html = isLeader() ? teamScreen() : homeScreen(); break;
         case 'team': html = isLeader() ? teamScreen() : homeScreen(); break;
         case 'member': html = isLeader() ? memberScreen(params[0]) : homeScreen(); break;
@@ -1421,6 +1505,11 @@
     'admin-edit': (el) => { const s = (S.admin.data?.dealerships || []).find((x) => x.id === el.dataset.id); if (s) openSheet(() => adminStoreSheet(s)); },
     'admin-deactivate': (el) => updateStore({ dealershipId: el.dataset.id, active: false }),
     'admin-activate': (el) => { const s = (S.admin.data?.dealerships || []).find((x) => x.id === el.dataset.id); if (s) openSheet(() => activateStoreSheet(s)); },
+    'roster-refresh': () => loadRoster(S.admin.roster.dealershipId, true),
+    'roster-member': (el) => { const u = (S.admin.roster.data?.dashboard?.users || []).find((x) => x.id === el.dataset.id); if (u) openSheet(() => rosterMemberSheet(u, S.admin.roster.dealershipId)); },
+    'member-deactivate': (el) => updateMember({ userId: el.dataset.id, deactivate: true }),
+    'member-reactivate': (el) => updateMember({ userId: el.dataset.id, reactivate: true }),
+    'member-remove': (el) => { if (window.confirm(`Remove ${el.dataset.name} from this store? They lose access until re-added.`)) removeMember(el.dataset.id); },
     copy: (el) => {
       const text = el.dataset.copy || '';
       if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => toast('Copied.')).catch(() => toast('Copy failed.', true));
@@ -1544,6 +1633,7 @@
     },
     'admin-edit-store': (f) => updateStore({ dealershipId: f.dealershipId.value, name: f.name.value.trim(), dealerCode: f.dealerCode.value.trim(), active: f.active.checked, ...termBody(f) }),
     'admin-activate': (f) => updateStore({ dealershipId: f.dealershipId.value, active: true, setTerm: true, ...termBody(f) }),
+    'member-edit': (f) => updateMember({ userId: f.userId.value, role: f.role.value, dealershipId: f.dealershipId.value }),
     'store-request': (f) => {
       if (!f.reportValidity()) return;
       const u = S.bundle.user || {};
@@ -1624,9 +1714,15 @@
   });
   window.addEventListener('hashchange', () => {
     S.sheet = null;
-    const { name } = parseRoute();
+    const { name, params } = parseRoute();
     if (name === 'plan' && !S.plan && !S.planLoading && S.bundle) { loadPlan(); return; }
-    if (name === 'admin' && isAdmin() && !S.admin.data && !S.admin.loading) { window.scrollTo(0, 0); loadAdmin(); return; }
+    if (name === 'admin' && isAdmin()) {
+      if (!S.admin.data && !S.admin.loading) loadAdmin();
+      if (params[0] === 'store') loadRoster(params[1]);
+      window.scrollTo(0, 0);
+      render();
+      return;
+    }
     if (name === 'tool') {
       const id = parseRoute().params[0];
       const st = toolState();
@@ -1669,7 +1765,11 @@
     }
     render();
     if (parseRoute().name === 'plan' && S.bundle && isLeader()) loadPlan();
-    if (parseRoute().name === 'admin' && S.bundle && isAdmin()) loadAdmin();
+    if (parseRoute().name === 'admin' && S.bundle && isAdmin()) {
+      loadAdmin();
+      const p = parseRoute().params;
+      if (p[0] === 'store') loadRoster(p[1]);
+    }
   }
 
   boot();
