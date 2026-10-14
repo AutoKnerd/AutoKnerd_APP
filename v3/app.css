@@ -339,4 +339,9 @@ input:focus-visible + [data-avatar-option] { outline: 2px dashed var(--accent); 
 .copy-row code { font-family: var(--num); font-size: 13px; padding: 3px 9px; border-radius: 8px; background: var(--s2); border: 1px solid var(--line); color: var(--text); }
 .enroll-box { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; padding: 14px; border: 1px solid var(--accent); border-radius: 14px; background: var(--accent-soft); }
 .btn.small { min-height: 40px; padding: 0 16px; border-radius: 12px; font-size: 14px; font-weight: 700; }
+.store-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.expiry { margin-left: auto; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.expiry.muted { color: var(--muted); }
+.expiry.exp-warn { color: #E8A317; }
+.expiry.exp-bad { color: #E5484D; }
 .trunc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }

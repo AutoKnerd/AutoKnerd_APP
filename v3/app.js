@@ -400,6 +400,20 @@
     if (term === 'custom' && f.customEndDate && f.customEndDate.value) body.customEndDate = f.customEndDate.value;
     return body;
   }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  function expiryLine(s) {
+    if (!s.accessEndsAt) return '';
+    const date = esc(fmtDate(s.accessEndsAt));
+    const dl = s.accessDaysLeft;
+    if (s.accessExpired || (dl != null && dl <= 0)) return `<span class="expiry exp-bad">Expired ${date}</span>`;
+    if (dl != null && dl <= 14) return `<span class="expiry exp-warn">Expires ${date}</span>`;
+    return `<span class="expiry muted">Expires ${date}</span>`;
+  }
 
   function formatUptime(sec) {
     const s = Math.max(0, Number(sec) || 0);
@@ -523,11 +537,12 @@
         ${s.dealerCode
           ? `<div class="copy-row"><code>${esc(s.dealerCode)}</code>${s.enrollmentUrl ? `<button class="link accent" type="button" data-action="copy" data-copy="${esc(s.enrollmentUrl)}">Copy join link</button>` : ''}</div>`
           : '<span class="muted small">No dealer code</span>'}
-        <div class="row gap">
+        <div class="store-actions">
           <button class="btn ghost small" type="button" data-action="admin-edit" data-id="${esc(s.id)}">Edit</button>
           ${(s.active && !s.accessExpired)
             ? `<button class="btn ghost small" type="button" data-action="admin-deactivate" data-id="${esc(s.id)}">Deactivate</button>`
             : `<button class="btn ghost small" type="button" data-action="admin-activate" data-id="${esc(s.id)}">${s.accessExpired ? 'Renew' : 'Activate'}</button>`}
+          ${expiryLine(s)}
         </div>
       </div>`).join('');
 
